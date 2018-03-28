@@ -35,7 +35,8 @@ import tempfile
 from pyworkflow.manager import Manager
 import pyworkflow.utils as pwutils
 from pyworkflow.protocol import getProtocolFromDb
-from pyworkflow.em.packages.ispyb.ispyb_esrf_utils import ISPyB_ESRF_Utils
+from esrf_utils_ispyb import UtilsISPyB
+from esrf_utils_path import UtilsPath
 
 
 def getUpdatedProtocol(protocol):
@@ -166,7 +167,7 @@ firstMovieFullPath = listMovies[0]
 # db=1: valid
 # db=2: lindemaria
 # db=3: localhost
-proposal = ISPyB_ESRF_Utils.getProposal(firstMovieFullPath)
+proposal = UtilsISPyB.getProposal(firstMovieFullPath)
 if proposal is None:
     print("WARNING! No valid proposal could be found for movie {0}.".format(firstMovieFullPath))
     print("No data will be uploaded to ISPyB.")
@@ -185,12 +186,12 @@ else:
 print("First movie full path file: {0}".format(firstMovieFullPath))
 
 
-jpeg, mrc, xml, gridSquareThumbNail =  ISPyB_ESRF_Utils.getMovieJpegMrcXml(firstMovieFullPath)
+jpeg, mrc, xml, gridSquareThumbNail =  UtilsPath.getMovieJpegMrcXml(firstMovieFullPath)
 
 print("Metadata file: {0}".format(xml))
 
 
-dictResults = ISPyB_ESRF_Utils.getXmlMetaData(xml)
+dictResults = UtilsPath.getXmlMetaData(xml)
 doPhaseShiftEstimation = dictResults["phasePlateUsed"]
 nominalMagnification = int(dictResults["nominalMagnification"])
 superResolutionFactor = int(dictResults["superResolutionFactor"])

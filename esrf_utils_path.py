@@ -28,152 +28,16 @@
 
 import os
 import re
-import sys
 import glob
 import math
 import time
 import socket
 import shutil
-import pprint
 import datetime
 import traceback
-import ConfigParser
 import xml.etree.ElementTree
 
-sys.path.insert(0, "/opt/pxsoft/EDNA/vMX/edna/libraries/suds-0.4")
-
-from suds.client import Client
-from suds.transport.http import HttpAuthenticated
-
-class ISPyB_ESRF_Utils(object):
-
-
-
-    @staticmethod
-    def getHttpAuthenticated():
-        credentialsConfig = ConfigParser.ConfigParser()
-        credentialsConfig.read(os.path.join(os.path.dirname(__file__), 'credentials.properties'))
-        username = str(credentialsConfig.get('Credential', 'user'))
-        password = str(credentialsConfig.get('Credential', 'password'))
-        return HttpAuthenticated(username = username, password = password )
-    
-    @staticmethod
-    def getUrlBase(dbNumber):
-        config = ConfigParser.ConfigParser()
-        # Configuration files
-        config.read(os.path.join(os.path.dirname(__file__), 'ispyb.properties'))    
-        # URL
-        urlBase = str(config.get('UrlBase', 'url_{0}'.format(dbNumber)))
-        return urlBase
-    
-    @staticmethod
-    def splitProposalInCodeAndNumber(proposal):
-        code = None
-        number = None
-        if proposal.startswith("mx"):
-            code = "mx"
-            number = proposal.split("mx")[1]
-        elif proposal.startswith("blc"):
-            code = "blc"
-            number = proposal.split("blc")[1]
-        return code, number
-    
-    @staticmethod
-    def getClient(dbNumber):
-        urlBase = ISPyB_ESRF_Utils.getUrlBase(dbNumber)
-        url = os.path.join(urlBase, "ToolsForEMWebService?wsdl") 
-        # Authentication
-        httpAuthenticated = ISPyB_ESRF_Utils.getHttpAuthenticated()
-        client = Client( url, transport = httpAuthenticated, cache = None, timeout = 15 )
-        return client  
-
-    @staticmethod
-    def updateProposalFromSMIS(dbNumber, proposal):
-        urlBase = ISPyB_ESRF_Utils.getUrlBase(dbNumber)
-        url = os.path.join(urlBase, "UpdateFromSMISWebService?wsdl")
-        # Authentication
-        httpAuthenticated = ISPyB_ESRF_Utils.getHttpAuthenticated()
-        client = Client( url, transport = httpAuthenticated, cache = None, timeout = 15 )
-        code, number = ISPyB_ESRF_Utils.splitProposalInCodeAndNumber(proposal)
-        response = client.service.updateProposalFromSMIS(code, number)
-        print(response)
- 
-    @staticmethod
-    def findSessions(dbNumber, proposal, beamline):
-        urlBase = ISPyB_ESRF_Utils.getUrlBase(dbNumber)
-        url = os.path.join(urlBase, "ToolsForCollectionWebService?wsdl")
-        print(url)
-        # Authentication
-        httpAuthenticated = ISPyB_ESRF_Utils.getHttpAuthenticated()
-        client = Client( url, transport = httpAuthenticated, cache = None, timeout = 15 )
-        code, number = ISPyB_ESRF_Utils.splitProposalInCodeAndNumber(proposal)
-        print(code, number, beamline)
-        sessions = client.service.findSessionsByProposalAndBeamLine(code, number, beamline)
-        return sessions      
-    
-    @staticmethod
-    def findProposal(dbNumber, proposal):
-        urlBase = ISPyB_ESRF_Utils.getUrlBase(dbNumber)
-        url = os.path.join(urlBase, "ToolsForShippingWebService?wsdl")
-        print(url)
-        # Authentication
-        httpAuthenticated = ISPyB_ESRF_Utils.getHttpAuthenticated()
-        client = Client( url, transport = httpAuthenticated, cache = None, timeout = 15 )
-        code, number = ISPyB_ESRF_Utils.splitProposalInCodeAndNumber(proposal)
-        print(code, number)
-        proposal = client.service.findProposal(code, number)
-        return proposal
-    
-    
-    @staticmethod
-    def createSession(dbNumber, proposal, beamline):
-        sessions = []
-        proposalDict = ISPyB_ESRF_Utils.findProposal(dbNumber, proposal)
-        if "proposalId" in proposalDict:
-            currentTime = datetime.datetime.now()
-            startTime = datetime.datetime.combine(currentTime, datetime.time(0, 0))
-            tomorrow = startTime + datetime.timedelta(days=1)
-            endTime = datetime.datetime.combine(tomorrow, datetime.time(7, 59, 59))
-    
-            # Create a session
-            newSessionDict = {}
-            newSessionDict['proposalId'] = proposalDict["proposalId"]
-            newSessionDict['startDate'] = startTime
-            newSessionDict['endDate'] = endTime
-            newSessionDict['beamlineName'] = beamline.upper()
-            newSessionDict['scheduled'] = 0
-            newSessionDict['nbShifts'] = 3
-            newSessionDict['comments'] = "Session created by Scipion"
-            
-            urlBase = ISPyB_ESRF_Utils.getUrlBase(dbNumber)
-            url = os.path.join(urlBase, "ToolsForCollectionWebService?wsdl")
-            print(url)
-            # Authentication
-            httpAuthenticated = ISPyB_ESRF_Utils.getHttpAuthenticated()
-            client = Client( url, transport = httpAuthenticated, cache = None, timeout = 15 )
-            code, number = ISPyB_ESRF_Utils.splitProposalInCodeAndNumber(proposal)
-            print(code, number, beamline)
-            sessions = client.service.storeOrUpdateSession(newSessionDict)
-        return sessions
-
-
-    @staticmethod
-    def getProposal(movieFilePath):
-        proposal = None
-        listDirectory = movieFilePath.split(os.sep)
-        # First check: directory must start with "data":
-        if listDirectory[1] == "data":
-            # Check if ihls2975 - temporary fix
-            if "IH-LS-2975" in movieFilePath:
-                proposal = "ihls2975"
-            # If not check if second level is "visitor":
-            elif listDirectory[2] == "visitor":
-                proposal = listDirectory[3]
-            elif listDirectory[3] == "inhouse":
-                proposal = listDirectory[4]
-        return proposal
-        
-    
+class UtilsPath(object):
     
     
     @staticmethod
@@ -181,7 +45,7 @@ class ISPyB_ESRF_Utils(object):
         mrc = None
         xml = None
         gridSquareSnapshot = None
-        dictFileName = ISPyB_ESRF_Utils.getMovieFileNameParameters(movieFilePath)
+        dictFileName = UtilsPath.getMovieFileNameParameters(movieFilePath)
         filePrefix = "{directory}/{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}".format(**dictFileName)
         jpeg = filePrefix + ".jpg"
         if not os.path.exists(jpeg):
@@ -197,36 +61,6 @@ class ISPyB_ESRF_Utils(object):
         if len(listSnapshot) > 0:
             gridSquareSnapshot = listSnapshot[-1]
             
-#        doContinue = True
-#        movieDirectory = os.path.dirname(movieFilePath)
-#        imageDiscDirectory = os.path.dirname(movieDirectory)
-#        imageDiscName = os.path.basename(movieDirectory)
-#        if imageDiscName == "Data":
-#            gridSquareDirectory = imageDiscDirectory
-#            gridSquareName = os.path.basename(gridSquareDirectory)
-#            imageDiscDirectory = os.path.dirname(gridSquareDirectory)
-#            imageDiscName = os.path.basename(imageDiscDirectory)
-#        runDirectory = os.path.dirname(imageDiscDirectory)
-#        runName = os.path.basename(runDirectory)
-#        topDir = os.path.dirname(runDirectory)
-#        gridSquareTopDataDir = os.path.join(topDir, "test", runName, imageDiscName)
-#        for gridSquareDir in glob.glob(os.path.join(gridSquareTopDataDir, "*")):
-#            dataDir = os.path.join(gridSquareDir, "Data")
-#            if os.path.exists(dataDir):
-#                listMrcFiles = glob.glob(os.path.join(dataDir, "*.mrc"))
-#                for mrcFile in listMrcFiles:
-#                    filePathWithoutSuffix = os.path.splitext(mrcFile)[0]
-#                    fileNameWithoutSuffix = os.path.basename(filePathWithoutSuffix)
-#                    #print(fileNameWithoutSuffix)
-#                    if movieFileName.startswith(fileNameWithoutSuffix):
-#                        mrc = mrcFile
-#                        jpeg = filePathWithoutSuffix + ".jpg"
-#                        xml = filePathWithoutSuffix + ".xml"
-#                        # Assume that the grid square thumb nail is one level above
-#                        listSnapshot = glob.glob(os.path.join(gridSquareDir, "*.jpg"))
-#                        if len(listSnapshot) > 0:
-#                            gridSquareSnapshot = listSnapshot[-1]
-#                        break
         return jpeg, mrc, xml, gridSquareSnapshot
 
 
@@ -235,11 +69,11 @@ class ISPyB_ESRF_Utils(object):
         dictResult = {}
         # Locate png file in same directory
         mrcDirectory = os.path.dirname(mrcFilePath)
-        dictMrcFile = ISPyB_ESRF_Utils.getMovieFileNameParameters(mrcFilePath)
+        dictMrcFile = UtilsPath.getMovieFileNameParameters(mrcFilePath)
         mrcMovieNumber = dictMrcFile["movieNumber"]
         listPng = glob.glob(os.path.join(mrcDirectory, "*.png"))
         for pngFile in listPng:
-            dictFileNameParameters = ISPyB_ESRF_Utils.getMovieFileNameParameters(pngFile)
+            dictFileNameParameters = UtilsPath.getMovieFileNameParameters(pngFile)
             movieNumber = dictFileNameParameters["movieNumber"]
             if dictFileNameParameters["extra"] == "_global_shifts" and mrcMovieNumber == movieNumber:
                 dictResult["globalShiftPng"] = pngFile
@@ -247,7 +81,7 @@ class ISPyB_ESRF_Utils(object):
                 dictResult["thumbnailPng"] = pngFile
         listMrc = glob.glob(os.path.join(mrcDirectory, "*.mrc"))
         for mrcFile in listMrc:
-            dictFileNameParameters = ISPyB_ESRF_Utils.getMovieFileNameParameters(mrcFile)
+            dictFileNameParameters = UtilsPath.getMovieFileNameParameters(mrcFile)
             movieNumber = dictFileNameParameters["movieNumber"]
             if "DW" in dictFileNameParameters["extra"] and mrcMovieNumber == movieNumber:
                 dictResult["doseWeightMrc"] = mrcFile            
@@ -261,7 +95,7 @@ class ISPyB_ESRF_Utils(object):
         m = p.match(t.tag)
         if m is not None:
             t.tag = t.tag[m.span()[1]:]
-        listTmp = map(ISPyB_ESRF_Utils.etree_to_dict, t.getchildren())
+        listTmp = map(UtilsPath.etree_to_dict, t.getchildren())
         if len(listTmp) > 0:
             d = {t.tag : listTmp}
         else:
@@ -284,14 +118,14 @@ class ISPyB_ESRF_Utils(object):
                 fields_found.append(value)
     
             elif isinstance(value, dict):
-                results = ISPyB_ESRF_Utils.get_recursively(value, field)
+                results = UtilsPath.get_recursively(value, field)
                 for result in results:
                     fields_found.append(result)
     
             elif isinstance(value, list):
                 for item in value:
                     if isinstance(item, dict):
-                        more_results = ISPyB_ESRF_Utils.get_recursively(item, field)
+                        more_results = UtilsPath.get_recursively(item, field)
                         for another_result in more_results:
                             fields_found.append(another_result)
     
@@ -301,27 +135,27 @@ class ISPyB_ESRF_Utils(object):
     def getXmlMetaData(xmlMetaDataFullPath):
         dictResults = {}
         root = xml.etree.ElementTree.parse(xmlMetaDataFullPath).getroot()
-        dictXML = ISPyB_ESRF_Utils.etree_to_dict(root)
-        listKeyValue = ISPyB_ESRF_Utils.get_recursively(dictXML, "KeyValueOfstringanyType")
+        dictXML = UtilsPath.etree_to_dict(root)
+        listKeyValue = UtilsPath.get_recursively(dictXML, "KeyValueOfstringanyType")
         for dictKey, dictValue in listKeyValue:
             if dictKey["Key"] == "Dose":
                 dictResults["dose"] = dictValue["Value"]
             if dictKey["Key"] == "PhasePlateUsed":
                 dictResults["phasePlateUsed"] = dictValue["Value"]
-        dictResults["numberOffractions"] = ISPyB_ESRF_Utils.get_recursively(dictXML, "NumberOffractions")[0]
-        dictResults["nominalMagnification"] = ISPyB_ESRF_Utils.get_recursively(dictXML, "NominalMagnification")[0]
-        dictResults["positionX"] = ISPyB_ESRF_Utils.get_recursively(dictXML, "X")[0]
-        dictResults["positionY"] = ISPyB_ESRF_Utils.get_recursively(dictXML, "Y")[0]
-        dictResults["accelerationVoltage"] = ISPyB_ESRF_Utils.get_recursively(dictXML, "AccelerationVoltage")[0]
-        dictResults["acquisitionDateTime"] = ISPyB_ESRF_Utils.get_recursively(dictXML, "acquisitionDateTime")[0]
-        listKeyValue = ISPyB_ESRF_Utils.get_recursively(dictXML, "CameraSpecificInput")[0]
-        print(listKeyValue)
+        dictResults["numberOffractions"] = UtilsPath.get_recursively(dictXML, "NumberOffractions")[0]
+        dictResults["nominalMagnification"] = UtilsPath.get_recursively(dictXML, "NominalMagnification")[0]
+        dictResults["positionX"] = UtilsPath.get_recursively(dictXML, "X")[0]
+        dictResults["positionY"] = UtilsPath.get_recursively(dictXML, "Y")[0]
+        dictResults["accelerationVoltage"] = UtilsPath.get_recursively(dictXML, "AccelerationVoltage")[0]
+        dictResults["acquisitionDateTime"] = UtilsPath.get_recursively(dictXML, "acquisitionDateTime")[0]
+        listKeyValue = UtilsPath.get_recursively(dictXML, "CameraSpecificInput")[0]
+        #print(listKeyValue)
         for dictKeyValueOfstringanyType in listKeyValue:
             dictKey = dictKeyValueOfstringanyType["KeyValueOfstringanyType"][0]
             dictValue = dictKeyValueOfstringanyType["KeyValueOfstringanyType"][1]
             if dictKey["Key"] == "SuperResolutionFactor":
                 dictResults["superResolutionFactor"] = dictValue["Value"]
-        #dictResults["superResolutionFactor"] = ISPyB_ESRF_Utils.get_recursively(dictXML, "superResolutionFactor")
+        #dictResults["superResolutionFactor"] = UtilsPath.get_recursively(dictXML, "superResolutionFactor")
         return dictResults
 
     @staticmethod
@@ -427,8 +261,16 @@ class ISPyB_ESRF_Utils(object):
             secondDirectory = list_directory[ 2 ]
             proposal = None
             beamline = None
-            #year = list_directory[ 5 ][0:4]
-            year = "2018"
+            year = list_directory[ 5 ][0:4]
+            # Check that we have a year that make sense...
+            try:
+                intYear = int(year)
+                if intYear < 2017 and intYear > 2100:
+                    # Something looks wrong, take the current year...
+                    year = str(datetime.datetime.now().year)
+            except:
+                # Something looks wrong, take the current year...
+                year = str(datetime.datetime.now().year)
             
             # Work around for ihls2975...
             if list_directory[4] == "IH-LS-2975":
@@ -480,7 +322,7 @@ class ISPyB_ESRF_Utils(object):
             try:
                 # Check if we have a "standard" ESRF data path
                 if "RAW_DATA" in filePath or "PROCESSED_DATA" in filePath:
-                    pyarchFilePath = ISPyB_ESRF_Utils.getPyarchFilePath(filePath)
+                    pyarchFilePath = UtilsPath.getPyarchFilePath(filePath)
                     pyarchFileDir = os.path.dirname(pyarchFilePath)
                     if not os.path.exists(pyarchFileDir):
                         os.makedirs(pyarchFileDir, 0755)

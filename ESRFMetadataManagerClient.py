@@ -149,7 +149,7 @@ class MetadataManagerClient(object):
                         MetadataManagerClient.metadataManager.StartScan()
 
                 # Give the server some time to react
-                time.sleep(10)
+                time.sleep(2)
 
             except:
                 print "Unexpected error:", sys.exc_info()[0]
@@ -159,7 +159,7 @@ class MetadataManagerClient(object):
         try:
             MetadataManagerClient.metadataManager.endScan()
             # Give the server some time to react
-            time.sleep(10)
+            time.sleep(5)
         except:
             print "Unexpected error:", sys.exc_info()[0]
             raise

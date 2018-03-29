@@ -25,8 +25,6 @@
 # *
 # **************************************************************************
 
-import os
-import pprint
 import unittest
 from esrf_utils_ispyb import UtilsISPyB
 

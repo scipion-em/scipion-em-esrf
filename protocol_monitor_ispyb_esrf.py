@@ -191,38 +191,8 @@ class MonitorISPyB_ESRF(Monitor):
                 timeElapsed = int(time.time() - self.currentGridSquareLastMovieTime)
                 self.info("Time elapsed since last movie detected: {0} s".format(timeElapsed))
                 if self.currentGridSquare is not None and timeElapsed > 60:
-                    # Archive remaining movies
-                    gridSquareToBeArchived = self.currentGridSquare
-                    self.currentGridSquare = None
-                    self.currentGridSquareLastMovieTime = None
-                    self.info("Archiving grid square: {0}".format(gridSquareToBeArchived))  
-                    listPathsToBeArchived = []
-                    sumPositionX = 0.0
-                    sumPositionY = 0.0
-                    for movieName in self.allParams:
-                        if "gridSquare" in self.allParams[movieName] and self.allParams[movieName]["gridSquare"] == gridSquareToBeArchived and not self.allParams[movieName]["archived"]:
-                            listPathsToBeArchived.append(self.allParams[movieName]["movieFullPath"])
-                            self.allParams[movieName]["archived"] = True
-                            sumPositionX += float(self.allParams[movieName]["positionX"])
-                            sumPositionY += float(self.allParams[movieName]["positionY"])
-                    noImagesToBeArchived = len(listPathsToBeArchived)
-                    if noImagesToBeArchived > 0:
-                        meanPositionX = sumPositionX / noImagesToBeArchived
-                        meanPositionY = sumPositionY / noImagesToBeArchived
-                        dictIcatMetaData = dict(self.allParams["EM_meta_data"])
-                        dictIcatMetaData["EM_position_x"] = meanPositionX
-                        dictIcatMetaData["EM_position_y"] = meanPositionY
-                        directory = dictIcatMetaData["EM_directory"]
-                        dataSetName = "{0}_{1}".format(gridSquareToBeArchived, round(time.time()))
-                        self.allParams[dataSetName] = dictIcatMetaData
-                        self.info("listPathsToBeArchived: {0}".format(pprint.pformat(listPathsToBeArchived)))
-                        self.info("directory: {0}".format(directory))
-                        self.info("self.proposal: {0}".format(self.proposal))
-                        self.info("self.sampleAcronym: {0}".format(self.sampleAcronym))
-                        self.info("dataSetName: {0}".format(dataSetName))
-                        self.info("dictIcatMetaData: {0}".format(pprint.pformat(dictIcatMetaData)))
+                    self.archiveCurrentGridSquare()
                     
-    
     
             # Update json file
             if self.allParamsJsonFile is not None:
@@ -396,37 +366,7 @@ class MonitorISPyB_ESRF(Monitor):
                     self.info("New grid square detected: {0}".format(self.currentGridSquare))                      
                 elif self.currentGridSquare != gridSquare:
                     # New grid square, archive previous grid square
-                    gridSquareToBeArchived = self.currentGridSquare
-                    self.currentGridSquare = gridSquare
-                    self.info("New grid square detected: {0}".format(self.currentGridSquare))  
-                    self.info("Archiving old grid square: {0}".format(gridSquareToBeArchived))  
-                    listPathsToBeArchived = []
-                    sumPositionX = 0.0
-                    sumPositionY = 0.0
-                    for movieName in self.allParams:
-                        if "gridSquare" in self.allParams[movieName] and self.allParams[movieName]["gridSquare"] == gridSquareToBeArchived and not self.allParams[movieName]["archived"]:
-                            listPathsToBeArchived.append(self.allParams[movieName]["movieFullPath"])
-                            self.allParams[movieName]["archived"] = True
-                            sumPositionX += float(self.allParams[movieName]["positionX"])
-                            sumPositionY += float(self.allParams[movieName]["positionY"])
-                    noImagesToBeArchived = len(listPathsToBeArchived)
-                    if noImagesToBeArchived > 0:
-                        meanPositionX = sumPositionX / noImagesToBeArchived
-                        meanPositionY = sumPositionY / noImagesToBeArchived
-                        dictIcatMetaData = dict(self.allParams["EM_meta_data"])
-                        dictIcatMetaData["EM_position_x"] = meanPositionX
-                        dictIcatMetaData["EM_position_y"] = meanPositionY
-                        directory = dictIcatMetaData["EM_directory"]
-                        dataSetName = "{0}_{1}".format(gridSquareToBeArchived, round(time.time()))
-                        self.allParams[dataSetName] = dictIcatMetaData
-                        self.info("listPathsToBeArchived: {0}".format(pprint.pformat(listPathsToBeArchived)))
-                        self.info("directory: {0}".format(directory))
-                        self.info("self.proposal: {0}".format(self.proposal))
-                        self.info("self.sampleAcronym: {0}".format(self.sampleAcronym))
-                        self.info("dataSetName: {0}".format(dataSetName))
-                        self.info("dictIcatMetaData: {0}".format(pprint.pformat(dictIcatMetaData)))
-    #                    UtilsIcat.uploadToIcat(listPathsToBeArchived, directory, self.proposal, 
-    #                                           self.sampleAcronym, dataSetName, dictIcatMetaData)
+                    self.archiveCurrentGridSquare()
                     
                     
                     
@@ -583,3 +523,37 @@ class MonitorISPyB_ESRF(Monitor):
                 
                 self.info("CTF done, CTFid = {0}".format(CTFid))
 
+
+    def archiveCurrentGridSquare(self):
+        # Archive remaining movies
+        gridSquareToBeArchived = self.currentGridSquare
+        self.currentGridSquare = None
+        self.info("Archiving grid square: {0}".format(gridSquareToBeArchived))  
+        listPathsToBeArchived = []
+        sumPositionX = 0.0
+        sumPositionY = 0.0
+        for movieName in self.allParams:
+            if "gridSquare" in self.allParams[movieName] and self.allParams[movieName]["gridSquare"] == gridSquareToBeArchived and not self.allParams[movieName]["archived"]:
+                listPathsToBeArchived.append(self.allParams[movieName]["movieFullPath"])
+                self.allParams[movieName]["archived"] = True
+                sumPositionX += float(self.allParams[movieName]["positionX"])
+                sumPositionY += float(self.allParams[movieName]["positionY"])
+        noImagesToBeArchived = len(listPathsToBeArchived)
+        if noImagesToBeArchived > 0:
+            meanPositionX = sumPositionX / noImagesToBeArchived
+            meanPositionY = sumPositionY / noImagesToBeArchived
+            dictIcatMetaData = dict(self.allParams["EM_meta_data"])
+            dictIcatMetaData["EM_position_x"] = meanPositionX
+            dictIcatMetaData["EM_position_y"] = meanPositionY
+            directory = dictIcatMetaData["EM_directory"]
+            dataSetName = "{0}_{1}".format(gridSquareToBeArchived, round(time.time()))
+            self.allParams[dataSetName] = dictIcatMetaData
+            self.info("listPathsToBeArchived: {0}".format(pprint.pformat(listPathsToBeArchived)))
+            self.info("directory: {0}".format(directory))
+            self.info("self.proposal: {0}".format(self.proposal))
+            self.info("self.sampleAcronym: {0}".format(self.sampleAcronym))
+            self.info("dataSetName: {0}".format(dataSetName))
+            self.info("dictIcatMetaData: {0}".format(pprint.pformat(dictIcatMetaData)))
+            UtilsIcat.uploadToIcat(listPathsToBeArchived, directory, self.proposal,  
+                                   self.sampleAcronym, dataSetName, dictIcatMetaData)
+        

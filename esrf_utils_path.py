@@ -69,11 +69,11 @@ class UtilsPath(object):
         dictResult = {}
         # Locate png file in same directory
         mrcDirectory = os.path.dirname(mrcFilePath)
-        dictMrcFile = UtilsPath.getMovieFileNameParameters(mrcFilePath)
+        dictMrcFile = UtilsPath.getMovieFileNameParametersFromMotioncorrPath(mrcFilePath)
         mrcMovieNumber = dictMrcFile["movieNumber"]
         listPng = glob.glob(os.path.join(mrcDirectory, "*.png"))
         for pngFile in listPng:
-            dictFileNameParameters = UtilsPath.getMovieFileNameParameters(pngFile)
+            dictFileNameParameters = UtilsPath.getMovieFileNameParametersFromMotioncorrPath(pngFile)
             movieNumber = dictFileNameParameters["movieNumber"]
             if dictFileNameParameters["extra"] == "_global_shifts" and mrcMovieNumber == movieNumber:
                 dictResult["globalShiftPng"] = pngFile
@@ -81,7 +81,7 @@ class UtilsPath(object):
                 dictResult["thumbnailPng"] = pngFile
         listMrc = glob.glob(os.path.join(mrcDirectory, "*.mrc"))
         for mrcFile in listMrc:
-            dictFileNameParameters = UtilsPath.getMovieFileNameParameters(mrcFile)
+            dictFileNameParameters = UtilsPath.getMovieFileNameParametersFromMotioncorrPath(mrcFile)
             movieNumber = dictFileNameParameters["movieNumber"]
             if "DW" in dictFileNameParameters["extra"] and mrcMovieNumber == movieNumber:
                 dictResult["doseWeightMrc"] = mrcFile            
@@ -229,6 +229,28 @@ class UtilsPath(object):
         FoilHole_19150795_Data_19148847_19148848_20170619_2101-0344.mrc
         """
         dictResult = {}
+        p = re.compile("^(.*)/(GridSquare_[0-9]*)/Data/(.*)_([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)-([0-9]*)(_?.*)\.(.*)")
+        m = p.match(mrcFilePath)
+        dictResult["directory"] = os.path.dirname(mrcFilePath)
+        dictResult["gridSquare"] = m.group(2)   
+        dictResult["prefix"] = m.group(3)   
+        dictResult["id1"] = m.group(4)   
+        dictResult["id2"] = m.group(5)   
+        dictResult["id3"] = m.group(6)   
+        dictResult["date"] = m.group(7)   
+        dictResult["hour"] = m.group(8)   
+        dictResult["movieNumber"] = m.group(9)   
+        dictResult["extra"] = m.group(10)   
+        dictResult["suffix"] = m.group(11)   
+        dictResult["movieName"] = "{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}-{movieNumber}".format(**dictResult) 
+        return dictResult
+
+    @ staticmethod
+    def getMovieFileNameParametersFromMotioncorrPath(mrcFilePath):
+        """
+        FoilHole_19150795_Data_19148847_19148848_20170619_2101-0344.mrc
+        """
+        dictResult = {}
         p = re.compile("^(.*)/(GridSquare_[0-9]*)*(_Data_)*(.*)_([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)-([0-9]*)(_?.*)\.(.*)")
         m = p.match(mrcFilePath)
         dictResult["directory"] = os.path.dirname(mrcFilePath)
@@ -245,7 +267,8 @@ class UtilsPath(object):
         dictResult["suffix"] = m.group(12)   
         dictResult["movieName"] = "{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}-{movieNumber}".format(**dictResult) 
         return dictResult
-
+    
+    
     @ staticmethod
     def getPyarchFilePath(workingDir):
         """

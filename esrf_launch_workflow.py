@@ -336,12 +336,16 @@ jsonString = """[
         "proteinAcronym": "%s",
         "sampleAcronym": "%s",
         "db": %d,
-        "allParamsJsonFile": "%s"
+        "allParamsJsonFile": "%s",
+        "samplingRate": "%s",
+        "doseInitial": "%s",
+        "dosePerFrame": "%s"
     }
 ]""" % (dataDirectory, filesPattern, nominalMagnification, samplingRate,
         doseInitial, dosePerFrame, dataStreaming, alignFrame0, alignFrameN,  
         doPhaseShiftEstimation, proposal,
-        proteinAcronym, sampleAcronym, db, allParamsJsonFile)
+        proteinAcronym, sampleAcronym, db, allParamsJsonFile,
+        samplingRate, doseInitial, dosePerFrame)
 
 # Write json file
 fd, jsonFile = tempfile.mkstemp(suffix=".json", prefix="scipion_workflow_", dir=location)

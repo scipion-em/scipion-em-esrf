@@ -35,10 +35,10 @@ import os
 import sys
 import json
 import time
+import pprint
 import shutil
 import traceback
 import collections
-import ConfigParser
 
 
 import pyworkflow.protocol.params as params
@@ -49,6 +49,7 @@ from pyworkflow.protocol import getProtocolFromDb
 
 from esrf_utils_ispyb import UtilsISPyB
 from esrf_utils_path import UtilsPath
+from esrf_utils_icat import UtilsIcat
 
 
 class ProtMonitorISPyB_ESRF(ProtMonitor):
@@ -125,6 +126,8 @@ class MonitorISPyB_ESRF(Monitor):
         self.sampleAcronym = protocol.sampleAcronym.get()
         self.movieDirectory = None
         self.currentDir = os.getcwd()
+        self.currentGridSquare = None
+        self.currentGridSquareLastMovieTime = None
         self.beamlineName = "cm01"
         if hasattr(protocol, "allParamsJsonFile"):
             self.allParamsJsonFile = protocol.allParamsJsonFile.get()
@@ -183,6 +186,44 @@ class MonitorISPyB_ESRF(Monitor):
                     self.uploadCTFMicrographs(prot)
                     isActiveCTFMicrographs = prot.isActive()
     
+            # Check if archive last grid square
+            if self.currentGridSquareLastMovieTime is not None:
+                timeElapsed = int(time.time() - self.currentGridSquareLastMovieTime)
+                self.info("Time elapsed since last movie detected: {0} s".format(timeElapsed))
+                if self.currentGridSquare is not None and timeElapsed > 60:
+                    # Archive remaining movies
+                    gridSquareToBeArchived = self.currentGridSquare
+                    self.currentGridSquare = None
+                    self.currentGridSquareLastMovieTime = None
+                    self.info("Archiving grid square: {0}".format(gridSquareToBeArchived))  
+                    listPathsToBeArchived = []
+                    sumPositionX = 0.0
+                    sumPositionY = 0.0
+                    for movieName in self.allParams:
+                        if "gridSquare" in self.allParams[movieName] and self.allParams[movieName]["gridSquare"] == gridSquareToBeArchived and not self.allParams[movieName]["archived"]:
+                            listPathsToBeArchived.append(self.allParams[movieName]["movieFullPath"])
+                            self.allParams[movieName]["archived"] = True
+                            sumPositionX += float(self.allParams[movieName]["positionX"])
+                            sumPositionY += float(self.allParams[movieName]["positionY"])
+                    noImagesToBeArchived = len(listPathsToBeArchived)
+                    if noImagesToBeArchived > 0:
+                        meanPositionX = sumPositionX / noImagesToBeArchived
+                        meanPositionY = sumPositionY / noImagesToBeArchived
+                        dictIcatMetaData = dict(self.allParams["EM_meta_data"])
+                        dictIcatMetaData["EM_position_x"] = meanPositionX
+                        dictIcatMetaData["EM_position_y"] = meanPositionY
+                        directory = dictIcatMetaData["EM_directory"]
+                        dataSetName = "{0}_{1}".format(gridSquareToBeArchived, round(time.time()))
+                        self.allParams[dataSetName] = dictIcatMetaData
+                        self.info("listPathsToBeArchived: {0}".format(pprint.pformat(listPathsToBeArchived)))
+                        self.info("directory: {0}".format(directory))
+                        self.info("self.proposal: {0}".format(self.proposal))
+                        self.info("self.sampleAcronym: {0}".format(self.sampleAcronym))
+                        self.info("dataSetName: {0}".format(dataSetName))
+                        self.info("dictIcatMetaData: {0}".format(pprint.pformat(dictIcatMetaData)))
+                    
+    
+    
             # Update json file
             if self.allParamsJsonFile is not None:
                 f = open(self.allParamsJsonFile, "w")
@@ -218,7 +259,9 @@ class MonitorISPyB_ESRF(Monitor):
                 self.info("Import movies: movieFullPath: {0}".format(movieFullPath))
                 # Create "process" directory
                 dictFileNameParameters = UtilsPath.getMovieFileNameParameters(movieFullPath)
+                self.info("dictFileNameParameters: {0}".format(dictFileNameParameters))
                 self.movieDirectory = dictFileNameParameters["directory"]
+                gridSquare = dictFileNameParameters["gridSquare"]
                 prefix = dictFileNameParameters["prefix"]   
                 date = dictFileNameParameters["date"]   
                 hour = dictFileNameParameters["hour"]   
@@ -279,9 +322,12 @@ class MonitorISPyB_ESRF(Monitor):
                     except:
                         self.info("ERROR reading XML file {0}".format(xmlMetaDataFullPath))
                         traceback.print_exc()
-                sphericalAberration = None
-                amplitudeContrast = None
-                scannedPixelSize = None
+                        
+                sphericalAberration = prot.sphericalAberration.get()
+                amplitudeContrast = prot.amplitudeContrast.get()
+                samplingRate = prot.samplingRate.get()
+                doseInitial = prot.doseInitial.get()
+                dosePerFrame = prot.dosePerFrame.get()
                 
                 try:
                     movieObject = self.client.service.addMovie(proposal=self.proposal,
@@ -297,7 +343,7 @@ class MonitorISPyB_ESRF(Monitor):
                                 sphericalAberration=sphericalAberration,
                                 amplitudeContrast=amplitudeContrast,
                                 magnification=magnification,
-                                scannedPixelSize=scannedPixelSize,
+                                scannedPixelSize=samplingRate,
                                 imagesCount=imagesCount,
                                 dosePerImage=dosePerImage,
                                 positionX=positionX,
@@ -324,10 +370,67 @@ class MonitorISPyB_ESRF(Monitor):
                     "hour": hour,   
                     "movieId": movieId,   
                     "imagesCount": imagesCount,     
-                    "dosePerFrame": prot.dosePerFrame.get(),
+                    "dosePerFrame": dosePerFrame,
                     "proposal": self.proposal,
-                 }
+                    "gridSquare": gridSquare,
+                    "archived": False,
+                    "positionX": positionX,
+                    "positionY": positionY,
+                }
+                if not "EM_meta_data" in self.allParams:
+                    self.allParams["EM_meta_data"] = {
+                        "EM_directory": prot.filesPath.get(),
+                        "EM_amplitude_contrast": amplitudeContrast,
+                        "EM_dose_initial": doseInitial,
+                        "EM_dose_per_frame": dosePerFrame,
+                        "EM_images_count": imagesCount,
+                        "EM_magnification": magnification,
+                        "EM_protein_acronym": self.proteinAcronym,
+                        "EM_sampling_rate": samplingRate,
+                        "EM_spherical_aberration": sphericalAberration,
+                        "EM_voltage": voltage}                    
                 self.info("Import movies done, movieId = {0}".format(self.allParams[movieName]["movieId"]))
+                self.currentGridSquareLastMovieTime = time.time()
+                if self.currentGridSquare is None:
+                    self.currentGridSquare = gridSquare
+                    self.info("New grid square detected: {0}".format(self.currentGridSquare))                      
+                elif self.currentGridSquare != gridSquare:
+                    # New grid square, archive previous grid square
+                    gridSquareToBeArchived = self.currentGridSquare
+                    self.currentGridSquare = gridSquare
+                    self.info("New grid square detected: {0}".format(self.currentGridSquare))  
+                    self.info("Archiving old grid square: {0}".format(gridSquareToBeArchived))  
+                    listPathsToBeArchived = []
+                    sumPositionX = 0.0
+                    sumPositionY = 0.0
+                    for movieName in self.allParams:
+                        if "gridSquare" in self.allParams[movieName] and self.allParams[movieName]["gridSquare"] == gridSquareToBeArchived and not self.allParams[movieName]["archived"]:
+                            listPathsToBeArchived.append(self.allParams[movieName]["movieFullPath"])
+                            self.allParams[movieName]["archived"] = True
+                            sumPositionX += float(self.allParams[movieName]["positionX"])
+                            sumPositionY += float(self.allParams[movieName]["positionY"])
+                    noImagesToBeArchived = len(listPathsToBeArchived)
+                    if noImagesToBeArchived > 0:
+                        meanPositionX = sumPositionX / noImagesToBeArchived
+                        meanPositionY = sumPositionY / noImagesToBeArchived
+                        dictIcatMetaData = dict(self.allParams["EM_meta_data"])
+                        dictIcatMetaData["EM_position_x"] = meanPositionX
+                        dictIcatMetaData["EM_position_y"] = meanPositionY
+                        directory = dictIcatMetaData["EM_directory"]
+                        dataSetName = "{0}_{1}".format(gridSquareToBeArchived, round(time.time()))
+                        self.allParams[dataSetName] = dictIcatMetaData
+                        self.info("listPathsToBeArchived: {0}".format(pprint.pformat(listPathsToBeArchived)))
+                        self.info("directory: {0}".format(directory))
+                        self.info("self.proposal: {0}".format(self.proposal))
+                        self.info("self.sampleAcronym: {0}".format(self.sampleAcronym))
+                        self.info("dataSetName: {0}".format(dataSetName))
+                        self.info("dictIcatMetaData: {0}".format(pprint.pformat(dictIcatMetaData)))
+    #                    UtilsIcat.uploadToIcat(listPathsToBeArchived, directory, self.proposal, 
+    #                                           self.sampleAcronym, dataSetName, dictIcatMetaData)
+                    
+                    
+                    
+                    
 
 
     def uploadAlignMovies(self, prot):
@@ -335,7 +438,7 @@ class MonitorISPyB_ESRF(Monitor):
         for micrograph in self.iter_updated_set(prot.outputMicrographs):
             micrographFullPath = os.path.join(self.currentDir, micrograph.getFileName())
             #self.info("Motion corr micrographFullPath: {0}".format(micrographFullPath))
-            dictFileNameParameters = UtilsPath.getMovieFileNameParameters(micrographFullPath)
+            dictFileNameParameters = UtilsPath.getMovieFileNameParametersFromMotioncorrPath(micrographFullPath)
             movieName = dictFileNameParameters["movieName"]
             #self.info("Motion corr movie name: {0}".format(movieName))
             if movieName in self.allParams and not "motionCorrectionId" in self.allParams[movieName]:
@@ -410,7 +513,7 @@ class MonitorISPyB_ESRF(Monitor):
         workingDir = os.path.join(self.currentDir, str(prot.workingDir))
         for ctf in self.iter_updated_set(prot.outputCTF):
             micrographFullPath = ctf.getMicrograph().getFileName()
-            dictFileNameParameters = UtilsPath.getMovieFileNameParameters(micrographFullPath)
+            dictFileNameParameters = UtilsPath.getMovieFileNameParametersFromMotioncorrPath(micrographFullPath)
             movieName = dictFileNameParameters["movieName"]
             if movieName in self.allParams and not "CTFid" in self.allParams[movieName]:
                 self.info("CTF: movie {0}".format(os.path.basename(self.allParams[movieName]["movieFullPath"])))

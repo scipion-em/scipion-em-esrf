@@ -26,6 +26,7 @@
 # **************************************************************************
 
 import os
+import pprint
 import unittest
 
 from esrf_utils_path import UtilsPath
@@ -33,27 +34,27 @@ from esrf_utils_path import UtilsPath
 class Test(unittest.TestCase):
 
 
-    def test_getMovieFileNameParameters(self):
-        # Test1
-        movieFullPath1 = "/users/svensson/cryoem/CWAT_ESRF_RawData_K2/170619_bGal1/Images-Disc1/GridSquare_19141127/Data/FoilHole_19150795_Data_19148847_19148848_20170619_2101-0344.mrc"
-        dictResult1 = UtilsPath.getMovieFileNameParameters(movieFullPath1)
-        refDict1 = {'data': None,
- 'date': '20170619',
- 'directory': '/users/svensson/cryoem/CWAT_ESRF_RawData_K2/170619_bGal1/Images-Disc1/GridSquare_19141127/Data',
- 'extra': '',
- 'gridSquare': None,
- 'hour': '2101',
- 'id1': '19150795',
- 'id2': '19148847',
- 'id3': '19148848',
- 'movieName': 'FoilHole_19150795_Data_19148847_19148848_20170619_2101-0344',
- 'movieNumber': '0344',
+    def test_getMovieFileNameParametersFromMotioncorrPath(self):
+        # Test 1
+        mrcFullPath1 = "/mntdirect/_data_visitor/mx2006/cm01/20180123/PROCESSED_DATA/sa1mgml/saribs/Runs/000058_ProtMotionCorr/extra/GridSquare_22879601_Data_FoilHole_22888571_Data_22885672_22885673_20180124_0845-4482_aligned_mic.mrc"
+        dictResult1 = UtilsPath.getMovieFileNameParametersFromMotioncorrPath(mrcFullPath1)
+        refDict1 = {'data': '_Data_',
+ 'date': '20180124',
+ 'directory': '/mntdirect/_data_visitor/mx2006/cm01/20180123/PROCESSED_DATA/sa1mgml/saribs/Runs/000058_ProtMotionCorr/extra',
+ 'extra': '_aligned_mic',
+ 'gridSquare': 'GridSquare_22879601',
+ 'hour': '0845',
+ 'id1': '22888571',
+ 'id2': '22885672',
+ 'id3': '22885673',
+ 'movieName': 'FoilHole_22888571_Data_22885672_22885673_20180124_0845-4482',
+ 'movieNumber': '4482',
  'prefix': 'FoilHole',
- 'suffix': 'mrc'}
+ 'suffix': 'mrc'} 
         self.assertEqual(refDict1, dictResult1)
         # Test 2
         mrcFullPath2 = "/users/svensson/ScipionUserData/projects/TestPipeLine/Runs/000859_ProtMotionCorr/extra/FoilHole_19150795_Data_19148847_19148848_20170619_2101-0344_aligned_mic.mrc"
-        dictResult2 = UtilsPath.getMovieFileNameParameters(mrcFullPath2)
+        dictResult2 = UtilsPath.getMovieFileNameParametersFromMotioncorrPath(mrcFullPath2)
         refDict2 = {'data': None,
  'date': '20170619',
  'directory': '/users/svensson/ScipionUserData/projects/TestPipeLine/Runs/000859_ProtMotionCorr/extra',
@@ -68,24 +69,41 @@ class Test(unittest.TestCase):
  'prefix': 'FoilHole',
  'suffix': 'mrc'}
         self.assertEqual(refDict2, dictResult2)
-        # Test 3
-        mrcFullPath3 = "/mntdirect/_data_visitor/mx2006/cm01/20180123/PROCESSED_DATA/sa1mgml/saribs/Runs/000058_ProtMotionCorr/extra/GridSquare_22879601_Data_FoilHole_22888571_Data_22885672_22885673_20180124_0845-4482_aligned_mic.mrc"
-        dictResult3 = UtilsPath.getMovieFileNameParameters(mrcFullPath3)
-        refDict3 = {'data': '_Data_',
- 'date': '20180124',
- 'directory': '/mntdirect/_data_visitor/mx2006/cm01/20180123/PROCESSED_DATA/sa1mgml/saribs/Runs/000058_ProtMotionCorr/extra',
- 'extra': '_aligned_mic',
- 'gridSquare': 'GridSquare_22879601',
- 'hour': '0845',
- 'id1': '22888571',
- 'id2': '22885672',
- 'id3': '22885673',
- 'movieName': 'FoilHole_22888571_Data_22885672_22885673_20180124_0845-4482',
- 'movieNumber': '4482',
- 'prefix': 'FoilHole',
- 'suffix': 'mrc'} 
-        self.assertEqual(refDict3, dictResult3)
         
+
+    def test_getMovieFileNameParameters(self):
+        # Test1
+        movieFullPath1 = "/users/svensson/cryoem/CWAT_ESRF_RawData_K2/170619_bGal1/Images-Disc1/GridSquare_19141127/Data/FoilHole_19150795_Data_19148847_19148848_20170619_2101-0344.mrc"
+        dictResult1 = UtilsPath.getMovieFileNameParameters(movieFullPath1)
+        refDict1 = {'date': '20170619',
+ 'directory': '/users/svensson/cryoem/CWAT_ESRF_RawData_K2/170619_bGal1/Images-Disc1/GridSquare_19141127/Data',
+ 'extra': '',
+ 'gridSquare': 'GridSquare_19141127',
+ 'hour': '2101',
+ 'id1': '19150795',
+ 'id2': '19148847',
+ 'id3': '19148848',
+ 'movieName': 'FoilHole_19150795_Data_19148847_19148848_20170619_2101-0344',
+ 'movieNumber': '0344',
+ 'prefix': 'FoilHole',
+ 'suffix': 'mrc'}
+        self.assertEqual(refDict1, dictResult1)
+        # Test 2
+        mrcFullPath2 = "/data/visitor/mx415/cm01/20180315/RAW_DATA/EPU_BSA_grid5_2mg_2_test8/Images-Disc1/GridSquare_15806527/Data/FoilHole_15814308_Data_15808956_15808957_20180317_1109-17665.mrc"
+        dictResult2 = UtilsPath.getMovieFileNameParameters(mrcFullPath2)
+        refDict2 = {'date': '20180317',
+ 'directory': '/data/visitor/mx415/cm01/20180315/RAW_DATA/EPU_BSA_grid5_2mg_2_test8/Images-Disc1/GridSquare_15806527/Data',
+ 'extra': '',
+ 'gridSquare': 'GridSquare_15806527',
+ 'hour': '1109',
+ 'id1': '15814308',
+ 'id2': '15808956',
+ 'id3': '15808957',
+ 'movieName': 'FoilHole_15814308_Data_15808956_15808957_20180317_1109-17665',
+ 'movieNumber': '17665',
+ 'prefix': 'FoilHole',
+ 'suffix': 'mrc'}
+        self.assertEqual(refDict2, dictResult2)
         
 
     def test_getMovieJpegMrcXml(self):

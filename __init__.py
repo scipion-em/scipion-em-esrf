@@ -30,5 +30,4 @@ from bibtex import _bibtex # Load bibtex dict with references
 _logo = None
 _references = ['Delageniere2011']
 
-from prot_import_movies_esrf import ProtImportMoviesESRF
 from protocol_monitor_ispyb_esrf import ProtMonitorISPyB_ESRF

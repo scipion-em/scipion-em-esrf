@@ -190,7 +190,8 @@ class MonitorISPyB_ESRF(Monitor):
             if self.currentGridSquareLastMovieTime is not None:
                 timeElapsed = int(time.time() - self.currentGridSquareLastMovieTime)
                 self.info("Time elapsed since last movie detected: {0} s".format(timeElapsed))
-                if self.currentGridSquare is not None and timeElapsed > 60:
+                # Timeout for uploading last grid square to icat: 2h
+                if self.currentGridSquare is not None and timeElapsed > 2*60*60:
                     self.archiveCurrentGridSquare()
                     
     
@@ -532,16 +533,21 @@ class MonitorISPyB_ESRF(Monitor):
         listPathsToBeArchived = []
         sumPositionX = 0.0
         sumPositionY = 0.0
+        indexPosition = 0
         for movieName in self.allParams:
             if "gridSquare" in self.allParams[movieName] and self.allParams[movieName]["gridSquare"] == gridSquareToBeArchived and not self.allParams[movieName]["archived"]:
                 listPathsToBeArchived.append(self.allParams[movieName]["movieFullPath"])
                 self.allParams[movieName]["archived"] = True
-                sumPositionX += float(self.allParams[movieName]["positionX"])
-                sumPositionY += float(self.allParams[movieName]["positionY"])
+                try:
+                    sumPositionX += float(self.allParams[movieName]["positionX"])
+                    sumPositionY += float(self.allParams[movieName]["positionY"])
+                    indexPosition += 1
+                except:
+                    pass
         noImagesToBeArchived = len(listPathsToBeArchived)
         if noImagesToBeArchived > 0:
-            meanPositionX = sumPositionX / noImagesToBeArchived
-            meanPositionY = sumPositionY / noImagesToBeArchived
+            meanPositionX = sumPositionX / indexPosition
+            meanPositionY = sumPositionY / indexPosition
             dictIcatMetaData = dict(self.allParams["EM_meta_data"])
             dictIcatMetaData["EM_position_x"] = meanPositionX
             dictIcatMetaData["EM_position_y"] = meanPositionY

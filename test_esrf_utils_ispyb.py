@@ -37,6 +37,9 @@ class Test(unittest.TestCase):
         movieFilePath = "/data/cm01/inhouse/Hons/IH-LS-2975/RAW_DATA"
         proposal = UtilsISPyB.getProposal(movieFilePath)
         self.assertEqual("ihls2975", proposal)
+        movieFilePath = "/data/cm01/inhouse/BLC11341/20180410/RAW_DATA/EPU_BLC11341"
+        proposal = UtilsISPyB.getProposal(movieFilePath)
+        self.assertEqual("blc11341", proposal)
 
     def test_getClient(self):
         client = UtilsISPyB.getClient(1)

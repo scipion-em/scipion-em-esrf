@@ -169,7 +169,7 @@ class UtilsISPyB(object):
                 proposal = listDirectory[3]
             elif listDirectory[3] == "inhouse":
                 proposal = listDirectory[4]
-        return proposal
+        return proposal.lower()
         
     
     

@@ -76,12 +76,13 @@ class UtilsISPyB(object):
         elif proposal.startswith("blc"):
             code = "blc"
             number = proposal.split("blc")[1]
+        elif proposal.startswith("opcm"):
+            code = "opcm"
+            number = proposal.split("opcm")[1]
         return code, number
     
     @staticmethod
-    def getClient(dbNumber):
-        urlBase = UtilsISPyB.getUrlBase(dbNumber)
-        url = os.path.join(urlBase, "ToolsForEMWebService?wsdl") 
+    def getClient(url):
         # Authentication
         httpAuthenticated = UtilsISPyB.getHttpAuthenticated()
         client = Client( url, transport = httpAuthenticated, cache = None, timeout = 15 )
@@ -91,9 +92,7 @@ class UtilsISPyB(object):
     def updateProposalFromSMIS(dbNumber, proposal):
         urlBase = UtilsISPyB.getUrlBase(dbNumber)
         url = os.path.join(urlBase, "UpdateFromSMISWebService?wsdl")
-        # Authentication
-        httpAuthenticated = UtilsISPyB.getHttpAuthenticated()
-        client = Client( url, transport = httpAuthenticated, cache = None, timeout = 15 )
+        client = UtilsISPyB.getClient(url)
         code, number = UtilsISPyB.splitProposalInCodeAndNumber(proposal)
         response = client.service.updateProposalFromSMIS(code, number)
         print(response)
@@ -103,8 +102,7 @@ class UtilsISPyB(object):
         urlBase = UtilsISPyB.getUrlBase(dbNumber)
         url = os.path.join(urlBase, "ToolsForCollectionWebService?wsdl")
         # Authentication
-        httpAuthenticated = UtilsISPyB.getHttpAuthenticated()
-        client = Client( url, transport = httpAuthenticated, cache = None, timeout = 15 )
+        client = UtilsISPyB.getClient(url)
         code, number = UtilsISPyB.splitProposalInCodeAndNumber(proposal)
         # print(code, number, beamline)
         sessions = client.service.findSessionsByProposalAndBeamLine(code, number, beamline)
@@ -115,9 +113,8 @@ class UtilsISPyB(object):
         urlBase = UtilsISPyB.getUrlBase(dbNumber)
         url = os.path.join(urlBase, "ToolsForShippingWebService?wsdl")
         # Authentication
-        httpAuthenticated = UtilsISPyB.getHttpAuthenticated()
-        client = Client( url, transport = httpAuthenticated, cache = None, timeout = 15 )
-        code, number = UtilsISPyB.splitProposalInCodeAndNumber(proposal)
+        client = UtilsISPyB.getClient(url)
+        code, number = UtilsISPyB.splitProposalInCodeAndNumber(proposal.lower())
         # print(code, number)
         proposal = client.service.findProposal(code, number)
         return proposal
@@ -147,8 +144,7 @@ class UtilsISPyB(object):
             url = os.path.join(urlBase, "ToolsForCollectionWebService?wsdl")
             print(url)
             # Authentication
-            httpAuthenticated = UtilsISPyB.getHttpAuthenticated()
-            client = Client( url, transport = httpAuthenticated, cache = None, timeout = 15 )
+            client = UtilsISPyB.getClient(url)
             code, number = UtilsISPyB.splitProposalInCodeAndNumber(proposal)
             print(code, number, beamline)
             sessions = client.service.storeOrUpdateSession(newSessionDict)
@@ -169,7 +165,7 @@ class UtilsISPyB(object):
                 proposal = listDirectory[3]
             elif listDirectory[3] == "inhouse":
                 proposal = listDirectory[4]
-        return proposal
+        return proposal.lower()
         
     
     

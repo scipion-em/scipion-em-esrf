@@ -25,9 +25,18 @@
 # *
 # **************************************************************************
 
-from bibtex import _bibtex # Load bibtex dict with references
+import unittest
+from esrf_utils_ispyb import UtilsISPyB
 
-_logo = None
-_references = ['Delageniere2011']
+class Test(unittest.TestCase):
 
-from protocol_monitor_ispyb_esrf import ProtMonitorISPyB_ESRF
+    def tes_updateProposalFromSMIS(self):
+        UtilsISPyB.updateProposalFromSMIS(1, "mx415")
+        
+    def tes_createSession(self):
+        sessions = UtilsISPyB.createSession(1, "opcm01", "cm01")
+        print(sessions)
+
+if __name__ == "__main__":
+    #import sys;sys.argv = ['', 'Test.testName']
+    unittest.main()

@@ -190,7 +190,8 @@ class MonitorISPyB_ESRF(Monitor):
             if self.currentGridSquareLastMovieTime is not None:
                 timeElapsed = int(time.time() - self.currentGridSquareLastMovieTime)
                 self.info("Time elapsed since last movie detected: {0} s".format(timeElapsed))
-                if self.currentGridSquare is not None and timeElapsed > 60:
+                # Timeout for uploading last grid square to icat: 2h
+                if self.currentGridSquare is not None and timeElapsed > 2*60*60:
                     self.archiveCurrentGridSquare()
                     
     

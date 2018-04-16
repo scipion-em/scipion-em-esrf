@@ -25,6 +25,7 @@
 # *
 # **************************************************************************
 
+import os
 import unittest
 from esrf_utils_ispyb import UtilsISPyB
 
@@ -37,30 +38,37 @@ class Test(unittest.TestCase):
         movieFilePath = "/data/cm01/inhouse/Hons/IH-LS-2975/RAW_DATA"
         proposal = UtilsISPyB.getProposal(movieFilePath)
         self.assertEqual("ihls2975", proposal)
+        movieFilePath = "/data/cm01/inhouse/BLC11341/20180410/RAW_DATA/EPU_BLC11341"
+        proposal = UtilsISPyB.getProposal(movieFilePath)
+        self.assertEqual("blc11341", proposal)
 
     def test_getClient(self):
-        client = UtilsISPyB.getClient(1)
+        urlBase = UtilsISPyB.getUrlBase(1)
+        url = os.path.join(urlBase, "UpdateFromSMISWebService?wsdl")
+        client = UtilsISPyB.getClient(url)
         self.assertIsNotNone(client)        
-
-    def test_updateProposalFromSMIS(self):
-        UtilsISPyB.updateProposalFromSMIS(1, "mx415")
 
     def test_splitProposalInCodeAndNumber(self):
         self.assertEqual(("mx", "415"), UtilsISPyB.splitProposalInCodeAndNumber("mx415"))
         self.assertEqual(("blc", "11258"), UtilsISPyB.splitProposalInCodeAndNumber("blc11258"))
+        self.assertEqual(("opcm", "01"), UtilsISPyB.splitProposalInCodeAndNumber("opcm01"))
 
     def test_findSessions(self):
-        sessions = UtilsISPyB.findSessions(1, "mx415", "CM01")
+        sessions = UtilsISPyB.findSessions(1, "opcm01", "cm01")
         self.assertTrue(len(sessions) > 0)
         
     def test_findPropsal(self):
         proposal = UtilsISPyB.findProposal(1, "mx415")
         self.assertEqual("MX", proposal.code)
+        proposal = UtilsISPyB.findProposal(1, "MX415")
+        self.assertEqual("MX", proposal.code)
+        proposal = UtilsISPyB.findProposal(1, "opcm01")
+        self.assertEqual("OPCM", proposal.code)
+        self.assertEqual("01", proposal.number)
+        proposal = UtilsISPyB.findProposal(1, "OPCM01")
+        self.assertEqual("OPCM", proposal.code)
+        self.assertEqual("01", proposal.number)
         
-    def tes_createSession(self):
-        sessions = UtilsISPyB.createSession(1, "mx415", "cm01")
-        print(sessions)
-
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

@@ -56,11 +56,6 @@ class Test(unittest.TestCase):
         UtilsIcat.uploadToIcat(listFiles, directory, proposal, sample, dataSetName, dictMetadata)
 
 
-    def tes_getDataFilesToBeArchived(self):
-        allParams = []
-        
-    
-
 
 
 

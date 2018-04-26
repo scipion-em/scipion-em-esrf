@@ -95,7 +95,9 @@ class ProtMonitorISPyB_ESRF(ProtMonitor):
     def monitorStep(self):
 
         dbNumber = self.db.get()
-        self.client = UtilsISPyB.getClient(dbNumber)
+        urlBase = UtilsISPyB.getUrlBase(dbNumber)
+        url = os.path.join(urlBase, "ToolsForEMWebService?wsdl")
+        self.client = UtilsISPyB.getClient(url)
         
         # Update proposal
         UtilsISPyB.updateProposalFromSMIS(dbNumber, self.proposal.get())

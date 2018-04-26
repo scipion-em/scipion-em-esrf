@@ -35,12 +35,12 @@ class Test(unittest.TestCase):
         movieFilePath = "/data/visitor/mx2001/cm01/20171124/RAW_DATA/Data-hug-grid1/Images-Disc1/GridSquare_24748253/Data/FoilHole_24762814_Data_24757346_24757347_20171126_0223-4929.mrc"
         proposal = UtilsISPyB.getProposal(movieFilePath)
         self.assertEqual("mx2001", proposal)
-        movieFilePath = "/data/cm01/inhouse/Hons/IH-LS-2975/RAW_DATA"
-        proposal = UtilsISPyB.getProposal(movieFilePath)
-        self.assertEqual("ihls2975", proposal)
         movieFilePath = "/data/cm01/inhouse/BLC11341/20180410/RAW_DATA/EPU_BLC11341"
         proposal = UtilsISPyB.getProposal(movieFilePath)
         self.assertEqual("blc11341", proposal)
+        movieFilePath = "/data/cm01/inhouse/ih-ls3046/20180410/RAW_DATA/EPU_BLC11341"
+        proposal = UtilsISPyB.getProposal(movieFilePath)
+        self.assertEqual("ih-ls3046", proposal)
 
     def test_getClient(self):
         urlBase = UtilsISPyB.getUrlBase(1)
@@ -53,6 +53,9 @@ class Test(unittest.TestCase):
         self.assertEqual(("blc", "11258"), UtilsISPyB.splitProposalInCodeAndNumber("blc11258"))
         self.assertEqual(("opcm", "01"), UtilsISPyB.splitProposalInCodeAndNumber("opcm01"))
         self.assertEqual(("ih-ls", "3046"), UtilsISPyB.splitProposalInCodeAndNumber("ih-ls3046"))
+        self.assertEqual((None, None), UtilsISPyB.splitProposalInCodeAndNumber(None))
+        self.assertEqual((None, None), UtilsISPyB.splitProposalInCodeAndNumber("abc123"))
+        self.assertEqual((None, None), UtilsISPyB.splitProposalInCodeAndNumber("mxx123"))
 
     def test_findSessions(self):
         sessions = UtilsISPyB.findSessions(1, "opcm01", "cm01")

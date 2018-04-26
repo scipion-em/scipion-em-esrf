@@ -70,13 +70,17 @@ class UtilsISPyB(object):
     def splitProposalInCodeAndNumber(proposal):
         code = None
         number = None
-        listCodes = ["fx", "mxihr", "mx", "bx", "ix", "in", "im", "ih-ls", "blc", "bm161", "sc", "tc", "opcm", "opid"]
-        proposalLowerCase = proposal.lower()
-        for tmpCode in listCodes:
-            if proposalLowerCase.startswith(tmpCode):
-                code = tmpCode
-                number = proposal.split(code)[1]
-                break
+        if proposal is not None:
+            listCodes = ["fx", "mxihr", "mx", "bx", "ix", "in", "im", "ih-ls", "blc", "bm161", "sc", "tc", "opcm", "opid"]
+            proposalLowerCase = proposal.lower()
+            for tmpCode in listCodes:
+                if proposalLowerCase.startswith(tmpCode):
+                    code = tmpCode
+                    number = proposalLowerCase.split(code)[1]
+                    # Check that we have an integer number
+                    if not number.isdigit():
+                        code = None
+                        number = None
         return code, number
     
     @staticmethod
@@ -155,15 +159,15 @@ class UtilsISPyB(object):
         listDirectory = movieFilePath.split(os.sep)
         # First check: directory must start with "data":
         if listDirectory[1] == "data":
-            # Check if ihls2975 - temporary fix
-            if "IH-LS-2975" in movieFilePath:
-                proposal = "ihls2975"
-            # If not check if second level is "visitor":
-            elif listDirectory[2] == "visitor":
-                proposal = listDirectory[3]
+            proposalFromDirectory = None
+            if listDirectory[2] == "visitor":
+                proposalFromDirectory = listDirectory[3]
             elif listDirectory[3] == "inhouse":
-                proposal = listDirectory[4]
-        return proposal.lower()
+                proposalFromDirectory = listDirectory[4]
+            proposalCode, proposalNumber = UtilsISPyB.splitProposalInCodeAndNumber(proposalFromDirectory)
+            if proposalCode is not None:
+                proposal = proposalFromDirectory.lower()
+        return proposal
         
     
     

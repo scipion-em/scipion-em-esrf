@@ -161,6 +161,7 @@ print("All param json file: {0}".format(allParamsJsonFile))
 doPhaseShiftEstimation = "false"
 
 firstMovieFullPath = listMovies[0]
+print("First movie full path file: {0}".format(firstMovieFullPath))
 
 # Check proposal
 # db=0: production
@@ -170,7 +171,24 @@ firstMovieFullPath = listMovies[0]
 proposal = UtilsISPyB.getProposal(firstMovieFullPath)
 if proposal is None:
     print("WARNING! No valid proposal could be found for movie {0}.".format(firstMovieFullPath))
-    print("No data will be uploaded to ISPyB.")
+    print("")
+    answer = raw_input("Would you like to enter a valid proposal name now (yes/no)? ")
+    while answer != "yes" and answer !="no":
+        print("")
+        answer = raw_input("Please answer 'yes' or 'no'. Would you like to enter a valid proposal name now? ")
+    if answer == "yes":
+        proposal = raw_input("Please enter a valid proposal name: ")
+        code, number = UtilsISPyB.splitProposalInCodeAndNumber(proposal)
+        while code is None:
+            print("'{0}' is not a valid proposal name.".format(proposal))
+            print("")
+            proposal = raw_input("Please enter a valid proposal name (mxXXXX, ih-lsXXXX etc): ")
+            code, number = UtilsISPyB.splitProposalInCodeAndNumber(proposal)
+    else:
+        proposal = None
+
+if proposal is None:
+    print("WARNING! No data will be uploaded to ISPyB.")
     db = 3
 else:
     print("Proposal: {0}".format(proposal))
@@ -182,9 +200,6 @@ else:
         # Use productiond data base
         print("ISPyB production data base used")
         db = 0
-
-print("First movie full path file: {0}".format(firstMovieFullPath))
-
 
 jpeg, mrc, xml, gridSquareThumbNail =  UtilsPath.getMovieJpegMrcXml(firstMovieFullPath)
 
@@ -352,7 +367,7 @@ fd, jsonFile = tempfile.mkstemp(suffix=".json", prefix="scipion_workflow_", dir=
 os.write(fd, jsonString)
 os.close(fd)
 os.chmod(jsonFile, 0644)
-print("jsonFile: {0}".format(jsonFile))
+print("Scipion project json fFile: {0}".format(jsonFile))
 
 
 # Create a new project
@@ -362,7 +377,7 @@ def getNewScipionProjectName(scipionProjectName, index):
     return "{0}_{1}".format(scipionProjectName, index)
 
 if manager.hasProject(scipionProjectName):
-    print("WARNING! There is already a project with this name: {0}".format(scipionProjectName))
+    print("WARNING! There is already a Scipion project with this name: '{0}'".format(scipionProjectName))
     # Try to find an unique project name
     index = 1
     newScipionProjectName = getNewScipionProjectName(scipionProjectName, index)
@@ -370,10 +385,7 @@ if manager.hasProject(scipionProjectName):
         index += 1
         newScipionProjectName = getNewScipionProjectName(scipionProjectName, index)
     scipionProjectName = newScipionProjectName
-    print("New Scipion project name: {0}".format(scipionProjectName))
-
-if jsonFile is not None and not os.path.exists(jsonFile):
-    usage("Inexistent json file: %s" % pwutils.red(jsonFile))
+    print("New Scipion project name: '{0}'".format(scipionProjectName))
 
 project = manager.createProject(scipionProjectName, location=location)
 

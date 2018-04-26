@@ -358,9 +358,19 @@ print("jsonFile: {0}".format(jsonFile))
 # Create a new project
 manager = Manager()
 
+def getNewScipionProjectName(scipionProjectName, index):
+    return "{0}_{1}".format(scipionProjectName, index)
+
 if manager.hasProject(scipionProjectName):
-    usage("There is already a project with this name: {0}".format(scipionProjectName))
-    sys.exit(1)
+    print("WARNING! There is already a project with this name: {0}".format(scipionProjectName))
+    # Try to find an unique project name
+    index = 1
+    newScipionProjectName = getNewScipionProjectName(scipionProjectName, index)
+    while manager.hasProject(newScipionProjectName):
+        index += 1
+        newScipionProjectName = getNewScipionProjectName(scipionProjectName, index)
+    scipionProjectName = newScipionProjectName
+    print("New Scipion project name: {0}".format(scipionProjectName))
 
 if jsonFile is not None and not os.path.exists(jsonFile):
     usage("Inexistent json file: %s" % pwutils.red(jsonFile))

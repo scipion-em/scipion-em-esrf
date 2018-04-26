@@ -224,7 +224,12 @@ class MonitorISPyB_ESRF(Monitor):
 
     def uploadImportMovies(self, prot):
         for movieFullPath in prot.getMatchFiles():
-            listMovieFullPath = [ self.allParams[movieName]["movieFullPath"] for movieName in self.allParams if "movieFullPath" in self.allParams[movieName]]
+            listMovieFullPath = []
+            for movieName in self.allParams:
+                if "movieFullPath" in self.allParams[movieName] and "movieId" in self.allParams[movieName]:
+                    if self.allParams[movieName]["movieId"] is not None:
+                        listMovieFullPath.append(self.allParams[movieName]["movieFullPath"])
+#            listMovieFullPath = [ self.allParams[movieName]["movieFullPath"] for movieName in self.allParams if "movieFullPath" in self.allParams[movieName]]
             if movieFullPath in listMovieFullPath:
                 pass
                 #self.info("Movie already uploaded: {0}".format(movieFullPath))

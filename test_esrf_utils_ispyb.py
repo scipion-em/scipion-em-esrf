@@ -52,6 +52,7 @@ class Test(unittest.TestCase):
         self.assertEqual(("mx", "415"), UtilsISPyB.splitProposalInCodeAndNumber("mx415"))
         self.assertEqual(("blc", "11258"), UtilsISPyB.splitProposalInCodeAndNumber("blc11258"))
         self.assertEqual(("opcm", "01"), UtilsISPyB.splitProposalInCodeAndNumber("opcm01"))
+        self.assertEqual(("ih-ls", "3046"), UtilsISPyB.splitProposalInCodeAndNumber("ih-ls3046"))
 
     def test_findSessions(self):
         sessions = UtilsISPyB.findSessions(1, "opcm01", "cm01")

@@ -70,15 +70,13 @@ class UtilsISPyB(object):
     def splitProposalInCodeAndNumber(proposal):
         code = None
         number = None
-        if proposal.startswith("mx"):
-            code = "mx"
-            number = proposal.split("mx")[1]
-        elif proposal.startswith("blc"):
-            code = "blc"
-            number = proposal.split("blc")[1]
-        elif proposal.startswith("opcm"):
-            code = "opcm"
-            number = proposal.split("opcm")[1]
+        listCodes = ["fx", "mxihr", "mx", "bx", "ix", "in", "im", "ih-ls", "blc", "bm161", "sc", "tc", "opcm", "opid"]
+        proposalLowerCase = proposal.lower()
+        for tmpCode in listCodes:
+            if proposalLowerCase.startswith(tmpCode):
+                code = tmpCode
+                number = proposal.split(code)[1]
+                break
         return code, number
     
     @staticmethod

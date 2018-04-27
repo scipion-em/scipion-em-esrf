@@ -193,8 +193,11 @@ class MonitorISPyB_ESRF(Monitor):
                 timeElapsed = int(time.time() - self.currentGridSquareLastMovieTime)
                 self.info("Time elapsed since last movie detected: {0} s".format(timeElapsed))
                 # Timeout for uploading last grid square to icat: 2h
-                if self.currentGridSquare is not None and timeElapsed > 2*60*60:
-                    self.archiveCurrentGridSquare()
+                if self.currentGridSquare is not None and timeElapsed > 30*60:
+                    self.archiveGridSquare(self.currentGridSquare)
+                    self.currentGridSquare = None
+                    # Check if old grid squares
+                    self.archiveOldGridSquares()
                     
     
             # Update json file
@@ -374,7 +377,10 @@ class MonitorISPyB_ESRF(Monitor):
                     self.info("New grid square detected: {0}".format(self.currentGridSquare))                      
                 elif self.currentGridSquare != gridSquare:
                     # New grid square, archive previous grid square
-                    self.archiveCurrentGridSquare()
+                    self.archiveGridSquare(self.currentGridSquare)
+                    self.currentGridSquare = None
+                    # Check if old grid squares
+                    self.archiveOldGridSquares()
                     
                     
                     
@@ -532,10 +538,8 @@ class MonitorISPyB_ESRF(Monitor):
                 self.info("CTF done, CTFid = {0}".format(CTFid))
 
 
-    def archiveCurrentGridSquare(self):
+    def archiveGridSquare(self, gridSquareToBeArchived):
         # Archive remaining movies
-        gridSquareToBeArchived = self.currentGridSquare
-        self.currentGridSquare = None
         self.info("Archiving grid square: {0}".format(gridSquareToBeArchived))  
         listPathsToBeArchived = []
         sumPositionX = 0.0
@@ -569,4 +573,11 @@ class MonitorISPyB_ESRF(Monitor):
             self.info("dictIcatMetaData: {0}".format(pprint.pformat(dictIcatMetaData)))
             UtilsIcat.uploadToIcat(listPathsToBeArchived, directory, self.proposal,  
                                    self.sampleAcronym, dataSetName, dictIcatMetaData)
+            
+    def archiveOldGridSquares(self):
+        # Check if there are remaining grid squares to be uploaded:
+        dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(self.allParams)
+        for gridSquareToBeArchived in dictGridSquares:
+            self.archiveGridSquare(gridSquareToBeArchived)
+            
         

@@ -62,4 +62,16 @@ class UtilsIcat(object):
         dictMetadata["definition"] = "EM"
         for attributeName, value in dictMetadata.iteritems():
             setattr(client.metadataManager, attributeName, str(value))
-        client.end() 
+        client.end()
+
+    @staticmethod
+    def findGridSquaresNotUploaded(allParams):
+        dictGridSquares = {}
+        for key in allParams:
+            entry = allParams[key]
+            if "archived" in entry and not entry["archived"]:
+                gridSquare = entry["gridSquare"]
+                if not gridSquare in dictGridSquares:
+                    dictGridSquares[gridSquare] = []
+                dictGridSquares[gridSquare].append(key)
+        return dictGridSquares

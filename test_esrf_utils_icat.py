@@ -41,7 +41,14 @@ class Test(unittest.TestCase):
         dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(allParams)
         pprint.pprint(dictGridSquares)
 
-
+    def test_getStackTraceLog(self):
+        errorMessage = None
+        try:
+            print(1/0)
+        except:
+            errorMessage = UtilsIcat.getStackTraceLog()
+        print(errorMessage)
+        self.assertNotEquals(errorMessage, None)
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

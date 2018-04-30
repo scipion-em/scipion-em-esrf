@@ -27,15 +27,8 @@
 
 
 import os
-import re
-import glob
-import math
-import time
-import socket
-import shutil
-import datetime
+import sys
 import traceback
-import xml.etree.ElementTree
 
 from ESRFMetadataManagerClient import MetadataManagerClient
 
@@ -51,18 +44,25 @@ class UtilsIcat(object):
     
     @staticmethod
     def uploadToIcat(listFiles, directory, proposal, sample, dataSetName, dictMetadata={}):
-        os.environ["TANGO_HOST"] = "l-cryoem-2.esrf.fr:20000"
-        metadataManagerName = 'cm01/metadata/ingest'
-        metaExperimentName = 'cm01/metadata/experiment'
-        client = MetadataManagerClient(metadataManagerName, metaExperimentName)
-        client.start(directory, proposal, sample, dataSetName)
-        for filePath in listFiles:
-            archivePath = filePath.replace(directory + "/", "")
-            client.appendFile(archivePath)
-        dictMetadata["definition"] = "EM"
-        for attributeName, value in dictMetadata.iteritems():
-            setattr(client.metadataManager, attributeName, str(value))
-        client.end()
+        errorMessage = None
+        try:
+            os.environ["TANGO_HOST"] = "l-cryoem-2.esrf.fr:20000"
+            metadataManagerName = 'cm01/metadata/ingest'
+            metaExperimentName = 'cm01/metadata/experiment'
+            client = MetadataManagerClient(metadataManagerName, metaExperimentName)
+            # Proposal hardwired for tests
+            proposal = "id310010"
+            client.start(directory, proposal, sample, dataSetName)
+            for filePath in listFiles:
+                archivePath = filePath.replace(directory + "/", "")
+                client.appendFile(archivePath)
+            dictMetadata["definition"] = "EM"
+            for attributeName, value in dictMetadata.iteritems():
+                setattr(client.metadataManager, attributeName, str(value))
+            client.end()
+        except:
+            errorMessage = UtilsIcat.getStackTraceLog()
+        return errorMessage
 
     @staticmethod
     def findGridSquaresNotUploaded(allParams):
@@ -75,3 +75,13 @@ class UtilsIcat(object):
                     dictGridSquares[gridSquare] = []
                 dictGridSquares[gridSquare].append(key)
         return dictGridSquares
+
+
+    @staticmethod
+    def getStackTraceLog():
+        (exc_type, exc_value, exc_traceback) = sys.exc_info()
+        errorMessage = "{0} {1}\n".format(exc_type, exc_value)
+        listTrace = traceback.extract_tb(exc_traceback)
+        for listLine in listTrace:
+            errorMessage += "  File \"%s\", line %d, in %s%s\n" % (listLine[0], listLine[1], listLine[2], os.linesep)
+        return errorMessage

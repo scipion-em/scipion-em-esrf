@@ -571,8 +571,11 @@ class MonitorISPyB_ESRF(Monitor):
             self.info("self.sampleAcronym: {0}".format(self.sampleAcronym))
             self.info("dataSetName: {0}".format(dataSetName))
             self.info("dictIcatMetaData: {0}".format(pprint.pformat(dictIcatMetaData)))
-            UtilsIcat.uploadToIcat(listPathsToBeArchived, directory, self.proposal,  
-                                   self.sampleAcronym, dataSetName, dictIcatMetaData)
+            errorMessage = UtilsIcat.uploadToIcat(listPathsToBeArchived, directory, self.proposal,  
+                                                  self.sampleAcronym, dataSetName, dictIcatMetaData)
+            if errorMessage is not None:
+                self.info("ERROR during icat upload!")
+                self.info(errorMessage)
             
     def archiveOldGridSquares(self):
         # Check if there are remaining grid squares to be uploaded:

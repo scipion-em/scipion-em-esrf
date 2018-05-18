@@ -557,8 +557,12 @@ class MonitorISPyB_ESRF(Monitor):
                     pass
         noImagesToBeArchived = len(listPathsToBeArchived)
         if noImagesToBeArchived > 0:
-            meanPositionX = sumPositionX / indexPosition
-            meanPositionY = sumPositionY / indexPosition
+            if indexPosition > 0:
+                meanPositionX = sumPositionX / indexPosition
+                meanPositionY = sumPositionY / indexPosition
+            else:
+                meanPositionX = None
+                meanPositionY = None
             dictIcatMetaData = dict(self.allParams["EM_meta_data"])
             dictIcatMetaData["EM_position_x"] = meanPositionX
             dictIcatMetaData["EM_position_y"] = meanPositionY

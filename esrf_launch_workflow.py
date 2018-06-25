@@ -69,7 +69,7 @@ filesPattern = None
 scipionProjectName = None
 proteinAcronym = None
 sampleAcronym = None
-doseInitial = None
+doseInitial = 0.0
 dosePerFrame = None
 samplingRate = None
 dataStreaming = "true"
@@ -103,7 +103,7 @@ for opt, arg in opts:
         alignFrameN = float(arg)
 
 # Check mandatory parameters
-if not all([dataDirectory, proteinAcronym, sampleAcronym, doseInitial, dosePerFrame]):
+if not all([dataDirectory, proteinAcronym, sampleAcronym, dosePerFrame]):
     print(usage)
     sys.exit(1)
     

@@ -50,8 +50,6 @@ class UtilsIcat(object):
             metadataManagerName = 'cm01/metadata/ingest'
             metaExperimentName = 'cm01/metadata/experiment'
             client = MetadataManagerClient(metadataManagerName, metaExperimentName)
-            # Proposal hardwired for tests
-            proposal = "id310010"
             client.start(directory, proposal, sample, dataSetName)
             for filePath in listFiles:
                 archivePath = filePath.replace(directory + "/", "")

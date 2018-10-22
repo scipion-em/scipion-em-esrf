@@ -28,7 +28,12 @@
 
 import os
 import sys
+import time
 import traceback
+
+# Temporary hard-wired path for PyTango
+sys.path.insert(0, "/opt/pxsoft/scipion/vESRF_dev/debian90-x86_64/scipion_dev/software/lib/python2.7/site-packages/pytango-9.2.0-py2.7-linux-x86_64.egg")
+import PyTango
 
 from ESRFMetadataManagerClient import MetadataManagerClient
 
@@ -43,23 +48,67 @@ class UtilsIcat(object):
 
     
     @staticmethod
-    def uploadToIcat(listFiles, directory, proposal, sample, dataSetName, dictMetadata={}):
+    def uploadToIcat(listFiles, directory, proposal, sample, dataSetName, dictMetadata={}, listGalleryPath=[]):
         errorMessage = None
         try:
             os.environ["TANGO_HOST"] = "l-cryoem-2.esrf.fr:20000"
             metadataManagerName = 'cm01/metadata/ingest'
             metaExperimentName = 'cm01/metadata/experiment'
             client = MetadataManagerClient(metadataManagerName, metaExperimentName)
-            client.start(directory, proposal, sample, dataSetName)
-            for filePath in listFiles:
-                archivePath = filePath.replace(directory + "/", "")
-                client.appendFile(archivePath)
-            dictMetadata["definition"] = "EM"
-            for attributeName, value in dictMetadata.iteritems():
-                setattr(client.metadataManager, attributeName, str(value))
-            client.end()
         except:
             errorMessage = UtilsIcat.getStackTraceLog()
+
+        if errorMessage is None:
+            retry = True
+            aborted = False
+            while retry and errorMessage is None:
+                try:
+                    client.start(directory, proposal, sample, dataSetName)
+                    retry = False
+                except PyTango.DevFailed:
+                    if not aborted:                        
+                        # We try to abort the client.
+                        client.abortScan()
+                        aborted = True
+                        time.sleep(1)
+                        retry = True
+                    else:
+                        errorMessage = UtilsIcat.getStackTraceLog()
+                        retry = False                        
+                except:
+                    errorMessage = UtilsIcat.getStackTraceLog()
+                    retry = False
+                
+        if errorMessage is None:
+            try:
+                for filePath in listFiles:
+                    archivePath = filePath.replace(directory + "/", "")
+                    client.appendFile(archivePath)
+                dictMetadata["definition"] = "EM"
+                for attributeName, value in dictMetadata.iteritems():
+                    setattr(client.metadataManager, attributeName, str(value))
+            except:
+                errorMessage = UtilsIcat.getStackTraceLog()
+
+        if errorMessage is None:
+            try:
+                galleryString = ""
+                for galleryPath in listGalleryPath:
+                    if galleryString == "":
+                        galleryString = galleryPath
+                    else:
+                        galleryString += ", " + galleryPath
+                if galleryString != "":
+                    setattr(client.metadataManager, "ResourcesGalleryFilePaths", galleryString)
+            except:
+                print("ERROR when uploading gallery paths:")
+                print(UtilsIcat.getStackTraceLog())
+
+        if errorMessage is None:
+            try:
+                client.end()
+            except:
+                errorMessage = UtilsIcat.getStackTraceLog()
         return errorMessage
 
     @staticmethod

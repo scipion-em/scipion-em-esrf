@@ -49,6 +49,18 @@ class Test(unittest.TestCase):
             errorMessage = UtilsIcat.getStackTraceLog()
         print(errorMessage)
         self.assertNotEquals(errorMessage, None)
+        
+    def tes_uploadToIcat(self):
+        listFiles = ["/data/visitor/mx415/cm01/20180619/RAW_DATA/epu-grid2-ddw49-1_1/Images-Disc1/GridSquare_7728190/Data/FoilHole_7742940_Data_7738968_7738969_20180611_0959.mrc"]
+        directory = "/data/visitor/mx415/cm01/20180619/RAW_DATA/epu-grid2-ddw49-1_1"
+        proposal = "id000001"
+        sample = "Test"
+        dataSetName = "Test_1"
+        dictMetadata = {"EM_voltage": "300000"}
+        listGalleryPath = ["/data/visitor/mx415/cm01/20180619/RAW_DATA/epu-grid2-ddw49-1_1/Images-Disc1/GridSquare_7728190/GridSquare_20180608_164247.jpg"]
+        errorMessage = UtilsIcat.uploadToIcat(listFiles, directory, proposal, sample, 
+                                              dataSetName, dictMetadata, listGalleryPath)
+        print(errorMessage)
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

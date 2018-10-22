@@ -192,8 +192,8 @@ class MonitorISPyB_ESRF(Monitor):
             if self.currentGridSquareLastMovieTime is not None:
                 timeElapsed = int(time.time() - self.currentGridSquareLastMovieTime)
                 self.info("Time elapsed since last movie detected: {0} s".format(timeElapsed))
-                # Timeout for uploading last grid square to icat: 2h
-                if self.currentGridSquare is not None and timeElapsed > 30*60:
+                # Timeout for uploading last grid square to icat: 2h, 7200 s
+                if self.currentGridSquare is not None and timeElapsed > 7200:
                     self.archiveGridSquare(self.currentGridSquare)
                     self.currentGridSquare = None
                     # Check if old grid squares
@@ -369,7 +369,11 @@ class MonitorISPyB_ESRF(Monitor):
                         "EM_protein_acronym": self.proteinAcronym,
                         "EM_sampling_rate": samplingRate,
                         "EM_spherical_aberration": sphericalAberration,
-                        "EM_voltage": voltage}                    
+                        "EM_voltage": voltage}
+                if not gridSquare in self.allParams:
+                    self.allParams[gridSquare] = {}
+                if not "listGalleryPath" in self.allParams[gridSquare]:
+                    self.allParams[gridSquare]["listGalleryPath"] = [gridSquareSnapshotFullPath]
                 self.info("Import movies done, movieId = {0}".format(self.allParams[movieName]["movieId"]))
                 self.currentGridSquareLastMovieTime = time.time()
                 if self.currentGridSquare is None:
@@ -504,6 +508,17 @@ class MonitorISPyB_ESRF(Monitor):
                     ctfObject = None                
                 
                 logFilePath = UtilsPath.copyToPyarchPath(dictResults["logFilePath"])
+#                self.info("proposal : {0}".format(self.proposal))
+#                self.info("movieFullPath : {0}".format(movieFullPath))
+#                self.info("spectraImageSnapshotFullPath : {0}".format(spectraImageSnapshotPyarchPath))
+#                self.info("spectraImageFullPath : {0}".format(spectraImagePyarchPath))
+#                self.info("defocusU : {0}".format(defocusU))
+#                self.info("defocusV : {0}".format(defocusV))
+#                self.info("angle : {0}".format(angle))
+#                self.info("crossCorrelationCoefficient : {0}".format(crossCorrelationCoefficient))
+#                self.info("resolutionLimit : {0}".format(resolutionLimit))
+#                self.info("estimatedBfactor : {0}".format(estimatedBfactor))
+#                self.info("logFilePath : {0}".format(logFilePath))
                 try:
                     ctfObject = self.client.service.addCTF(proposal=self.proposal, 
                                         movieFullPath=movieFullPath,
@@ -567,6 +582,7 @@ class MonitorISPyB_ESRF(Monitor):
             dictIcatMetaData["EM_position_x"] = meanPositionX
             dictIcatMetaData["EM_position_y"] = meanPositionY
             directory = dictIcatMetaData["EM_directory"]
+            listGalleryPath = self.allParams[gridSquareToBeArchived]["listGalleryPath"]
             dataSetName = "{0}_{1}".format(gridSquareToBeArchived, round(time.time()))
             self.allParams[dataSetName] = dictIcatMetaData
             self.info("listPathsToBeArchived: {0}".format(pprint.pformat(listPathsToBeArchived)))
@@ -576,7 +592,8 @@ class MonitorISPyB_ESRF(Monitor):
             self.info("dataSetName: {0}".format(dataSetName))
             self.info("dictIcatMetaData: {0}".format(pprint.pformat(dictIcatMetaData)))
             errorMessage = UtilsIcat.uploadToIcat(listPathsToBeArchived, directory, self.proposal,  
-                                                  self.sampleAcronym, dataSetName, dictIcatMetaData)
+                                                  self.sampleAcronym, dataSetName, dictIcatMetaData,
+                                                  listGalleryPath)
             if errorMessage is not None:
                 self.info("ERROR during icat upload!")
                 self.info(errorMessage)

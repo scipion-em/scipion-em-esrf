@@ -33,6 +33,8 @@ import os
 import sys
 import time
 import logging
+# Temporary hard-wired path for PyTango
+sys.path.insert(0, "/opt/pxsoft/scipion/vESRF_dev/debian90-x86_64/scipion_dev/software/lib/python2.7/site-packages/pytango-9.2.0-py2.7-linux-x86_64.egg")
 import PyTango.client
 import traceback
 from email.mime.text import MIMEText

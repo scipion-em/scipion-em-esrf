@@ -171,6 +171,9 @@ class MetadataManagerClient(object):
 
     def getMessageList(self):
         return list(MetadataManagerClient.metadataManager.messageList)
+    
+    def abortScan(self):
+        MetadataManagerClient.metadataManager.AbortScan()
 
             
 if __name__ == '__main__':

@@ -59,25 +59,10 @@ class UtilsIcat(object):
             errorMessage = UtilsIcat.getStackTraceLog()
 
         if errorMessage is None:
-            retry = True
-            aborted = False
-            while retry and errorMessage is None:
-                try:
-                    client.start(directory, proposal, sample, dataSetName)
-                    retry = False
-                except PyTango.DevFailed:
-                    if not aborted:                        
-                        # We try to abort the client.
-                        client.abortScan()
-                        aborted = True
-                        time.sleep(1)
-                        retry = True
-                    else:
-                        errorMessage = UtilsIcat.getStackTraceLog()
-                        retry = False                        
-                except:
-                    errorMessage = UtilsIcat.getStackTraceLog()
-                    retry = False
+            try:
+                client.start(directory, proposal, sample, dataSetName)
+            except:
+                errorMessage = UtilsIcat.getStackTraceLog()
                 
         if errorMessage is None:
             try:

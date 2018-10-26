@@ -36,12 +36,12 @@ from esrf_utils_icat import UtilsIcat
 class Test(unittest.TestCase):
 
 
-    def test_findGridSquaresNotUploaded(self):
+    def tes_findGridSquaresNotUploaded(self):
         allParams = json.loads(open("/scisoft/pxsoft/data/cryoem/testRunData/20180423/allParams.json").read())
         dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(allParams)
         pprint.pprint(dictGridSquares)
 
-    def test_getStackTraceLog(self):
+    def tes_getStackTraceLog(self):
         errorMessage = None
         try:
             print(1/0)
@@ -55,12 +55,51 @@ class Test(unittest.TestCase):
         directory = "/data/visitor/mx415/cm01/20180619/RAW_DATA/epu-grid2-ddw49-1_1"
         proposal = "id000001"
         sample = "Test"
-        dataSetName = "Test_1"
+        dataSetName = "Test_1_1"
         dictMetadata = {"EM_voltage": "300000"}
         listGalleryPath = ["/data/visitor/mx415/cm01/20180619/RAW_DATA/epu-grid2-ddw49-1_1/Images-Disc1/GridSquare_7728190/GridSquare_20180608_164247.jpg"]
         errorMessage = UtilsIcat.uploadToIcat(listFiles, directory, proposal, sample, 
                                               dataSetName, dictMetadata, listGalleryPath)
         print(errorMessage)
+
+    def tes_getOutOfStandbyState(self):
+        metadataManagerName = 'cm01_test/metadata/ingest'
+        metaExperimentName = 'cm01_test/metadata/experiment'
+        os.environ["TANGO_HOST"] = "l-cryoem-2.esrf.fr:20000"
+        from ESRFMetadataManagerClient import MetadataManagerClient
+        proposal = "id000001"
+        directory = "/data/visitor/mx415/cm01/20180619/RAW_DATA/epu-grid2-ddw49-1_1"
+        sample = "Test"
+        dataSetName = "Test_1"
+        import PyTango
+        metadataManager = PyTango.client.Device(metadataManagerName)
+        metaExperiment = PyTango.client.Device(metaExperimentName)
+        print("MetadataManager state: {0}".format(metadataManager.state()))
+#        print([str(metadataManager.state())])
+        # Abort any RUNNING scan
+#        if str(metadataManager.state()) == "RUNNING":
+#            metadataManager.AbortScan()
+#            print("MetadataManager state: {0}".format(metadataManager.state()))
+#        # Start new scan
+#        metaExperiment.proposal = proposal
+#        print("MetadataManager state: {0}".format(metadataManager.state()))
+#        metaExperiment.dataRoot = directory
+#        print("MetadataManager state: {0}".format(metadataManager.state()))
+##        metaExperiment.sample = sample
+##        print("MetadataManager state: {0}".format(metadataManager.state()))
+#        metadataManager.scanName = dataSetName
+#        print("MetadataManager state: {0}".format(metadataManager.state()))
+#        # Start scan
+#        metadataManager.StartScan()
+#        print("MetadataManager state: {0}".format(metadataManager.state()))
+        # Now try with other client
+        client = MetadataManagerClient(metadataManagerName, metaExperimentName)
+        client.start(directory, proposal, sample, dataSetName)
+        client.printStatus()
+
+        
+        
+        
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

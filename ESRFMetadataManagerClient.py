@@ -59,115 +59,105 @@ class MetadataManagerClient(object):
         self.sample = None
         self.datasetName = None
 
-        if metadataManagerName:
-            self.metadataManagerName = metadataManagerName
-        if metaExperimentName:
-            self.metaExperimentName = metaExperimentName
-
-        print('MetadataManager: %s' % metadataManagerName)
-        print('MetaExperiment: %s' % metaExperimentName)
+        print("MetadataManager: %s" % metadataManagerName)
+        print("MetaExperiment: %s" % metaExperimentName)
 
         # Tango Devices instances
-        try:
-            MetadataManagerClient.metadataManager = PyTango.client.Device(self.metadataManagerName)
-            MetadataManagerClient.metaExperiment = PyTango.client.Device(self.metaExperimentName)
-        except:
-            print "Unexpected error:", sys.exc_info()[0]
-            raise
+        MetadataManagerClient.metadataManager = PyTango.client.Device(metadataManagerName)
+        MetadataManagerClient.metaExperiment = PyTango.client.Device(metaExperimentName)
+
 
     def printStatus(self):
-        print('DataRoot: %s' % MetadataManagerClient.metaExperiment.dataRoot)
-        print('Proposal: %s' % MetadataManagerClient.metaExperiment.proposal)
-        print('Sample: %s' % MetadataManagerClient.metaExperiment.sample)
-        print('Dataset: %s' % MetadataManagerClient.metadataManager.scanName)
+        print("DataRoot: %s" % MetadataManagerClient.metaExperiment.dataRoot)
+        print("Proposal: %s" % MetadataManagerClient.metaExperiment.proposal)
+        print("Sample: %s" % MetadataManagerClient.metaExperiment.sample)
+        print("Dataset: %s" % MetadataManagerClient.metadataManager.scanName)
 
     def getStatus(self):
-        status = 'DataRoot: %s\n' % MetadataManagerClient.metaExperiment.dataRoot
-        status += 'Proposal: %s\n' % MetadataManagerClient.metaExperiment.proposal
-        status += 'Sample: %s\n' % MetadataManagerClient.metaExperiment.sample
-        status += 'Dataset: %s\n' % MetadataManagerClient.metadataManager.scanName
+        status = "DataRoot: %s\n" % MetadataManagerClient.metaExperiment.dataRoot
+        status += "Proposal: %s\n" % MetadataManagerClient.metaExperiment.proposal
+        status += "Sample: %s\n" % MetadataManagerClient.metaExperiment.sample
+        status += "Dataset: %s\n" % MetadataManagerClient.metadataManager.scanName
         return status
 
 
-    def __setDataRoot(self, dataRoot):
-        try:
-            MetadataManagerClient.metaExperiment.dataRoot = dataRoot
-            self.dataRoot = dataRoot
-        except:
-            print "Unexpected error:", sys.exc_info()[0]
-            raise
-
-    def __setProposal(self, proposal):
-        """ Set proposal should be done before stting the data root """
-        try:
-            MetadataManagerClient.metaExperiment.proposal = proposal
-            self.proposal = proposal
-        except:
-            print "Unexpected error:", sys.exc_info()[0]
-            raise
-
+    def _setAttribute(self, proxy, attributeName, newValue):
+        """
+        This method sets an attribute on either the MetadataManager or MetaExperiment server.
+        The method checks that the attribute has been set, and repeats up to five times
+        setting the attribute if not. If the attribute is not set after five trials the method
+        raises an 'RuntimeError' exception.
+        """
+        currentValue = "unknown"
+        if newValue == currentValue:
+            currentValue = "Current value not known"
+        counter = 0
+        while counter < 5:
+            counter += 1
+            try:
+                setattr(proxy, attributeName, newValue)
+                time.sleep(0.1)
+                currentValue = getattr(proxy, attributeName)
+                if currentValue == newValue:
+                    break
+            except Exception as e:
+                print("Unexpected error in MetadataManagerClient._setAttribute: {0}".format(e))
+                print("proxy = '{0}', attributeName = '{1}', newValue = '{2}'".format(
+                      proxy, attributeName, newValue))
+                print("Trying again, trial #{0}".format(counter))
+                time.sleep(1)
+        if currentValue == newValue:
+            setattr(self, attributeName, newValue)
+        else:
+            raise RuntimeError("Cannot set '{0}' attribute '{1}' to '{2}'!".format(proxy, attributeName, newValue))
+        
     def appendFile(self, filePath):
-        try:
-            MetadataManagerClient.metadataManager.lastDataFile = filePath
-        except:
-            print "Unexpected error:", sys.exc_info()[0]
-            raise
+        self._setAttribute(MetadataManagerClient.metadataManager, "lastDataFile", filePath)
 
-    def __setSample(self, sample):
-        try:
-            MetadataManagerClient.metaExperiment.sample = sample
-            self.sample = sample
-        except:
-            print "Unexpected error:", sys.exc_info()[0]
-            raise
-
-    def __setDataset(self, datasetName):
-        try:
-            MetadataManagerClient.metadataManager.scanName = datasetName
-            self.datasetName = datasetName
-        except:
-            print "Unexpected error:", sys.exc_info()[0]
-            raise
 
     def start(self, dataRoot, proposal, sampleName, datasetName):
         """ Starts a new dataset """
-        if MetadataManagerClient.metaExperiment:
-            try:
-                # setting proposal
-                self.__setProposal(proposal)
+        # Check if in state RUNNING, if yes abort scan
+        if self.getMetadataManagerState() == "RUNNING":
+            MetadataManagerClient.metadataManager.AbortScan()
+            
+        # setting proposal
+        self._setAttribute(MetadataManagerClient.metaExperiment, "proposal", proposal)
 
-                # setting dataRoot
-                self.__setDataRoot(dataRoot)
+        # setting dataRoot
+        self._setAttribute(MetadataManagerClient.metaExperiment, "dataRoot", dataRoot)
 
-                # setting sample
-                self.__setSample(sampleName)
+        # setting sampleName
+        self._setAttribute(MetadataManagerClient.metaExperiment, "sample", sampleName)
 
-                # setting dataset
-                self.__setDataset(datasetName)
+        # setting datasetName
+        self._setAttribute(MetadataManagerClient.metadataManager, "scanName", datasetName)
 
-                # setting datasetName
-                if (str(MetadataManagerClient.metaExperiment.state()) == 'ON'):
-                    if (str(MetadataManagerClient.metadataManager.state()) == 'ON'):
-                        MetadataManagerClient.metadataManager.StartScan()
+        # Start scan
+        if (self.getMetadataManagerState() == "ON") and (self.getMetaExperimentState() == "ON"):
+            MetadataManagerClient.metadataManager.StartScan()
+        else:
+            raise RuntimeError("Cannot start scan! MetadataManagerState= {0}, MetaExperimentState = {1}".format(
+                    self.getMetadataManagerState(), self.getMetaExperimentState()))
 
-                # Give the server some time to react
-                time.sleep(2)
+        # Give the server some time to react
+        time.sleep(1)
 
-            except:
-                print "Unexpected error:", sys.exc_info()[0]
-                raise
 
     def end(self):
         try:
             MetadataManagerClient.metadataManager.endScan()
             # Give the server some time to react
-            time.sleep(5)
+            time.sleep(1)
         except:
             print "Unexpected error:", sys.exc_info()[0]
             raise
 
-    def getState(self):
+    def getMetadataManagerState(self):
         return str(MetadataManagerClient.metadataManager.state())
+
+    def getMetaExperimentState(self):
+        return str(MetadataManagerClient.metaExperiment.state())
 
     def getMessageList(self):
         return list(MetadataManagerClient.metadataManager.messageList)
@@ -176,7 +166,7 @@ class MetadataManagerClient(object):
         MetadataManagerClient.metadataManager.AbortScan()
 
             
-if __name__ == '__main__':
+if __name__ == "__main__":
     os.environ["TANGO_HOST"] = "l-cryoem-2.esrf.fr:20000"
     listFiles = [
                 "/data/visitor/mx2005/cm01/20171209/RAW_DATA/baseplate-epu-grid2/Images-Disc1/GridSquare_7259648/Data/FoilHole_7265309_Data_7264706_7264707_20171207_1704-10925.mrc",
@@ -189,8 +179,8 @@ if __name__ == '__main__':
     proposal = "id310001"
     sample = "sample1"
     dataSetName = "GridSquare_7259648_{0}".format(round(time.time()))
-    metadataManagerName = 'cm01/metadata/ingest'
-    metaExperimentName = 'cm01/metadata/experiment'
+    metadataManagerName = "cm01_test/metadata/ingest"
+    metaExperimentName = "cm01_test/metadata/experiment"
     client = MetadataManagerClient(metadataManagerName, metaExperimentName)
     client.start(directory, proposal, sample, dataSetName)
     for filePath in listFiles:

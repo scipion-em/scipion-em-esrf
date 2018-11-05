@@ -36,9 +36,14 @@ from esrf_utils_icat import UtilsIcat
 class Test(unittest.TestCase):
 
 
-    def tes_findGridSquaresNotUploaded(self):
+    def test_findGridSquaresNotUploaded(self):
         allParams = json.loads(open("/scisoft/pxsoft/data/cryoem/testRunData/20180423/allParams.json").read())
         dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(allParams)
+        pprint.pprint(dictGridSquares)
+
+    def test_findGridSquaresNotUploaded_2(self):
+        allParams = json.loads(open("/scisoft/pxsoft/data/cryoem/testRunData/20181105/allParams.json").read())
+        dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(allParams, "GridSquare_32013107")
         pprint.pprint(dictGridSquares)
 
     def tes_getStackTraceLog(self):

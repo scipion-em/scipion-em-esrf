@@ -384,7 +384,7 @@ class MonitorISPyB_ESRF(Monitor):
                     self.archiveGridSquare(self.currentGridSquare)
                     self.currentGridSquare = None
                     # Check if old grid squares
-                    self.archiveOldGridSquares()
+                    self.archiveOldGridSquares(gridSquare)
                     
                     
                     
@@ -598,9 +598,9 @@ class MonitorISPyB_ESRF(Monitor):
                 self.info("ERROR during icat upload!")
                 self.info(errorMessage)
             
-    def archiveOldGridSquares(self):
+    def archiveOldGridSquares(self, gridSquareNotToArchive=None):
         # Check if there are remaining grid squares to be uploaded:
-        dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(self.allParams)
+        dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(self.allParams, gridSquareNotToArchive)
         for gridSquareToBeArchived in dictGridSquares:
             self.archiveGridSquare(gridSquareToBeArchived)
             

@@ -1,9 +1,9 @@
 # coding: utf-8
 # **************************************************************************
 # *
-# * Author:     Olof Svensson (svensson@esrf.fr) [1]
+# * Author:     Yaiza Rancel (yrancel@cnb.csic.es) [1]
 # *
-# * [1] European Synchrotron Radiation Facility
+# * [1] Unidad de  Bioinformatica of Centro Nacional de Biotecnologia , CSIC
 # *
 # * This program is free software; you can redistribute it and/or modify
 # * it under the terms of the GNU General Public License as published by
@@ -24,10 +24,5 @@
 # *  e-mail address 'scipion@cnb.csic.es'
 # *
 # **************************************************************************
-
-from bibtex import _bibtex # Load bibtex dict with references
-
-_logo = None
-_references = ['Delageniere2011']
 
 from protocol_monitor_ispyb_esrf import ProtMonitorISPyB_ESRF

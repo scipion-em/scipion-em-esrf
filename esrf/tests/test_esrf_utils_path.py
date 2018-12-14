@@ -29,7 +29,7 @@ import os
 import pprint
 import unittest
 
-from esrf_utils_path import UtilsPath
+from  esrf.utils.esrf_utils_path import UtilsPath
 
 class Test(unittest.TestCase):
 

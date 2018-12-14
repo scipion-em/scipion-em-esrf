@@ -27,7 +27,7 @@
 
 import os
 import unittest
-from esrf_utils_ispyb import UtilsISPyB
+from  esrf.utils.esrf_utils_ispyb import UtilsISPyB
 
 class Test(unittest.TestCase):
 

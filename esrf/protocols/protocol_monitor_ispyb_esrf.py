@@ -47,9 +47,9 @@ from pyworkflow.em.protocol import ProtMonitor, Monitor, PrintNotifier
 from pyworkflow.em.protocol import ProtImportMovies, ProtAlignMovies, ProtCTFMicrographs
 from pyworkflow.protocol import getProtocolFromDb
 
-from esrf_utils_ispyb import UtilsISPyB
-from esrf_utils_path import UtilsPath
-from esrf_utils_icat import UtilsIcat
+from esrf.utils.esrf_utils_ispyb import UtilsISPyB
+from esrf.utils.esrf_utils_path import UtilsPath
+from esrf.utils.esrf_utils_icat import UtilsIcat
 
 
 class ProtMonitorISPyB_ESRF(ProtMonitor):

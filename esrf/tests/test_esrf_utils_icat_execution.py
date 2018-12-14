@@ -29,7 +29,7 @@ import os
 import time
 import unittest
 
-from esrf_utils_icat import UtilsIcat
+from  esrf.utils.esrf_utils_icat import UtilsIcat
 
 class Test(unittest.TestCase):
 

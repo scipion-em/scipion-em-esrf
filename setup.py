@@ -42,7 +42,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name='scipion-em-esrf',  # Required
-    version='1.0.0',  # Required
+    version='1.0.1',  # Required
     description="Esrf's ISPyB monitor for Scipion",  # Required
     long_description=long_description,  # Optional
     url='https://github.com/scipion-em/scipion-em-esrf',

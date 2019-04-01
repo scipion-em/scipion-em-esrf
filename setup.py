@@ -42,13 +42,13 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name='scipion-em-esrf',  # Required
-    version='1.0.1',  # Required
+    version='1.0.2',  # Required
     description="Esrf's ISPyB monitor for Scipion",  # Required
     long_description=long_description,  # Optional
     url='https://github.com/scipion-em/scipion-em-esrf',
     author='I2PC',  # Optional
     author_email='scipion@cnb.csic.es',  # Optional
-    keywords='scipion cryoem imageprocessing scipion-1.2',  # Optional
+    keywords='scipion cryoem imageprocessing scipion-2.0',  # Optional
     packages=find_packages(),
     package_data={  # Optional
        'esrf': ['protocols.conf'],

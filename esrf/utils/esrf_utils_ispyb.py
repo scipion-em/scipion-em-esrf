@@ -162,7 +162,7 @@ class UtilsISPyB(object):
             proposalFromDirectory = None
             if listDirectory[2] == "visitor":
                 proposalFromDirectory = listDirectory[3]
-            elif listDirectory[3] == "inhouse":
+            else:
                 proposalFromDirectory = listDirectory[4]
             proposalCode, proposalNumber = UtilsISPyB.splitProposalInCodeAndNumber(proposalFromDirectory)
             if proposalCode is not None:

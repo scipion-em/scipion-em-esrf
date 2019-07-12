@@ -361,15 +361,18 @@ class MonitorISPyB_ESRF(Monitor):
                 if not "EM_meta_data" in self.allParams:
                     self.allParams["EM_meta_data"] = {
                         "EM_directory": prot.filesPath.get(),
-                        "EM_amplitude_contrast": amplitudeContrast,
-                        "EM_dose_initial": doseInitial,
-                        "EM_dose_per_frame": dosePerFrame,
-                        "EM_images_count": imagesCount,
-                        "EM_magnification": magnification,
                         "EM_protein_acronym": self.proteinAcronym,
-                        "EM_sampling_rate": samplingRate,
+                        "EM_voltage": voltage,
+                        "EM_magnification": magnification,
+                        "EM_images_count": imagesCount,
+                        "EM_position_x": positionX,
+                        "EM_position_y": positionY,
+                        "EM_dose_initial": doseInitial,
                         "EM_spherical_aberration": sphericalAberration,
-                        "EM_voltage": voltage}
+                        "EM_dose_per_frame": dosePerFrame,
+                        "EM_amplitude_contrast": amplitudeContrast,
+                        "EM_sampling_rate": samplingRate,
+                        }
                 if not gridSquare in self.allParams:
                     self.allParams[gridSquare] = {}
                 if not "listGalleryPath" in self.allParams[gridSquare]:

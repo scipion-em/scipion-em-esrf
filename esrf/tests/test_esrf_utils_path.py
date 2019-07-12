@@ -195,6 +195,14 @@ class Test(unittest.TestCase):
         mrcFilePath = "/mntdirect/_data_cm01_inhouse/opcm01/20171108/RAW_DATA/nicetest/Frame.mrc"
         pyarchFilePath = UtilsPath.getPyarchFilePath(mrcFilePath)
         self.assertEqual("/data/pyarch/2018/20171108/opcm01/RAW_DATA/nicetest/Frame.mrc", pyarchFilePath)
+        # CRYOEM-25 : New paths for inhouse research...
+        mrcFilePath = "/data/cm01/cmihr2/IH-LS3198/20181203/RAW_DATA/EPU_IH_LS3198/Images-Disc1/GridSquare_3087556/Data/FoilHole_4118111_Data_5127341_5127342_20181205_1023.jpg"
+        pyarchFilePath = UtilsPath.getPyarchFilePath(mrcFilePath)
+        self.assertEqual("/data/pyarch/2018/cm01/IH-LS3198/20181203/RAW_DATA/EPU_IH_LS3198/Images-Disc1/GridSquare_3087556/Data/FoilHole_4118111_Data_5127341_5127342_20181205_1023.jpg", pyarchFilePath)
+        mrcFilePath = "/mntdirect/_data_cm01_cmihr2/IH-LS3198/20181203/RAW_DATA/EPU_IH_LS3198/Images-Disc1/GridSquare_3087308/GridSquare_20181204_115820.jpg"
+        pyarchFilePath = UtilsPath.getPyarchFilePath(mrcFilePath)
+        self.assertEqual("/data/pyarch/2018/cm01/IH-LS3198/20181203/RAW_DATA/EPU_IH_LS3198/Images-Disc1/GridSquare_3087308/GridSquare_20181204_115820.jpg", pyarchFilePath)
+        
 
     def tes_copyToPyarchPath(self):
         # Can only be tested on a computer which can write to /data/pyarch

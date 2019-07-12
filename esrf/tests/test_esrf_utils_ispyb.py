@@ -41,6 +41,9 @@ class Test(unittest.TestCase):
         movieFilePath = "/data/cm01/inhouse/ih-ls3046/20180410/RAW_DATA/EPU_BLC11341"
         proposal = UtilsISPyB.getProposal(movieFilePath)
         self.assertEqual("ih-ls3046", proposal)
+        movieFilePath = "/data/cm01/cmihr1/IH-LS3214/20190220/RAW_DATA/EPU-IHLS3214-comp-grid1/Images-Disc1/GridSquare_19849110/Data/FoilHole_19853578_Data_19852496_19852497_20190221_0414-0634.mrc"
+        proposal = UtilsISPyB.getProposal(movieFilePath)
+        self.assertEqual("ih-ls3214", proposal)
 
     def test_getClient(self):
         urlBase = UtilsISPyB.getUrlBase(1)

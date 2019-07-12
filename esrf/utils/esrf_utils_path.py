@@ -309,10 +309,17 @@ class UtilsPath(object):
                 beamline = list_directory[ 4 ]
                 listOfRemainingDirectories = list_directory[ 5: ]
 
-            elif topDirectory == "mntdirect" and secondDirectory == "_data_cm01_inhouse":
-                proposal = list_directory[ 3 ]
-                beamline = list_directory[ 4 ]
-                listOfRemainingDirectories = list_directory[ 5: ]
+            elif topDirectory == "mntdirect" and "_data_cm01_" in secondDirectory:
+                
+                if "inhouse" in secondDirectory: 
+                    proposal = list_directory[ 3 ]
+                    beamline = list_directory[ 4 ]
+                    listOfRemainingDirectories = list_directory[ 5: ]
+                else:
+                    proposal = list_directory[ 3 ]
+                    beamline = "cm01"
+                    listOfRemainingDirectories = list_directory[ 4: ]
+                    
     
             elif topDirectory == "data" and secondDirectory == "visitor":
                 proposal = list_directory[ 3 ]

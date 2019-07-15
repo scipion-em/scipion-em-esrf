@@ -32,11 +32,19 @@ import time
 import getopt
 import datetime
 import tempfile
-from pyworkflow.manager import Manager
-import pyworkflow.utils as pwutils
+from pyworkflow.project.manager import Manager
 from pyworkflow.protocol import getProtocolFromDb
-from esrf_utils_ispyb import UtilsISPyB
-from esrf_utils_path import UtilsPath
+from esrf.utils.esrf_utils_ispyb import UtilsISPyB
+from esrf.utils.esrf_utils_path import UtilsPath
+
+# Set up config for DB and ISPyB
+modulePath = os.path.dirname(__file__)
+installPath = os.path.dirname(modulePath)
+configPath = os.path.join(installPath, 'config', 'esrf.properties')
+if not os.path.exists(configPath):
+    raise RuntimeError('No configuration file found at {0}!'.format(configPath))
+print(configPath)
+os.environ['SCIPION_ESRF_CONFIG'] = configPath
 
 
 def getUpdatedProtocol(protocol):
@@ -367,7 +375,9 @@ fd, jsonFile = tempfile.mkstemp(suffix=".json", prefix="scipion_workflow_", dir=
 os.write(fd, jsonString)
 os.close(fd)
 os.chmod(jsonFile, 0644)
-print("Scipion project json fFile: {0}".format(jsonFile))
+print("Scipion project json file: {0}".format(jsonFile))
+print("Project location: {0}".format(location))
+
 
 
 # Create a new project
@@ -387,7 +397,11 @@ if manager.hasProject(scipionProjectName):
     scipionProjectName = newScipionProjectName
     print("New Scipion project name: '{0}'".format(scipionProjectName))
 
-project = manager.createProject(scipionProjectName, location=location)
+projectLocation = os.path.join(location, scipionProjectName)
+if not os.path.exists(projectLocation):
+    os.makedirs(projectLocation, 0o755)
+os.chdir(projectLocation)
+project = manager.createProject(scipionProjectName, location=os.path.abspath(location))
 
 if jsonFile is not None:
     protDict = project.loadProtocols(jsonFile)

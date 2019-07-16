@@ -27,41 +27,32 @@
 
 
 import os
-import re
 import sys
-import glob
-import math
-import time
-import socket
-import shutil
-import pprint
 import datetime
-import traceback
 import ConfigParser
-import xml.etree.ElementTree
 
 sys.path.insert(0, "/opt/pxsoft/EDNA/vMX/edna/libraries/suds-0.4")
 
 from suds.client import Client
 from suds.transport.http import HttpAuthenticated
+from suds.cache import NoCache
+
 
 class UtilsISPyB(object):
-
-
 
     @staticmethod
     def getHttpAuthenticated():
         credentialsConfig = ConfigParser.ConfigParser()
-        credentialsConfig.read(os.path.join(os.path.dirname(__file__), 'credentials.properties'))
-        username = str(credentialsConfig.get('Credential', 'user'))
-        password = str(credentialsConfig.get('Credential', 'password'))
-        return HttpAuthenticated(username = username, password = password )
+        credentialsConfig.read(os.path.join(os.environ['SCIPION_ESRF_CONFIG']))
+        username = str(credentialsConfig.get('ISPyB', 'user'))
+        password = str(credentialsConfig.get('ISPyB', 'password'))
+        return HttpAuthenticated(username=username, password=password)
     
     @staticmethod
     def getUrlBase(dbNumber):
         config = ConfigParser.ConfigParser()
         # Configuration files
-        config.read(os.path.join(os.path.dirname(__file__), 'ispyb.properties'))    
+        config.read(os.path.join(os.environ['SCIPION_ESRF_CONFIG']))
         # URL
         urlBase = str(config.get('UrlBase', 'url_{0}'.format(dbNumber)))
         return urlBase
@@ -87,7 +78,7 @@ class UtilsISPyB(object):
     def getClient(url):
         # Authentication
         httpAuthenticated = UtilsISPyB.getHttpAuthenticated()
-        client = Client( url, transport = httpAuthenticated, cache = None, timeout = 15 )
+        client = Client(url, transport=httpAuthenticated, cache=NoCache(), timeout=15)
         return client  
 
     @staticmethod

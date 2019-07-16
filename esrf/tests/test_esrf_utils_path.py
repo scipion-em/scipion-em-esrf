@@ -151,36 +151,21 @@ class Test(unittest.TestCase):
     
 
     def test_getCtfMetaData(self):
-        workingDir = "/scisoft/pxsoft/data/cryoem/testRunData/20171017/000977_ProtGctf"
-        mrcFilePath = "/scisoft/pxsoft/data/cryoem/testRunData/20171017/000859_ProtMotionCorr/extra/FoilHole_19150795_Data_19148847_19148848_20170619_2101-0344_aligned_mic.mrc"
+        workingDir = "/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf"
+        mrcFilePath = "/scisoft/pxsoft/data/cryoem/testRunData/20190715/000064_ProtMotionCorr/extra/GridSquare_7828225_Data_FoilHole_8853794_Data_7832898_7832899_20190711_0913-4443_aligned_mic.mrc"
         dictResult = UtilsPath.getCtfMetaData(workingDir, mrcFilePath)
-        dictRef = {'Angle': '85.03',
- 'CCC': '0.001368',
- 'Defocus_U': '12558.52',
- 'Defocus_V': '12380.92',
+        dictRef = {'Angle': '35.60',
+ 'CCC': '-0.076290',
+ 'Defocus_U': '23173.92',
+ 'Defocus_V': '22988.54',
  'Phase_shift': None,
- 'estimatedBfactor': '83.88',
- 'logFilePath': '/scisoft/pxsoft/data/cryoem/testRunData/20171017/000977_ProtGctf/logs/run.log',
- 'resolutionLimit': '3.839',
- 'spectraImageFullPath': '/scisoft/pxsoft/data/cryoem/testRunData/20171017/000977_ProtGctf/extra/FoilHole_19150795_Data_19148847_19148848_20170619_2101-0344_aligned_mic/ctfEstimation.mrc',
- 'spectraImageSnapshotFullPath': '/scisoft/pxsoft/data/cryoem/testRunData/20171017/000977_ProtGctf/extra/FoilHole_19150795_Data_19148847_19148848_20170619_2101-0344_aligned_mic/ctfEstimation.jpeg'}
+ 'estimatedBfactor': '82.54',
+ 'logFilePath': '/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf/logs/run.log',
+ 'resolutionLimit': '3.381',
+ 'spectraImageFullPath': '/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf/extra/GridSquare_7828225_Data_FoilHole_8853794_Data_7832898_7832899_20190711_0913-4443_aligned_mic_ctf.mrc',
+ 'spectraImageSnapshotFullPath': '/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf/extra/GridSquare_7828225_Data_FoilHole_8853794_Data_7832898_7832899_20190711_0913-4443_aligned_mic_ctf.jpeg'}
         self.assertEqual(dictRef, dictResult)
-        workingDir = "/scisoft/pxsoft/data/cryoem/testRunData/20171120/Runs/000117_ProtGctf"
-        mrcFilePath = "/scisoft/pxsoft/data/cryoem/testRunData/20171120/Runs/000056_ProtMotionCorr/extra/FoilHole_15445484_Data_15444206_15444207_20171115_1620-1324_aligned_mic.mrc"
-        dictResult = UtilsPath.getCtfMetaData(workingDir, mrcFilePath)
-        dictRef = {'Angle': '72.75',
- 'CCC': '0.213712',
- 'Defocus_U': '1977.10',
- 'Defocus_V': '1991.74',
- 'Phase_shift': '41.52',
- 'estimatedBfactor': '271.93',
- 'logFilePath': '/scisoft/pxsoft/data/cryoem/testRunData/20171120/Runs/000117_ProtGctf/logs/run.log',
- 'resolutionLimit': '3.875',
- 'spectraImageFullPath': '/scisoft/pxsoft/data/cryoem/testRunData/20171120/Runs/000117_ProtGctf/extra/FoilHole_15445484_Data_15444206_15444207_20171115_1620-1324_aligned_mic/ctfEstimation.mrc',
- 'spectraImageSnapshotFullPath': '/scisoft/pxsoft/data/cryoem/testRunData/20171120/Runs/000117_ProtGctf/extra/FoilHole_15445484_Data_15444206_15444207_20171115_1620-1324_aligned_mic/ctfEstimation.jpeg'}
 
-        self.assertEqual(dictRef, dictResult)
-          
     def test_getPyarchFilePath(self):
         mrcFilePath = "/data/visitor/mx415/cm01/20171108/RAW_DATA/test2/CWAT_ESRF_RawData_K2/170620_TMV_1/Images-Disc1/GridSquare_20174003/Data/FoilHole_20182354_Data_20179605_20179606_20170620_1523-1198.mrc"
         pyarchFilePath = UtilsPath.getPyarchFilePath(mrcFilePath)
@@ -194,14 +179,14 @@ class Test(unittest.TestCase):
         self.assertEqual("/data/pyarch/2018/cm01/ihls2975/Hons/RAW_DATA/grid1/Images-Disc1/GridSquare_20174003/Data/GridSquare_20174003_test2/Runs/000056_ProtMotionCorr/extra/FoilHole_20182354_Data_20179605_20179606_20170620_1523-1198_aligned_mic.mrc", pyarchFilePath)
         mrcFilePath = "/mntdirect/_data_cm01_inhouse/opcm01/20171108/RAW_DATA/nicetest/Frame.mrc"
         pyarchFilePath = UtilsPath.getPyarchFilePath(mrcFilePath)
-        self.assertEqual("/data/pyarch/2018/20171108/opcm01/RAW_DATA/nicetest/Frame.mrc", pyarchFilePath)
+        self.assertEqual("/data/pyarch/2019/20171108/opcm01/RAW_DATA/nicetest/Frame.mrc", pyarchFilePath)
         # CRYOEM-25 : New paths for inhouse research...
         mrcFilePath = "/data/cm01/cmihr2/IH-LS3198/20181203/RAW_DATA/EPU_IH_LS3198/Images-Disc1/GridSquare_3087556/Data/FoilHole_4118111_Data_5127341_5127342_20181205_1023.jpg"
         pyarchFilePath = UtilsPath.getPyarchFilePath(mrcFilePath)
         self.assertEqual("/data/pyarch/2018/cm01/IH-LS3198/20181203/RAW_DATA/EPU_IH_LS3198/Images-Disc1/GridSquare_3087556/Data/FoilHole_4118111_Data_5127341_5127342_20181205_1023.jpg", pyarchFilePath)
         mrcFilePath = "/mntdirect/_data_cm01_cmihr2/IH-LS3198/20181203/RAW_DATA/EPU_IH_LS3198/Images-Disc1/GridSquare_3087308/GridSquare_20181204_115820.jpg"
         pyarchFilePath = UtilsPath.getPyarchFilePath(mrcFilePath)
-        self.assertEqual("/data/pyarch/2018/cm01/IH-LS3198/20181203/RAW_DATA/EPU_IH_LS3198/Images-Disc1/GridSquare_3087308/GridSquare_20181204_115820.jpg", pyarchFilePath)
+        self.assertEqual("/data/pyarch/2019/cm01/IH-LS3198/20181203/RAW_DATA/EPU_IH_LS3198/Images-Disc1/GridSquare_3087308/GridSquare_20181204_115820.jpg", pyarchFilePath)
         
 
     def tes_copyToPyarchPath(self):

@@ -188,18 +188,18 @@ class UtilsPath(object):
             "estimatedBfactor": None,
             "logFilePath": None,
         }
-        # Find MRC directory
-        mrcFileName = os.path.splitext(os.path.basename(mrcFilePath))[0]
-        mrcDirectory = os.path.join(workingDir, "extra", mrcFileName)
-        if os.path.exists(mrcDirectory):
-            spectraImageFullPath = os.path.join(mrcDirectory, "ctfEstimation.mrc")
+        # Find extra directory
+        mrcFileBase = os.path.basename(mrcFilePath).split(".mrc")[0]
+        extraDirectory = os.path.join(workingDir, "extra")
+        if os.path.exists(extraDirectory):
+            spectraImageFullPath = os.path.join(extraDirectory, mrcFileBase + "_ctf.mrc")
             if os.path.exists(spectraImageFullPath):
                 dictResults["spectraImageFullPath"] = spectraImageFullPath
-                spectraImageSnapshotFullPath = os.path.join(mrcDirectory, "ctfEstimation.jpeg")
+                spectraImageSnapshotFullPath = os.path.join(extraDirectory, mrcFileBase + "_ctf.jpeg")
                 os.system("bimg {0} {1}".format(spectraImageFullPath, spectraImageSnapshotFullPath))
                 if os.path.exists(spectraImageSnapshotFullPath):
                     dictResults["spectraImageSnapshotFullPath"] = spectraImageSnapshotFullPath
-            ctfEstimationPath = os.path.join(mrcDirectory, "ctfEstimation.txt")
+            ctfEstimationPath = os.path.join(extraDirectory, mrcFileBase + "_ctf.log")
             if os.path.exists(ctfEstimationPath):
                 f = open(ctfEstimationPath)
                 lines = f.readlines()
@@ -213,10 +213,10 @@ class UtilsPath(object):
                             dictResults[label] = value
                     elif "Resolution limit" in lines[index]:
                         listValues = lines[index].split()
-                        dictResults["resolutionLimit"] = listValues[-2]
+                        dictResults["resolutionLimit"] = listValues[-1]
                     elif "Estimated Bfactor" in lines[index]:
                         listValues = lines[index].split()
-                        dictResults["estimatedBfactor"] = listValues[-2]
+                        dictResults["estimatedBfactor"] = listValues[-1]
         # Find log file
         logFilePath = os.path.join(workingDir, "logs", "run.log")
         if os.path.exists(logFilePath):

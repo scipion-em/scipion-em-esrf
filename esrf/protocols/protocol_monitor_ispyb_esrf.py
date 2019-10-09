@@ -240,154 +240,162 @@ class MonitorISPyB_ESRF(Monitor):
                 self.info("Import movies: movieFullPath: {0}".format(movieFullPath))
                 # Create "process" directory
                 dictFileNameParameters = UtilsPath.getMovieFileNameParameters(movieFullPath)
-                self.info("dictFileNameParameters: {0}".format(dictFileNameParameters))
-                self.movieDirectory = dictFileNameParameters["directory"]
-                gridSquare = dictFileNameParameters["gridSquare"]
-                prefix = dictFileNameParameters["prefix"]   
-                date = dictFileNameParameters["date"]   
-                hour = dictFileNameParameters["hour"]   
-                movieNumber = dictFileNameParameters["movieNumber"]   
-                movieName = dictFileNameParameters["movieName"]
-                self.info("Import movies: movieName: {0}".format(movieName))
-                processDir = os.path.join(os.path.dirname(movieFullPath), "process", movieName)     
-                if not os.path.exists(processDir):
-                    os.makedirs(processDir, 0755)     
-                
-                self.movieDirectory = os.path.dirname(movieFullPath)
-                
-                micrographSnapshotFullPath, micrographFullPath, xmlMetaDataFullPath, gridSquareSnapshotFullPath = \
-                   UtilsPath.getMovieJpegMrcXml(movieFullPath)
-                
-                startTime = time.time()
-                doContinue = True
-                while doContinue:
+                if dictFileNameParameters is None:
+                    movieName = os.path.basename(movieFullPath)
+                    self.info("File {0} is not a movie, skipping".format(movieFullPath))
+                    self.allParams[movieName] = {
+                        "movieFullPath": movieFullPath,
+                        "movieId": "not a movie"
+                    }
+                else:
+                    self.info("dictFileNameParameters: {0}".format(dictFileNameParameters))
+                    self.movieDirectory = dictFileNameParameters["directory"]
+                    gridSquare = dictFileNameParameters["gridSquare"]
+                    prefix = dictFileNameParameters["prefix"]
+                    date = dictFileNameParameters["date"]
+                    hour = dictFileNameParameters["hour"]
+                    movieNumber = dictFileNameParameters["movieNumber"]
+                    movieName = dictFileNameParameters["movieName"]
+                    self.info("Import movies: movieName: {0}".format(movieName))
+                    processDir = os.path.join(os.path.dirname(movieFullPath), "process", movieName)
+                    if not os.path.exists(processDir):
+                        os.makedirs(processDir, 0755)
+
+                    self.movieDirectory = os.path.dirname(movieFullPath)
+
                     micrographSnapshotFullPath, micrographFullPath, xmlMetaDataFullPath, gridSquareSnapshotFullPath = \
                        UtilsPath.getMovieJpegMrcXml(movieFullPath)
-                    if micrographSnapshotFullPath is None or micrographFullPath is None or xmlMetaDataFullPath is None or gridSquareSnapshotFullPath is None:
-                        self.info("Import movies: waiting for meta-data files to appear on disk...")
-                        timeNow = time.time()
-                        deltaTime = timeNow -startTime
-                        if deltaTime > 30:
-                            self.info("Import movies: Timeout waiting for meta-data files to appear on disk!!!")
-                            doContinue = False
+
+                    startTime = time.time()
+                    doContinue = True
+                    while doContinue:
+                        micrographSnapshotFullPath, micrographFullPath, xmlMetaDataFullPath, gridSquareSnapshotFullPath = \
+                           UtilsPath.getMovieJpegMrcXml(movieFullPath)
+                        if micrographSnapshotFullPath is None or micrographFullPath is None or xmlMetaDataFullPath is None or gridSquareSnapshotFullPath is None:
+                            self.info("Import movies: waiting for meta-data files to appear on disk...")
+                            timeNow = time.time()
+                            deltaTime = timeNow -startTime
+                            if deltaTime > 30:
+                                self.info("Import movies: Timeout waiting for meta-data files to appear on disk!!!")
+                                doContinue = False
+                            else:
+                                time.sleep(5)
                         else:
-                            time.sleep(5)
-                    else:
-                        doContinue = False                         
-    
-                self.info("Import movies: micrographSnapshotFullPath: {0}".format(micrographSnapshotFullPath))
-    
-                micrographSnapshotPyarchPath = None
-                micrographPyarchPath = None
-                xmlMetaDataPyarchPath = None
-                gridSquareSnapshotPyarchPath = None
-                voltage = None
-                magnification = None
-                imagesCount = None
-                positionX = None
-                positionY = None
-                dosePerImage = None                    
-                if micrographFullPath is not None:
-                    micrographSnapshotPyarchPath = UtilsPath.copyToPyarchPath(micrographSnapshotFullPath)
-                    xmlMetaDataPyarchPath = UtilsPath.copyToPyarchPath(xmlMetaDataFullPath)
-                    gridSquareSnapshotPyarchPath = UtilsPath.copyToPyarchPath(gridSquareSnapshotFullPath)
-                                            
+                            doContinue = False
+
+                    self.info("Import movies: micrographSnapshotFullPath: {0}".format(micrographSnapshotFullPath))
+
+                    micrographSnapshotPyarchPath = None
+                    micrographPyarchPath = None
+                    xmlMetaDataPyarchPath = None
+                    gridSquareSnapshotPyarchPath = None
+                    voltage = None
+                    magnification = None
+                    imagesCount = None
+                    positionX = None
+                    positionY = None
+                    dosePerImage = None
+                    if micrographFullPath is not None:
+                        micrographSnapshotPyarchPath = UtilsPath.copyToPyarchPath(micrographSnapshotFullPath)
+                        xmlMetaDataPyarchPath = UtilsPath.copyToPyarchPath(xmlMetaDataFullPath)
+                        gridSquareSnapshotPyarchPath = UtilsPath.copyToPyarchPath(gridSquareSnapshotFullPath)
+
+                        try:
+                            dictMetaData = UtilsPath.getXmlMetaData(xmlMetaDataFullPath)
+                            voltage = dictMetaData["accelerationVoltage"]
+                            magnification = dictMetaData["nominalMagnification"]
+                            imagesCount = dictMetaData["numberOffractions"]
+                            positionX = dictMetaData["positionX"]
+                            positionY = dictMetaData["positionY"]
+                            dosePerImage = round( float(dictMetaData["dose"]) / 10.0**20 / float(imagesCount), 2)
+                        except:
+                            self.info("ERROR reading XML file {0}".format(xmlMetaDataFullPath))
+                            traceback.print_exc()
+
+                    sphericalAberration = prot.sphericalAberration.get()
+                    amplitudeContrast = prot.amplitudeContrast.get()
+                    samplingRate = prot.samplingRate.get()
+                    doseInitial = prot.doseInitial.get()
+                    dosePerFrame = prot.dosePerFrame.get()
+
                     try:
-                        dictMetaData = UtilsPath.getXmlMetaData(xmlMetaDataFullPath)
-                        voltage = dictMetaData["accelerationVoltage"]
-                        magnification = dictMetaData["nominalMagnification"]
-                        imagesCount = dictMetaData["numberOffractions"]
-                        positionX = dictMetaData["positionX"]
-                        positionY = dictMetaData["positionY"]
-                        dosePerImage = round( float(dictMetaData["dose"]) / 10.0**20 / float(imagesCount), 2)
+                        movieObject = self.client.service.addMovie(proposal=self.proposal,
+                                    proteinAcronym=self.proteinAcronym,
+                                    sampleAcronym=self.sampleAcronym,
+                                    movieDirectory=self.movieDirectory,
+                                    movieFullPath=movieFullPath,
+                                    movieNumber=movieNumber,
+                                    micrographFullPath=micrographPyarchPath,
+                                    micrographSnapshotFullPath=micrographSnapshotPyarchPath,
+                                    xmlMetaDataFullPath=xmlMetaDataPyarchPath,
+                                    voltage=voltage,
+                                    sphericalAberration=sphericalAberration,
+                                    amplitudeContrast=amplitudeContrast,
+                                    magnification=magnification,
+                                    scannedPixelSize=samplingRate,
+                                    imagesCount=imagesCount,
+                                    dosePerImage=dosePerImage,
+                                    positionX=positionX,
+                                    positionY=positionY,
+                                    beamlineName=self.beamlineName,
+                                    gridSquareSnapshotFullPath=gridSquareSnapshotPyarchPath,
+                                    )
                     except:
-                        self.info("ERROR reading XML file {0}".format(xmlMetaDataFullPath))
+                        self.info("ERROR uploading movie {0}".format(movieFullPath))
                         traceback.print_exc()
-                        
-                sphericalAberration = prot.sphericalAberration.get()
-                amplitudeContrast = prot.amplitudeContrast.get()
-                samplingRate = prot.samplingRate.get()
-                doseInitial = prot.doseInitial.get()
-                dosePerFrame = prot.dosePerFrame.get()
-                
-                try:
-                    movieObject = self.client.service.addMovie(proposal=self.proposal,
-                                proteinAcronym=self.proteinAcronym, 
-                                sampleAcronym=self.sampleAcronym, 
-                                movieDirectory=self.movieDirectory,
-                                movieFullPath=movieFullPath,
-                                movieNumber=movieNumber,
-                                micrographFullPath=micrographPyarchPath,
-                                micrographSnapshotFullPath=micrographSnapshotPyarchPath,
-                                xmlMetaDataFullPath=xmlMetaDataPyarchPath,
-                                voltage=voltage,
-                                sphericalAberration=sphericalAberration,
-                                amplitudeContrast=amplitudeContrast,
-                                magnification=magnification,
-                                scannedPixelSize=samplingRate,
-                                imagesCount=imagesCount,
-                                dosePerImage=dosePerImage,
-                                positionX=positionX,
-                                positionY=positionY,
-                                beamlineName=self.beamlineName,
-                                gridSquareSnapshotFullPath=gridSquareSnapshotPyarchPath,
-                                )
-                except:
-                    self.info("ERROR uploading movie {0}".format(movieFullPath))
-                    traceback.print_exc()
-                    movieObject = None
-                    
-                if movieObject is not None:
-                    movieId = movieObject.movieId
-                else:
-                    self.info("ERROR: movieObject is None!")
-                    movieId = None
-    
-                self.allParams[movieName] = {
-                    "movieNumber": movieNumber,
-                    "movieFullPath": movieFullPath,
-                    "processDir": processDir,
-                    "date": date,   
-                    "hour": hour,   
-                    "movieId": movieId,   
-                    "imagesCount": imagesCount,     
-                    "dosePerFrame": dosePerFrame,
-                    "proposal": self.proposal,
-                    "gridSquare": gridSquare,
-                    "archived": False,
-                    "positionX": positionX,
-                    "positionY": positionY,
-                }
-                if not "EM_meta_data" in self.allParams:
-                    self.allParams["EM_meta_data"] = {
-                        "EM_directory": prot.filesPath.get(),
-                        "EM_protein_acronym": self.proteinAcronym,
-                        "EM_voltage": voltage,
-                        "EM_magnification": magnification,
-                        "EM_images_count": imagesCount,
-                        "EM_position_x": positionX,
-                        "EM_position_y": positionY,
-                        "EM_dose_initial": doseInitial,
-                        "EM_spherical_aberration": sphericalAberration,
-                        "EM_dose_per_frame": dosePerFrame,
-                        "EM_amplitude_contrast": amplitudeContrast,
-                        "EM_sampling_rate": samplingRate,
-                        }
-                if not gridSquare in self.allParams:
-                    self.allParams[gridSquare] = {}
-                if not "listGalleryPath" in self.allParams[gridSquare]:
-                    self.allParams[gridSquare]["listGalleryPath"] = [gridSquareSnapshotFullPath]
-                self.info("Import movies done, movieId = {0}".format(self.allParams[movieName]["movieId"]))
-                self.currentGridSquareLastMovieTime = time.time()
-                if self.currentGridSquare is None:
-                    self.currentGridSquare = gridSquare
-                    self.info("New grid square detected: {0}".format(self.currentGridSquare))                      
-                elif self.currentGridSquare != gridSquare:
-                    # New grid square, archive previous grid square
-                    self.archiveGridSquare(self.currentGridSquare)
-                    self.currentGridSquare = None
-                    # Check if old grid squares
-                    self.archiveOldGridSquares(gridSquare)
+                        movieObject = None
+
+                    if movieObject is not None:
+                        movieId = movieObject.movieId
+                    else:
+                        self.info("ERROR: movieObject is None!")
+                        movieId = None
+
+                    self.allParams[movieName] = {
+                        "movieNumber": movieNumber,
+                        "movieFullPath": movieFullPath,
+                        "processDir": processDir,
+                        "date": date,
+                        "hour": hour,
+                        "movieId": movieId,
+                        "imagesCount": imagesCount,
+                        "dosePerFrame": dosePerFrame,
+                        "proposal": self.proposal,
+                        "gridSquare": gridSquare,
+                        "archived": False,
+                        "positionX": positionX,
+                        "positionY": positionY,
+                    }
+                    if not "EM_meta_data" in self.allParams:
+                        self.allParams["EM_meta_data"] = {
+                            "EM_directory": prot.filesPath.get(),
+                            "EM_protein_acronym": self.proteinAcronym,
+                            "EM_voltage": voltage,
+                            "EM_magnification": magnification,
+                            "EM_images_count": imagesCount,
+                            "EM_position_x": positionX,
+                            "EM_position_y": positionY,
+                            "EM_dose_initial": doseInitial,
+                            "EM_spherical_aberration": sphericalAberration,
+                            "EM_dose_per_frame": dosePerFrame,
+                            "EM_amplitude_contrast": amplitudeContrast,
+                            "EM_sampling_rate": samplingRate,
+                            }
+                    if not gridSquare in self.allParams:
+                        self.allParams[gridSquare] = {}
+                    if not "listGalleryPath" in self.allParams[gridSquare]:
+                        self.allParams[gridSquare]["listGalleryPath"] = [gridSquareSnapshotFullPath]
+                    self.info("Import movies done, movieId = {0}".format(self.allParams[movieName]["movieId"]))
+                    self.currentGridSquareLastMovieTime = time.time()
+                    if self.currentGridSquare is None:
+                        self.currentGridSquare = gridSquare
+                        self.info("New grid square detected: {0}".format(self.currentGridSquare))
+                    elif self.currentGridSquare != gridSquare:
+                        # New grid square, archive previous grid square
+                        self.archiveGridSquare(self.currentGridSquare)
+                        self.currentGridSquare = None
+                        # Check if old grid squares
+                        self.archiveOldGridSquares(gridSquare)
                     
                     
                     

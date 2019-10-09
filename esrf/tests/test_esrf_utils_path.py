@@ -104,6 +104,12 @@ class Test(unittest.TestCase):
  'prefix': 'FoilHole',
  'suffix': 'mrc'}
         self.assertEqual(refDict2, dictResult2)
+        # Test 3 - CRYOEM-33
+        mrcFullPath2 = "/data/cm01/cmihr3/IH-LS3226/20191004/RAW_DATA/epu-grid4/Images-Disc1/GridSquare_3931883/Data/FoilHole_3936249_Data_3945596_3945597_20191004_1443-gain-ref.mrc"
+        dictResult2 = UtilsPath.getMovieFileNameParameters(mrcFullPath2)
+        refDict2 = None
+        self.assertEqual(refDict2, dictResult2)
+        
         
 
     def test_getMovieJpegMrcXml(self):

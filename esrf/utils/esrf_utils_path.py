@@ -228,21 +228,27 @@ class UtilsPath(object):
         """
         FoilHole_19150795_Data_19148847_19148848_20170619_2101-0344.mrc
         """
-        dictResult = {}
-        p = re.compile("^(.*)/(GridSquare_[0-9]*)/Data/(.*)_([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)-([0-9]*)(_?.*)\.(.*)")
-        m = p.match(mrcFilePath)
-        dictResult["directory"] = os.path.dirname(mrcFilePath)
-        dictResult["gridSquare"] = m.group(2)   
-        dictResult["prefix"] = m.group(3)   
-        dictResult["id1"] = m.group(4)   
-        dictResult["id2"] = m.group(5)   
-        dictResult["id3"] = m.group(6)   
-        dictResult["date"] = m.group(7)   
-        dictResult["hour"] = m.group(8)   
-        dictResult["movieNumber"] = m.group(9)   
-        dictResult["extra"] = m.group(10)   
-        dictResult["suffix"] = m.group(11)   
-        dictResult["movieName"] = "{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}-{movieNumber}".format(**dictResult) 
+        try:
+            dictResult = {}
+            p = re.compile("^(.*)/(GridSquare_[0-9]*)/Data/(.*)_([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)-([0-9]*)(_?.*)\.(.*)")
+            m = p.match(mrcFilePath)
+            dictResult["directory"] = os.path.dirname(mrcFilePath)
+            dictResult["gridSquare"] = m.group(2)   
+            dictResult["prefix"] = m.group(3)   
+            dictResult["id1"] = m.group(4)   
+            dictResult["id2"] = m.group(5)   
+            dictResult["id3"] = m.group(6)   
+            dictResult["date"] = m.group(7)   
+            dictResult["hour"] = m.group(8)   
+            dictResult["movieNumber"] = m.group(9)   
+            dictResult["extra"] = m.group(10)   
+            dictResult["suffix"] = m.group(11)   
+            dictResult["movieName"] = "{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}-{movieNumber}".format(**dictResult)
+        except Exception as e:
+            dictResult = None
+        # Check numbers
+        if not dictResult["hour"].isdigit() or not dictResult["movieNumber"].isdigit():
+            dictResult = None
         return dictResult
 
     @ staticmethod

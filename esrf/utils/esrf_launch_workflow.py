@@ -60,10 +60,40 @@ def getUpdatedProtocol(protocol):
 
 
 # Parse command line
-usage = "\nUsage: cryoemProcess --directory <dir> [--filesPattern <filesPattern>] [--scipionProjectName <name>] --protein <name> --sample <name> --doseInitial <dose> --dosePerFrame <dose> [--samplingRate <samplingRate>] [--startMotioncorFrame startFrame] [--endMotioncorFrame endFrame]\n"    
+usage = "\nUsage: cryoemProcess --directory <dir> " + \
+        "[--filesPattern <filesPattern>]  " + \
+        "[--scipionProjectName <name>]  " + \
+        "--protein <name>  " + \
+        "--sample <name>  " + \
+        "--doseInitial <dose>  " + \
+        "--dosePerFrame <dose>  " + \
+        "[--samplingRate <samplingRate>]  " + \
+        "[--startMotioncorFrame startFrame]  " + \
+        "[--endMotioncorFrame endFrame]" + \
+        "[--phasePlateData]" + \
+        "[--onlyISPyB]" + \
+        "\n"    
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "", ["directory=", "filesPattern=", "scipionProjectName=", "protein=", "sample=", "doseInitial=", "dosePerFrame=", "samplingRate=", "startMotioncorFrame=", "endMotioncorFrame=", "help"])
+    opts, args = getopt.getopt(
+        sys.argv[1:], 
+        "", 
+        [
+            "directory=", 
+            "filesPattern=", 
+            "scipionProjectName=", 
+            "protein=", 
+            "sample=", 
+            "doseInitial=", 
+            "dosePerFrame=", 
+            "samplingRate=", 
+            "startMotioncorFrame=", 
+            "endMotioncorFrame=", 
+            "phasePlateData",
+            "onlyISPyB",
+            "help"
+        ]
+    )
 except getopt.GetoptError:
     print(usage)
     sys.exit(1)
@@ -83,6 +113,8 @@ samplingRate = None
 dataStreaming = "true"
 alignFrame0 = 1
 alignFrameN = 0
+phasePlateData = False
+onlyISPyB = False
 
 
 for opt, arg in opts:
@@ -109,6 +141,10 @@ for opt, arg in opts:
         alignFrame0 = float(arg)
     elif opt in ["--endMotioncorFrame"]:
         alignFrameN = float(arg)
+    elif opt in ["--phasePlateData"]:
+        phasePlateData = True
+    elif opt in ["--onlyISPyB"]:
+        onlyISPyB = True
 
 # Check mandatory parameters
 if not all([dataDirectory, proteinAcronym, sampleAcronym, dosePerFrame]):
@@ -117,13 +153,6 @@ if not all([dataDirectory, proteinAcronym, sampleAcronym, dosePerFrame]):
     
 if filesPattern is None:
     filesPattern = "Images-Disc1/GridSquare_*/Data/FoilHole_*-*.mrc"
-
-print("Data directory: {0}".format(dataDirectory))
-print("filesPattern: {0}".format(filesPattern))
-print("Protein acronym: {0}".format(proteinAcronym))
-print("Sample acronym: {0}".format(sampleAcronym))
-print("Dose initial: {0}".format(doseInitial))
-print("Dose per frame: {0}".format(dosePerFrame))
 
 # Check how many movies are present on disk
 listMovies = glob.glob(os.path.join(dataDirectory, filesPattern))
@@ -160,9 +189,6 @@ else:
 # All param json file
 allParamsJsonFile = os.path.join(location, "allParams.json")
 
-print("Scipion project name: {0}".format(scipionProjectName))
-print("Scipion user data location: {0}".format(location))
-print("All param json file: {0}".format(allParamsJsonFile))
 
 # Get meta data like phasePlateUsed
 
@@ -199,7 +225,6 @@ if proposal is None:
     print("WARNING! No data will be uploaded to ISPyB.")
     db = 3
 else:
-    print("Proposal: {0}".format(proposal))
     if proposal == "mx415":
         # Use valid data base
         print("ISPyB valid data base used")
@@ -211,7 +236,17 @@ else:
 
 jpeg, mrc, xml, gridSquareThumbNail =  UtilsPath.getMovieJpegMrcXml(firstMovieFullPath)
 
-print("Metadata file: {0}".format(xml))
+if xml is None:
+    print("*"*80)
+    print("*"*80)
+    print("*"*80)
+    print("Error! Cannot find metadata files in the directory which contains the following movie:")
+    print(firstMovieFullPath)
+    print("*"*80)
+    print("*"*80)
+    print("*"*80)
+    sys.exit(1)
+
 
 
 dictResults = UtilsPath.getXmlMetaData(xml)
@@ -222,15 +257,81 @@ superResolutionFactor = int(dictResults["superResolutionFactor"])
 if samplingRate is None:
     samplingRate = 1.1 / float(superResolutionFactor)
 
-print("doPhaseShiftEstimation: {0}".format(doPhaseShiftEstimation))
-print("nominalMagnification: {0}".format(nominalMagnification))
-print("superResolutionFactor: {0}".format(superResolutionFactor))
-print("samplingRate: {0}".format(samplingRate))
-print("dataStreaming: {0}".format(dataStreaming))
+if not phasePlateData and doPhaseShiftEstimation:
+    print("!"*100)
+    print("WARNING! Phase plate data detected but doPhShEst set to false")
+    print("!"*100)
+
+if phasePlateData:
+    sphericalAberration = 0.0
+    minDefocus = 0.1
+    maxDefocus = 2.0
+    astigmatism = 1000.0
+    convsize = 25
+    doPhShEst = "true"
+    phaseShiftL = 0.0
+    phaseShiftH = 180.0
+    phaseShiftS = 5.0
+    phaseShiftT = 1
+    lowRes = samplingRate / 15.0
+    highRes = samplingRate / 4.0
+else:
+    sphericalAberration = 2.7
+    minDefocus = 0.25
+    maxDefocus = 4.0
+    astigmatism = 100.0
+    convsize = 85
+    doPhShEst = "false"
+    phaseShiftL = 0.0
+    phaseShiftH = 180.0
+    phaseShiftS = 10.0
+    phaseShiftT = 0
+    lowRes = samplingRate / 30.0
+    highRes = samplingRate / 4.0
+
+    
+print("")
+print("Parameters:")
+print("")
+print("{0:30s}{1:>8s}".format("proposal",proposal))
+print("{0:30s}{1:8s}".format("dataDirectory",dataDirectory))
+print("{0:30s}{1:>8s}".format("filesPattern",filesPattern))
+print("{0:30s}{1:>8s}".format("proteinAcronym",proteinAcronym))
+print("{0:30s}{1:>8s}".format("sampleAcronym",sampleAcronym))
+print("{0:30s}{1:8.2f}".format("doseInitial",doseInitial))
+print("{0:30s}{1:8.2f}".format("dosePerFrame",dosePerFrame))
+print("{0:30s}{1:8.1f}".format("sphericalAberration",sphericalAberration))
+print("{0:30s}{1:8.2f}".format("minDefocus",minDefocus))
+print("{0:30s}{1:8.2f}".format("maxDefocus",maxDefocus))
+print("{0:30s}{1:8.1f}".format("astigmatism",astigmatism))
+print("{0:30s}{1:8d}".format("convsize",convsize))
+print("{0:30s}{1:>8s}".format("doPhShEst",doPhShEst))
+print("{0:30s}{1:8.1f}".format("phaseShiftL",phaseShiftL))
+print("{0:30s}{1:8.1f}".format("phaseShiftH",phaseShiftH))
+print("{0:30s}{1:8.1f}".format("phaseShiftS",phaseShiftS))
+print("{0:30s}{1:8.1f}".format("phaseShiftT",phaseShiftT))
+print("{0:30s}{1:8.3f}".format("lowRes",lowRes))
+print("{0:30s}{1:8.3f}".format("highRes",highRes))
+print("{0:30s}{1:8.0f}".format("nominalMagnification",nominalMagnification))
+print("{0:30s}{1:8.2f}".format("superResolutionFactor",superResolutionFactor))
+print("{0:30s}{1:8.2f}".format("samplingRate",samplingRate))
+print("{0:30s}{1:>8s}".format("dataStreaming",dataStreaming))
+print("")
+print("Scipion project name: {0}".format(scipionProjectName))
+print("Scipion user data location: {0}".format(location))
+print("All param json file: {0}".format(allParamsJsonFile))
+print("Metadata file: {0}".format(xml))
+
+
+if onlyISPyB:
+    inputProtocols = """["2"]"""
+else:
+    inputProtocols = """["2", "77", "195"]"""
+
 
 # Create json file
 
-jsonString = """[
+protImportMovies = """
     {
         "object.className": "ProtImportMovies",
         "object.id": "2",
@@ -266,7 +367,10 @@ jsonString = """[
         "deleteFrames": false,
         "streamingSocket": false,
         "socketPort": 5000
-    },
+    }""" % (dataDirectory, filesPattern, nominalMagnification, samplingRate,
+        doseInitial, dosePerFrame, dataStreaming)
+
+protMotionCorr = """
     {
         "object.className": "ProtMotionCorr",
         "object.id": "77",
@@ -275,7 +379,7 @@ jsonString = """[
         "runName": null,
         "runMode": 0,
         "gpuMsg": "True",
-        "GPUIDs": "[0,1]",
+        "GPUIDs": "0",
         "alignFrame0": %d,
         "alignFrameN": %d,
         "useAlignToSum": true,
@@ -309,7 +413,9 @@ jsonString = """[
         "numberOfThreads": 1,
         "numberOfMpi": 1,
         "inputMovies": "2.outputMovies"
-    },
+    }"""  % (alignFrame0, alignFrameN)
+
+protGctf = """
     {
         "object.className": "ProtGctf",
         "object.id": "195",
@@ -320,11 +426,11 @@ jsonString = """[
         "recalculate": false,
         "sqliteFile": null,
         "ctfDownFactor": 1.0,
-        "lowRes": 0.05,
-        "highRes": 0.35,
-        "minDefocus": 0.25,
-        "maxDefocus": 4.0,
-        "astigmatism": 100.0,
+        "lowRes": %f,
+        "highRes": %f,
+        "minDefocus": %f,
+        "maxDefocus": %f,
+        "astigmatism": %f,
         "windowSize": 512,
         "plotResRing": true,
         "GPUCore": 0,
@@ -333,19 +439,22 @@ jsonString = """[
         "doBasicRotave": false,
         "bfactor": 150,
         "overlap": 0.5,
-        "convsize": 85,
+        "convsize": %f,
         "doHighRes": true,
         "HighResL": 30.0,
         "HighResH": 5.0,
         "HighResBf": 50,
         "doValidate": false,
         "doPhShEst": %s,
-        "phaseShiftL": 0.0,
-        "phaseShiftH": 180.0,
-        "phaseShiftS": 10.0,
-        "phaseShiftT": 0,
+        "phaseShiftL": %f,
+        "phaseShiftH": %f,
+        "phaseShiftS": %f,
+        "phaseShiftT": %f,
         "inputMicrographs": "77.outputMicrographs"
-    },
+    }"""  % (lowRes, highRes, minDefocus, maxDefocus, astigmatism, 
+        convsize, doPhShEst, phaseShiftL, phaseShiftH, phaseShiftS, phaseShiftT)
+
+protMonitorISPyB_ESRF = """
     {
         "object.className": "ProtMonitorISPyB_ESRF",
         "object.id": "259",
@@ -353,7 +462,7 @@ jsonString = """[
         "object.comment": "",
         "runName": null,
         "runMode": 0,
-        "inputProtocols": ["2", "77", "195"],
+        "inputProtocols": %s,
         "samplingInterval": 10,
         "proposal": "%s",
         "proteinAcronym": "%s",
@@ -363,12 +472,22 @@ jsonString = """[
         "samplingRate": "%s",
         "doseInitial": "%s",
         "dosePerFrame": "%s"
-    }
-]""" % (dataDirectory, filesPattern, nominalMagnification, samplingRate,
-        doseInitial, dosePerFrame, dataStreaming, alignFrame0, alignFrameN,  
-        doPhaseShiftEstimation, proposal,
-        proteinAcronym, sampleAcronym, db, allParamsJsonFile,
+    }"""  % (inputProtocols, proposal, proteinAcronym, sampleAcronym, db, allParamsJsonFile,
         samplingRate, doseInitial, dosePerFrame)
+
+if onlyISPyB:
+    jsonString = """[{0},
+    {1}
+    ]
+    """.format(protImportMovies, protMonitorISPyB_ESRF)
+    
+else:
+    jsonString = """[{0},
+    {1},
+    {2},
+    {3}
+    ]
+    """.format(protImportMovies, protMotionCorr, protGctf, protMonitorISPyB_ESRF)
 
 # Write json file
 fd, jsonFile = tempfile.mkstemp(suffix=".json", prefix="scipion_workflow_", dir=location)

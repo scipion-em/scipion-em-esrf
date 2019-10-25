@@ -25,23 +25,26 @@
 # *
 # **************************************************************************
 
-try:
-    from bibtex import _bibtex # Load bibtex dict with references
-except:
-    print('Error - cannot load bibtex')
-
-try:
-    import pyworkflow.em
-    _logo = None
-    _references = ['Delageniere2011']
+import os
+import subprocess
 
 
-    class Plugin(pyworkflow.em.Plugin):
-        pass
+class UtilsSerialEM(object):
 
-    pyworkflow.em.Domain.registerPlugin(__name__)
-except:
-    print('Error - cannot load pyworkflow.em')
+    @staticmethod
+    def createGainFile(dm4File, gainDir):
+        fileName = os.path.splitext(os.path.basename(dm4File))[0]
+        gainFilePath = os.path.join(gainDir, fileName + ".mrc")
+        stdout = subprocess.check_output(["dm2mrc", dm4File, gainFilePath])
+        print(stdout)
+        return gainFilePath
 
-
-
+    @staticmethod
+    def createDefectMapFile(shiftFile, tifFile, gainDir):
+        fileName = os.path.splitext(os.path.basename(shiftFile))[0]
+        defectMapPath = os.path.join(gainDir, fileName + ".mrc")
+        stdout = subprocess.check_output(
+            ["clip", "defect", "-D", shiftFile, tifFile, defectMapPath]
+        )
+        print(stdout)
+        return defectMapPath

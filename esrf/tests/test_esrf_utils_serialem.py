@@ -25,23 +25,41 @@
 # *
 # **************************************************************************
 
-try:
-    from bibtex import _bibtex # Load bibtex dict with references
-except:
-    print('Error - cannot load bibtex')
+import os
+import shutil
+import tempfile
+import unittest
 
-try:
-    import pyworkflow.em
-    _logo = None
-    _references = ['Delageniere2011']
+from esrf.utils.esrf_utils_serialem import UtilsSerialEM
 
 
-    class Plugin(pyworkflow.em.Plugin):
-        pass
+class Test(unittest.TestCase):
 
-    pyworkflow.em.Domain.registerPlugin(__name__)
-except:
-    print('Error - cannot load pyworkflow.em')
+    def setUp(self):
+        self.dataDir = \
+            "/scisoft/pxsoft/data/cryoem/testSerialEmData/" + \
+            "20190905/RAW_DATA/mx2214/data"
+        self.correctDir = tempfile.mkdtemp()
 
+    def tearDown(self):
+        shutil.rmtree(self.correctDir)
 
+    def test_createGainFile(self):
+        dm4File = os.path.join(self.dataDir, "CountRef_mx2214_00005.dm4")
+        gainPath = UtilsSerialEM.createGainFile(dm4File, self.correctDir)
+        self.assertTrue(os.path.exists(gainPath))
+
+    def test_createDefectMapFile(self):
+        shiftFile = os.path.join(
+            self.dataDir,
+            "defects_bgal-215k-img-shift_0001.txt"
+        )
+        tifFile = os.path.join(
+            self.dataDir,
+            "mx2214_00005.tif"
+        )
+        defectMapPath = UtilsSerialEM.createDefectMapFile(
+            shiftFile, tifFile, self.correctDir
+        )
+        self.assertTrue(os.path.exists(defectMapPath))
 

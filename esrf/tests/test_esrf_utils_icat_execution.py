@@ -31,14 +31,17 @@ import unittest
 
 from  esrf.utils.esrf_utils_icat import UtilsIcat
 
-class Test(unittest.TestCase):
 
+class Test(unittest.TestCase):
 
     def tes_uploadToIcat(self):
         listFiles = [
-                    "/data/visitor/mx2005/cm01/20171209/RAW_DATA/baseplate-epu-grid2/Images-Disc1/GridSquare_7259648/Data/FoilHole_7265309_Data_7264706_7264707_20171207_1704-10925.mrc",
-                    ]
-        directory = "/data/visitor/mx2005/cm01/20171209/RAW_DATA/baseplate-epu-grid2"
+            "/data/visitor/mx2005/cm01/20171209/RAW_DATA/" +
+            "baseplate-epu-grid2/Images-Disc1/GridSquare_7259648/Data/" +
+            "FoilHole_7265309_Data_7264706_7264707_20171207_1704-10925.mrc"
+        ]
+        directory = \
+            "/data/visitor/mx2005/cm01/20171209/RAW_DATA/baseplate-epu-grid2"
         proposal = "id310009"
         sample = "sample1"
         dataSetName = "GridSquare_7259648_{0}".format(round(time.time()))
@@ -53,10 +56,9 @@ class Test(unittest.TestCase):
             "EM_sampling_rate": 8.0,
             "EM_spherical_aberration": 9.0,
             "EM_voltage": 10.0}
-        UtilsIcat.uploadToIcat(listFiles, directory, proposal, sample, dataSetName, dictMetadata)
-
-
-
+        UtilsIcat.uploadToIcat(
+            listFiles, directory, proposal, sample, dataSetName, dictMetadata
+        )
 
 
 if __name__ == "__main__":

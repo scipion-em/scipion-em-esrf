@@ -169,12 +169,20 @@ class MetadataManagerClient(object):
             
 if __name__ == "__main__":
     os.environ["TANGO_HOST"] = "l-cryoem-2.esrf.fr:20000"
+    dataDir = \
+        "/data/visitor/mx2005/cm01/20171209/RAW_DATA/baseplate-epu-grid2/" + \
+        "Images-Disc1/GridSquare_7259648/Data/"
+    foilHoleDir = \
+        dataDir + \
+        "process/FoilHole_7265309_Data_7264706_7264707_20171207_1704-10925/"
     listFiles = [
-                "/data/visitor/mx2005/cm01/20171209/RAW_DATA/baseplate-epu-grid2/Images-Disc1/GridSquare_7259648/Data/FoilHole_7265309_Data_7264706_7264707_20171207_1704-10925.mrc",
-                "/data/visitor/mx2005/cm01/20171209/RAW_DATA/baseplate-epu-grid2/Images-Disc1/GridSquare_7259648/Data/process/FoilHole_7265309_Data_7264706_7264707_20171207_1704-10925/FoilHole_7265309_Data_7264706_7264707_20171207_1704-10925_aligned_mic_DW.mrc",
-                "/data/visitor/mx2005/cm01/20171209/RAW_DATA/baseplate-epu-grid2/Images-Disc1/GridSquare_7259648/Data/process/FoilHole_7265309_Data_7264706_7264707_20171207_1704-10925/FoilHole_7265309_Data_7264706_7264707_20171207_1704-10925_aligned_mic.mrc",
-                "/data/visitor/mx2005/cm01/20171209/RAW_DATA/baseplate-epu-grid2/Images-Disc1/GridSquare_7259648/Data/process/FoilHole_7265309_Data_7264706_7264707_20171207_1704-10925/run.log",
-                "/data/visitor/mx2005/cm01/20171209/RAW_DATA/baseplate-epu-grid2/Images-Disc1/GridSquare_7259648/Data/process/FoilHole_7265309_Data_7264706_7264707_20171207_1704-10925/ctfEstimation.mrc",
+        dataDir + "FoilHole_7265309_Data_7264706_7264707_20171207_1704-10925.mrc",
+        foilHoleDir +
+        "FoilHole_7265309_Data_7264706_7264707_20171207_1704-10925_aligned_mic_DW.mrc",
+        foilHoleDir +
+        "FoilHole_7265309_Data_7264706_7264707_20171207_1704-10925_aligned_mic.mrc",
+        foilHoleDir + "run.log",
+        foilHoleDir + "ctfEstimation.mrc",
                           ]
     directory = "/data/visitor/mx2005/cm01/20171209/RAW_DATA/baseplate-epu-grid2"
     proposal = "id310001"

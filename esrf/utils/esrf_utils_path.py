@@ -25,7 +25,6 @@
 # *
 # **************************************************************************
 
-
 import os
 import re
 import glob
@@ -38,15 +37,13 @@ import traceback
 import xml.etree.ElementTree
 
 class UtilsPath(object):
-    
-    
+
     @staticmethod
     def getMovieJpegMrcXml(movieFilePath):
-        mrc = None
-        xml = None
         gridSquareSnapshot = None
         dictFileName = UtilsPath.getMovieFileNameParameters(movieFilePath)
-        filePrefix = "{directory}/{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}".format(**dictFileName)
+        filePrefix = \
+            "{directory}/{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}".format(**dictFileName)
         jpeg = filePrefix + ".jpg"
         if not os.path.exists(jpeg):
             jpeg = None
@@ -63,32 +60,38 @@ class UtilsPath(object):
             
         return jpeg, mrc, xml, gridSquareSnapshot
 
-
     @staticmethod
     def getAlignMoviesPngLogFilePath(mrcFilePath):
         dictResult = {}
         # Locate png file in same directory
         mrcDirectory = os.path.dirname(mrcFilePath)
-        dictMrcFile = UtilsPath.getMovieFileNameParametersFromMotioncorrPath(mrcFilePath)
+        dictMrcFile = \
+            UtilsPath.getMovieFileNameParametersFromMotioncorrPath(mrcFilePath)
         mrcMovieNumber = dictMrcFile["movieNumber"]
         listPng = glob.glob(os.path.join(mrcDirectory, "*.png"))
         for pngFile in listPng:
-            dictFileNameParameters = UtilsPath.getMovieFileNameParametersFromMotioncorrPath(pngFile)
+            dictFileNameParameters = \
+                UtilsPath.getMovieFileNameParametersFromMotioncorrPath(pngFile)
             movieNumber = dictFileNameParameters["movieNumber"]
-            if dictFileNameParameters["extra"] == "_global_shifts" and mrcMovieNumber == movieNumber:
+            if dictFileNameParameters["extra"] == "_global_shifts" and \
+                    mrcMovieNumber == movieNumber:
                 dictResult["globalShiftPng"] = pngFile
-            elif dictFileNameParameters["extra"] == "_thumbnail" and mrcMovieNumber == movieNumber:
+            elif dictFileNameParameters["extra"] == "_thumbnail" and \
+                    mrcMovieNumber == movieNumber:
                 dictResult["thumbnailPng"] = pngFile
         listMrc = glob.glob(os.path.join(mrcDirectory, "*.mrc"))
         for mrcFile in listMrc:
-            dictFileNameParameters = UtilsPath.getMovieFileNameParametersFromMotioncorrPath(mrcFile)
+            dictFileNameParameters = \
+                UtilsPath.getMovieFileNameParametersFromMotioncorrPath(mrcFile)
             movieNumber = dictFileNameParameters["movieNumber"]
-            if "DW" in dictFileNameParameters["extra"] and mrcMovieNumber == movieNumber:
+            if "DW" in dictFileNameParameters["extra"] and \
+                    mrcMovieNumber == movieNumber:
                 dictResult["doseWeightMrc"] = mrcFile            
         # Find log file
-        dictResult["logFileFullPath"] = os.path.join(os.path.dirname(mrcDirectory), "logs", "run.log")
+        dictResult["logFileFullPath"] = \
+            os.path.join(os.path.dirname(mrcDirectory), "logs", "run.log")
         return dictResult
-    
+
     @staticmethod
     def etree_to_dict(t):
         p = re.compile("^\{(.*)\}")
@@ -101,14 +104,14 @@ class UtilsPath(object):
         else:
             d = {t.tag : t.text}
         return d
- 
+
     @staticmethod
     def get_recursively(search_dict, field):
         """
         Takes a dict with nested lists and dicts,
         and searches all dicts for a key of the field
         provided.
-        See: https://stackoverflow.com/questions/14962485/finding-a-key-recursively-in-a-dictionary
+        See: https://stackoverflow.com/q/14962485
         """
         fields_found = []
     
@@ -133,29 +136,35 @@ class UtilsPath(object):
     
     @staticmethod
     def getXmlMetaData(xmlMetaDataFullPath):
-        dictResults = {}
         root = xml.etree.ElementTree.parse(xmlMetaDataFullPath).getroot()
         dictXML = UtilsPath.etree_to_dict(root)
-        listKeyValue = UtilsPath.get_recursively(dictXML, "KeyValueOfstringanyType")
+        dictResults = {
+            "numberOffractions": \
+                UtilsPath.get_recursively(dictXML, "NumberOffractions")[0],
+            "nominalMagnification": \
+                UtilsPath.get_recursively(dictXML, "NominalMagnification")[0],
+            "positionX": UtilsPath.get_recursively(dictXML, "X")[0],
+            "positionY": UtilsPath.get_recursively(dictXML, "Y")[0],
+            "accelerationVoltage": \
+                UtilsPath.get_recursively(dictXML, "AccelerationVoltage")[0],
+            "acquisitionDateTime": \
+                UtilsPath.get_recursively(dictXML, "acquisitionDateTime")[0]
+        }
+        listKeyValue = \
+            UtilsPath.get_recursively(dictXML, "KeyValueOfstringanyType")
         for dictKey, dictValue in listKeyValue:
             if dictKey["Key"] == "Dose":
                 dictResults["dose"] = dictValue["Value"]
             if dictKey["Key"] == "PhasePlateUsed":
                 dictResults["phasePlateUsed"] = dictValue["Value"]
-        dictResults["numberOffractions"] = UtilsPath.get_recursively(dictXML, "NumberOffractions")[0]
-        dictResults["nominalMagnification"] = UtilsPath.get_recursively(dictXML, "NominalMagnification")[0]
-        dictResults["positionX"] = UtilsPath.get_recursively(dictXML, "X")[0]
-        dictResults["positionY"] = UtilsPath.get_recursively(dictXML, "Y")[0]
-        dictResults["accelerationVoltage"] = UtilsPath.get_recursively(dictXML, "AccelerationVoltage")[0]
-        dictResults["acquisitionDateTime"] = UtilsPath.get_recursively(dictXML, "acquisitionDateTime")[0]
-        listKeyValue = UtilsPath.get_recursively(dictXML, "CameraSpecificInput")[0]
+        listKeyValue = \
+            UtilsPath.get_recursively(dictXML, "CameraSpecificInput")[0]
         #print(listKeyValue)
         for dictKeyValueOfstringanyType in listKeyValue:
             dictKey = dictKeyValueOfstringanyType["KeyValueOfstringanyType"][0]
             dictValue = dictKeyValueOfstringanyType["KeyValueOfstringanyType"][1]
             if dictKey["Key"] == "SuperResolutionFactor":
                 dictResults["superResolutionFactor"] = dictValue["Value"]
-        #dictResults["superResolutionFactor"] = UtilsPath.get_recursively(dictXML, "superResolutionFactor")
         return dictResults
 
     @staticmethod
@@ -192,14 +201,19 @@ class UtilsPath(object):
         mrcFileBase = os.path.basename(mrcFilePath).split(".mrc")[0]
         extraDirectory = os.path.join(workingDir, "extra")
         if os.path.exists(extraDirectory):
-            spectraImageFullPath = os.path.join(extraDirectory, mrcFileBase + "_ctf.mrc")
+            spectraImageFullPath = \
+                os.path.join(extraDirectory, mrcFileBase + "_ctf.mrc")
             if os.path.exists(spectraImageFullPath):
                 dictResults["spectraImageFullPath"] = spectraImageFullPath
-                spectraImageSnapshotFullPath = os.path.join(extraDirectory, mrcFileBase + "_ctf.jpeg")
-                os.system("bimg {0} {1}".format(spectraImageFullPath, spectraImageSnapshotFullPath))
+                spectraImageSnapshotFullPath = \
+                    os.path.join(extraDirectory, mrcFileBase + "_ctf.jpeg")
+                os.system("bimg {0} {1}".format(
+                    spectraImageFullPath, spectraImageSnapshotFullPath))
                 if os.path.exists(spectraImageSnapshotFullPath):
-                    dictResults["spectraImageSnapshotFullPath"] = spectraImageSnapshotFullPath
-            ctfEstimationPath = os.path.join(extraDirectory, mrcFileBase + "_ctf.log")
+                    dictResults["spectraImageSnapshotFullPath"] = \
+                        spectraImageSnapshotFullPath
+            ctfEstimationPath = \
+                os.path.join(extraDirectory, mrcFileBase + "_ctf.log")
             if os.path.exists(ctfEstimationPath):
                 f = open(ctfEstimationPath)
                 lines = f.readlines()
@@ -230,7 +244,11 @@ class UtilsPath(object):
         """
         try:
             dictResult = {}
-            p = re.compile("^(.*)/(GridSquare_[0-9]*)/Data/(.*)_([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)-([0-9]*)(_?.*)\.(.*)")
+            p = re.compile(
+                "^(.*)/(GridSquare_[0-9]*)/" + \
+                "Data/(.*)_([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)" + \
+                "-([0-9]*)(_?.*)\.(.*)"
+            )
             m = p.match(mrcFilePath)
             dictResult["directory"] = os.path.dirname(mrcFilePath)
             dictResult["gridSquare"] = m.group(2)   
@@ -243,7 +261,8 @@ class UtilsPath(object):
             dictResult["movieNumber"] = m.group(9)   
             dictResult["extra"] = m.group(10)   
             dictResult["suffix"] = m.group(11)   
-            dictResult["movieName"] = "{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}-{movieNumber}".format(**dictResult)
+            dictResult["movieName"] = \
+                "{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}-{movieNumber}".format(**dictResult)
         except Exception as e:
             dictResult = None
         # Check numbers
@@ -257,7 +276,10 @@ class UtilsPath(object):
         FoilHole_19150795_Data_19148847_19148848_20170619_2101-0344.mrc
         """
         dictResult = {}
-        p = re.compile("^(.*)/(GridSquare_[0-9]*)*(_Data_)*(.*)_([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)-([0-9]*)(_?.*)\.(.*)")
+        p = re.compile(
+            "^(.*)/(GridSquare_[0-9]*)*(_Data_)*(.*)_" + \
+            "([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)-([0-9]*)(_?.*)\.(.*)"
+        )
         m = p.match(mrcFilePath)
         dictResult["directory"] = os.path.dirname(mrcFilePath)
         dictResult["gridSquare"] = m.group(2)   
@@ -271,7 +293,8 @@ class UtilsPath(object):
         dictResult["movieNumber"] = m.group(10)   
         dictResult["extra"] = m.group(11)   
         dictResult["suffix"] = m.group(12)   
-        dictResult["movieName"] = "{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}-{movieNumber}".format(**dictResult) 
+        dictResult["movieName"] = \
+            "{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}-{movieNumber}".format(**dictResult)
         return dictResult
     
     
@@ -367,22 +390,35 @@ class UtilsPath(object):
                     # Test path:
                     testPath = "/data/pyarch/2017/cm01/test"
                     # Add date
-                    datePath = os.path.join(testPath, time.strftime("%Y%m%d", time.localtime(time.time())))
+                    datePath = os.path.join(
+                        testPath,
+                        time.strftime("%Y%m%d", time.localtime(time.time()))
+                    )
                     # Loop until done
                     isDone = False
                     fileName = os.path.basename(filePath)
                     pyarchFilePath = None
                     while not isDone:
-                        timePath = os.path.join(datePath, time.strftime("%H%M%S", time.localtime(time.time())))
+                        timePath = os.path.join(
+                            datePath,
+                            time.strftime("%H%M%S", time.localtime(time.time()))
+                        )
                         if os.path.exists(timePath):
                             time.sleep(1)
                         else:
                             pyarchFilePath = os.path.join(timePath, fileName)
                             if "linsvensson" in socket.gethostname(): 
                                 if os.path.getsize(filePath) < 1e6:
-                                    # For the moment, only copy file if smaller than 1 MB
-                                    os.system("ssh mxhpc2-1705 'mkdir -p {0}'".format(timePath))
-                                    os.system("scp {0} mxhpc2-1705:{1}".format(filePath, pyarchFilePath))
+                                    # For the moment, only copy file if
+                                    # smaller than 1 MB
+                                    os.system(
+                                        "ssh mxhpc2-1705 'mkdir -p {0}'".format(
+                                            timePath)
+                                    )
+                                    os.system(
+                                        "scp {0} mxhpc2-1705:{1}".format(
+                                            filePath, pyarchFilePath)
+                                    )
                             else:
                                 os.makedirs(timePath, 0755)
                                 shutil.copy(filePath, pyarchFilePath)
@@ -398,7 +434,10 @@ class UtilsPath(object):
     @ staticmethod
     def getShiftData(filePath):
         dictResults = {}
-        logFile = os.path.join(os.path.dirname(os.path.dirname(filePath)), "logs", "run.stdout")
+        logFile = os.path.join(
+            os.path.dirname(os.path.dirname(filePath)),
+            "logs", "run.stdout"
+        )
         if os.path.exists(logFile):
             listLines = open(logFile).readlines()
             index = 0
@@ -439,6 +478,7 @@ class UtilsPath(object):
                     done = True
             dictResults["noPoints"] = noPoints
             dictResults["totalMotion"] = round(totalMotion, 1)
-            dictResults["averageMotionPerFrame"] = round(totalMotion / noPoints, 1)
+            dictResults["averageMotionPerFrame"] = \
+                round(totalMotion / noPoints, 1)
         return dictResults
  

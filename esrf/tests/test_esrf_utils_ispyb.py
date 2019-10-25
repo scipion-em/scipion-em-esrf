@@ -32,16 +32,24 @@ from  esrf.utils.esrf_utils_ispyb import UtilsISPyB
 class Test(unittest.TestCase):
 
     def test_getProposal(self):
-        movieFilePath = "/data/visitor/mx2001/cm01/20171124/RAW_DATA/Data-hug-grid1/Images-Disc1/GridSquare_24748253/Data/FoilHole_24762814_Data_24757346_24757347_20171126_0223-4929.mrc"
+        movieFilePath = \
+            "/data/visitor/mx2001/cm01/20171124/RAW_DATA/Data-hug-grid1/" + \
+            "Images-Disc1/GridSquare_24748253/Data/" + \
+            "FoilHole_24762814_Data_24757346_24757347_20171126_0223-4929.mrc"
         proposal = UtilsISPyB.getProposal(movieFilePath)
         self.assertEqual("mx2001", proposal)
-        movieFilePath = "/data/cm01/inhouse/BLC11341/20180410/RAW_DATA/EPU_BLC11341"
+        movieFilePath = \
+            "/data/cm01/inhouse/BLC11341/20180410/RAW_DATA/EPU_BLC11341"
         proposal = UtilsISPyB.getProposal(movieFilePath)
         self.assertEqual("blc11341", proposal)
-        movieFilePath = "/data/cm01/inhouse/ih-ls3046/20180410/RAW_DATA/EPU_BLC11341"
+        movieFilePath = \
+            "/data/cm01/inhouse/ih-ls3046/20180410/RAW_DATA/EPU_BLC11341"
         proposal = UtilsISPyB.getProposal(movieFilePath)
         self.assertEqual("ih-ls3046", proposal)
-        movieFilePath = "/data/cm01/cmihr1/IH-LS3214/20190220/RAW_DATA/EPU-IHLS3214-comp-grid1/Images-Disc1/GridSquare_19849110/Data/FoilHole_19853578_Data_19852496_19852497_20190221_0414-0634.mrc"
+        movieFilePath = \
+            "/data/cm01/cmihr1/IH-LS3214/20190220/RAW_DATA/" + \
+            "EPU-IHLS3214-comp-grid1/Images-Disc1/GridSquare_19849110/Data/" + \
+            "FoilHole_19853578_Data_19852496_19852497_20190221_0414-0634.mrc"
         proposal = UtilsISPyB.getProposal(movieFilePath)
         self.assertEqual("ih-ls3214", proposal)
 
@@ -52,19 +60,40 @@ class Test(unittest.TestCase):
         self.assertIsNotNone(client)        
 
     def test_splitProposalInCodeAndNumber(self):
-        self.assertEqual(("mx", "415"), UtilsISPyB.splitProposalInCodeAndNumber("mx415"))
-        self.assertEqual(("blc", "11258"), UtilsISPyB.splitProposalInCodeAndNumber("blc11258"))
-        self.assertEqual(("opcm", "01"), UtilsISPyB.splitProposalInCodeAndNumber("opcm01"))
-        self.assertEqual(("ih-ls", "3046"), UtilsISPyB.splitProposalInCodeAndNumber("ih-ls3046"))
-        self.assertEqual((None, None), UtilsISPyB.splitProposalInCodeAndNumber(None))
-        self.assertEqual((None, None), UtilsISPyB.splitProposalInCodeAndNumber("abc123"))
-        self.assertEqual((None, None), UtilsISPyB.splitProposalInCodeAndNumber("mxx123"))
+        self.assertEqual(
+            ("mx", "415"),
+            UtilsISPyB.splitProposalInCodeAndNumber("mx415")
+        )
+        self.assertEqual(
+            ("blc", "11258"),
+            UtilsISPyB.splitProposalInCodeAndNumber("blc11258")
+        )
+        self.assertEqual(
+            ("opcm", "01"),
+            UtilsISPyB.splitProposalInCodeAndNumber("opcm01")
+        )
+        self.assertEqual(
+            ("ih-ls", "3046"),
+            UtilsISPyB.splitProposalInCodeAndNumber("ih-ls3046")
+        )
+        self.assertEqual(
+            (None, None),
+            UtilsISPyB.splitProposalInCodeAndNumber(None)
+        )
+        self.assertEqual(
+            (None, None),
+            UtilsISPyB.splitProposalInCodeAndNumber("abc123")
+        )
+        self.assertEqual(
+            (None, None),
+            UtilsISPyB.splitProposalInCodeAndNumber("mxx123")
+        )
 
-    def test_findSessions(self):
-        sessions = UtilsISPyB.findSessions(1, "opcm01", "cm01")
-        self.assertTrue(len(sessions) > 0)
+    # def test_findSessions(self):
+    #     sessions = UtilsISPyB.findSessions(1, "opcm01", "cm01")
+    #     self.assertTrue(len(sessions) > 0)
         
-    def test_findPropsal(self):
+    def test_findProposal(self):
         proposal = UtilsISPyB.findProposal(1, "mx415")
         self.assertEqual("MX", proposal.code)
         proposal = UtilsISPyB.findProposal(1, "MX415")
@@ -75,7 +104,8 @@ class Test(unittest.TestCase):
         proposal = UtilsISPyB.findProposal(1, "OPCM01")
         self.assertEqual("OPCM", proposal.code)
         self.assertEqual("01", proposal.number)
-        
+
+
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

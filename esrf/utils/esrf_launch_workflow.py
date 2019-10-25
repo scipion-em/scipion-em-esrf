@@ -37,14 +37,17 @@ from pyworkflow.protocol import getProtocolFromDb
 from esrf.utils.esrf_utils_ispyb import UtilsISPyB
 from esrf.utils.esrf_utils_path import UtilsPath
 
-# Set up config for DB and ISPyB
-modulePath = os.path.dirname(__file__)
-installPath = os.path.dirname(modulePath)
-configPath = os.path.join(installPath, 'config', 'esrf.properties')
-if not os.path.exists(configPath):
-    raise RuntimeError('No configuration file found at {0}!'.format(configPath))
-print(configPath)
-os.environ['SCIPION_ESRF_CONFIG'] = configPath
+if not 'SCIPION_ESRF_CONFIG' in os.environ:
+    # Set up config for DB and ISPyB
+    modulePath = os.path.dirname(__file__)
+    installPath = os.path.dirname(modulePath)
+    configPath = os.path.join(installPath, 'config', 'esrf.properties')
+    if not os.path.exists(configPath):
+        raise RuntimeError(
+            'No configuration file found at {0}!'.format(configPath)
+        )
+    print(configPath)
+    os.environ['SCIPION_ESRF_CONFIG'] = configPath
 
 
 def getUpdatedProtocol(protocol):
@@ -379,7 +382,7 @@ protMotionCorr = """
         "runName": null,
         "runMode": 0,
         "gpuMsg": "True",
-        "GPUIDs": "0",
+        "GPUIDs": "0 1",
         "alignFrame0": %d,
         "alignFrameN": %d,
         "useAlignToSum": true,

@@ -43,7 +43,8 @@ class UtilsISPyB(object):
     @staticmethod
     def getHttpAuthenticated():
         credentialsConfig = ConfigParser.ConfigParser()
-        credentialsConfig.read(os.path.join(os.environ['SCIPION_ESRF_CONFIG']))
+        # credentialsConfig.read(os.path.join(os.environ['SCIPION_ESRF_CONFIG']))
+        credentialsConfig.read('/opt/pxsoft/scipion/vESRF_2.0/debian90-x86_64/config/esrf.properties')
         username = str(credentialsConfig.get('ISPyB', 'user'))
         password = str(credentialsConfig.get('ISPyB', 'password'))
         return HttpAuthenticated(username=username, password=password)
@@ -52,7 +53,8 @@ class UtilsISPyB(object):
     def getUrlBase(dbNumber):
         config = ConfigParser.ConfigParser()
         # Configuration files
-        config.read(os.path.join(os.environ['SCIPION_ESRF_CONFIG']))
+        # config.read(os.path.join(os.environ['SCIPION_ESRF_CONFIG']))
+        config.read('/opt/pxsoft/scipion/vESRF_2.0/debian90-x86_64/config/esrf.properties')
         # URL
         urlBase = str(config.get('UrlBase', 'url_{0}'.format(dbNumber)))
         return urlBase

@@ -61,6 +61,16 @@ class UtilsPath(object):
         return jpeg, mrc, xml, gridSquareSnapshot
 
     @staticmethod
+    def getSerialEMMovieJpegMdoc(topDir, movieFilePath):
+        gridSquareSnapshot = None
+        dictFileName = UtilsPath.getSerialEMMovieFileNameParameters(topDir, movieFilePath)
+        jpeg = None
+        mdoc = movieFilePath + ".mdoc"
+        if not os.path.exists(mdoc):
+            mdoc = None
+        return jpeg, mdoc, gridSquareSnapshot
+
+    @staticmethod
     def getAlignMoviesPngLogFilePath(mrcFilePath):
         dictResult = {}
         # Locate png file in same directory
@@ -87,6 +97,38 @@ class UtilsPath(object):
             if "DW" in dictFileNameParameters["extra"] and \
                     mrcMovieNumber == movieNumber:
                 dictResult["doseWeightMrc"] = mrcFile            
+        # Find log file
+        dictResult["logFileFullPath"] = \
+            os.path.join(os.path.dirname(mrcDirectory), "logs", "run.log")
+        return dictResult
+
+    @staticmethod
+    def getSerialEMAlignMoviesPngLogFilePath(mrcFilePath):
+        dictResult = {}
+        # Locate png file in same directory
+        mrcDirectory = os.path.dirname(mrcFilePath)
+        dictMrcFile = \
+            UtilsPath.getSerialEMMovieFileNameParametersFromMotioncorrPath(mrcFilePath)
+        mrcMovieNumber = dictMrcFile["movieNumber"]
+        listPng = glob.glob(os.path.join(mrcDirectory, "*.png"))
+        for pngFile in listPng:
+            dictFileNameParameters = \
+                UtilsPath.getSerialEMMovieFileNameParametersFromMotioncorrPath(pngFile)
+            movieNumber = dictFileNameParameters["movieNumber"]
+            if dictFileNameParameters["extra"] == "global_shifts" and \
+                    mrcMovieNumber == movieNumber:
+                dictResult["globalShiftPng"] = pngFile
+            elif dictFileNameParameters["extra"] == "thumbnail" and \
+                    mrcMovieNumber == movieNumber:
+                dictResult["thumbnailPng"] = pngFile
+        listMrc = glob.glob(os.path.join(mrcDirectory, "*.mrc"))
+        for mrcFile in listMrc:
+            dictFileNameParameters = \
+                UtilsPath.getSerialEMMovieFileNameParametersFromMotioncorrPath(mrcFile)
+            movieNumber = dictFileNameParameters["movieNumber"]
+            if "DW" in dictFileNameParameters["extra"] and \
+                    mrcMovieNumber == movieNumber:
+                dictResult["doseWeightMrc"] = mrcFile
         # Find log file
         dictResult["logFileFullPath"] = \
             os.path.join(os.path.dirname(mrcDirectory), "logs", "run.log")
@@ -168,6 +210,18 @@ class UtilsPath(object):
         return dictResults
 
     @staticmethod
+    def getMdocMetaData(mdocMetaDataFullPath):
+        dictResults = {}
+        with open(mdocMetaDataFullPath) as f:
+            listLines = f.readlines()
+        for line in listLines:
+            if "=" in line:
+                key, value = line.split("=")
+                dictResults[key.strip()] = value.strip()
+        return dictResults
+
+
+    @staticmethod
     def _getKeyValue(root, key):
         value = None
         keyFound = False
@@ -183,7 +237,7 @@ class UtilsPath(object):
         
     
     
-    @ staticmethod
+    @staticmethod
     def getCtfMetaData(workingDir, mrcFilePath):
         dictResults = {
             "spectraImageSnapshotFullPath": None,
@@ -237,7 +291,7 @@ class UtilsPath(object):
             dictResults["logFilePath"] = logFilePath
         return dictResults
 
-    @ staticmethod
+    @staticmethod
     def getMovieFileNameParameters(mrcFilePath):
         """
         FoilHole_19150795_Data_19148847_19148848_20170619_2101-0344.mrc
@@ -270,7 +324,34 @@ class UtilsPath(object):
             dictResult = None
         return dictResult
 
-    @ staticmethod
+    @staticmethod
+    def getSerialEMMovieFileNameParameters(topDir, tifFilePath):
+        """
+        /data/visitor/mx2112/cm01/20191029/RAW_DATA/mx2214/grid5/data/140/mx2214_140_00001.tif
+        """
+        movieFileName = os.path.basename(tifFilePath)
+        dictResult = {}
+        p = re.compile("^(.*)_([0-9]*)\.(.*)")
+        m = p.match(movieFileName)
+        dictResult["directory"] = os.path.dirname(tifFilePath)
+        dictResult["prefix"] = m.group(1)
+        dictResult["movieNumber"] = m.group(2)
+        dictResult["suffix"] = m.group(3)
+        # Check numbers
+        if not dictResult["movieNumber"].isdigit():
+            dictResult = None
+        else:
+            # Add parent directories to movieName
+            listPath = os.path.dirname(tifFilePath).split(os.sep)
+            listTopDir = topDir.split(os.sep)
+            # Check the three last levels
+            while listPath[-3:] != listTopDir[-3:]:
+                parentDir = listPath.pop()
+                dictResult["prefix"] = parentDir + "_" + dictResult["prefix"]
+            dictResult["movieName"] = "{prefix}_{movieNumber}".format(**dictResult)
+        return dictResult
+
+    @staticmethod
     def getMovieFileNameParametersFromMotioncorrPath(mrcFilePath):
         """
         FoilHole_19150795_Data_19148847_19148848_20170619_2101-0344.mrc
@@ -297,8 +378,29 @@ class UtilsPath(object):
             "{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}-{movieNumber}".format(**dictResult)
         return dictResult
     
-    
-    @ staticmethod
+    @staticmethod
+    def getSerialEMMovieFileNameParametersFromMotioncorrPath(mrcFilePath):
+        """
+        000064_ProtMotionCorr/extra/grid5_data_140_mx2214_140_00001_aligned_mic.mrc
+        """
+        try:
+            dictResult = {}
+            p = re.compile("^(.*)/(.*)_([0-9]*)_(.*)\.(.*)")
+            m = p.match(mrcFilePath)
+            dictResult["directory"] = os.path.dirname(mrcFilePath)
+            dictResult["prefix"] = m.group(2)
+            dictResult["movieNumber"] = m.group(3)
+            dictResult["extra"] = m.group(4)
+            dictResult["suffix"] = m.group(5)
+            dictResult["movieName"] = "{prefix}_{movieNumber}".format(**dictResult)
+        except Exception as e:
+            dictResult = None
+        # Check numbers
+        if not dictResult["movieNumber"].isdigit():
+            dictResult = None
+        return dictResult
+
+    @staticmethod
     def getPyarchFilePath(workingDir):
         """
         This method translates from a "visitor" path to a "pyarch" path:
@@ -374,7 +476,7 @@ class UtilsPath(object):
             print("ERROR! Directory path not converted for pyarch: %s" % workingDir)
         return pyarchFilePath
 
-    @ staticmethod
+    @staticmethod
     def copyToPyarchPath(filePath):
         pyarchFilePath = None
         if filePath is not None and os.path.exists(filePath):
@@ -431,7 +533,7 @@ class UtilsPath(object):
         return pyarchFilePath
         
                 
-    @ staticmethod
+    @staticmethod
     def getShiftData(filePath):
         dictResults = {}
         logFile = os.path.join(
@@ -481,4 +583,42 @@ class UtilsPath(object):
             dictResults["averageMotionPerFrame"] = \
                 round(totalMotion / noPoints, 1)
         return dictResults
- 
+
+    @staticmethod
+    def findSerialEMFilePaths(topDirectory):
+        tifDir = None
+        firstTifFileName = None
+        defectFilePath = None
+        dm4FilePath = None
+        listTif = []
+        for dirName, subdirList, fileList in os.walk(topDirectory, topdown=False):
+            for fileName in fileList:
+                if fileName.endswith(".tif"):
+                    listTif.append(os.path.join(dirName, fileName))
+        if len(listTif) > 0:
+            listTif.sort()
+            firstTifPath = listTif[0]
+            tifDir = os.path.dirname(firstTifPath)
+            firstTifFileName = os.path.basename(firstTifPath)
+            listFiles = os.listdir(tifDir)
+            for file in listFiles:
+                if file.startswith('defect') and file.endswith('.txt'):
+                    defectFilePath = os.path.join(tifDir, file)
+                elif file.endswith('.dm4'):
+                    dm4FilePath = os.path.join(tifDir, file)
+        return tifDir, firstTifFileName, defectFilePath, dm4FilePath
+
+    @staticmethod
+    def serialEMFilesPattern(dataDirectory, tifDir):
+        filesPattern = None
+        lastDirName = os.path.basename(dataDirectory)
+
+        listTifDir = tifDir.split(os.sep)
+        filesPattern = ''
+        for path in listTifDir[::-1]:
+            if path == lastDirName:
+                break
+            else:
+                filesPattern += "*/"
+        filesPattern += "*.tif"
+        return filesPattern

@@ -26,7 +26,7 @@
 # **************************************************************************
 
 import os
-import pprint
+import sys
 import unittest
 
 from  esrf.utils.esrf_utils_path import UtilsPath
@@ -70,6 +70,31 @@ class Test(unittest.TestCase):
  'suffix': 'mrc'}
         self.assertEqual(refDict2, dictResult2)
         
+    def test_getSerialEMMovieFileNameParametersFromMotioncorrPath(self):
+        # Test 1
+        mrcFullPath1 = "/mntdirect/_data_visitor/mx415/cm01/20191029/PROCESSED_DATA/mx2214/mx2214_20191029-110718/Runs/000064_ProtMotionCorr/extra/data_mx2214_00005_aligned_mic.mrc"
+        dictResult1 = UtilsPath.getSerialEMMovieFileNameParametersFromMotioncorrPath(mrcFullPath1)
+        refDict1 = {
+            'directory': '/mntdirect/_data_visitor/mx415/cm01/20191029/PROCESSED_DATA/mx2214/mx2214_20191029-110718/Runs/000064_ProtMotionCorr/extra',
+             'movieName': 'data_mx2214_00005',
+             'movieNumber': '00005',
+             'prefix': 'data_mx2214',
+             'suffix': 'mrc',
+             'extra': 'aligned_mic'
+        }
+        self.assertEqual(refDict1, dictResult1)
+        # Test 2
+        mrcFullPath2 = "/data/visitor/mx2112/cm01/20191029/PROCESSED_DATA/mx2214_1/mx2214_1_20191029-134731/Runs/000064_ProtMotionCorr/extra/grid5_data_140_mx2214_140_00001_aligned_mic.mrc"
+        dictResult2 = UtilsPath.getSerialEMMovieFileNameParametersFromMotioncorrPath(mrcFullPath2)
+        refDict2 = {
+            'directory': '/data/visitor/mx2112/cm01/20191029/PROCESSED_DATA/mx2214_1/mx2214_1_20191029-134731/Runs/000064_ProtMotionCorr/extra',
+             'movieName': 'grid5_data_140_mx2214_140_00001',
+             'movieNumber': '00001',
+             'prefix': 'grid5_data_140_mx2214_140',
+             'suffix': 'mrc',
+             'extra': 'aligned_mic'
+        }
+        self.assertEqual(refDict2, dictResult2)
 
     def test_getMovieFileNameParameters(self):
         # Test1
@@ -109,8 +134,30 @@ class Test(unittest.TestCase):
         dictResult2 = UtilsPath.getMovieFileNameParameters(mrcFullPath2)
         refDict2 = None
         self.assertEqual(refDict2, dictResult2)
-        
-        
+
+
+    def test_getSerialEMMovieFileNameParameters(self):
+        # Test1
+        topDir1 = "/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214"
+        movieFullPath1 = "/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214/data/mx2214_00005.tif"
+        dictResult1 = UtilsPath.getSerialEMMovieFileNameParameters(topDir1, movieFullPath1)
+        refDict1 = {'directory': '/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214/data',
+                    'movieName': 'data_mx2214_00005',
+                    'movieNumber': '00005',
+                    'prefix': 'data_mx2214',
+                    'suffix': 'tif'}
+        self.assertEqual(refDict1, dictResult1)
+        # Test2
+        topDir2 = "/data/visitor/mx2112/cm01/20191029/RAW_DATA/mx2214"
+        movieFullPath2 = "/data/visitor/mx2112/cm01/20191029/RAW_DATA/mx2214/grid5/data/140/mx2214_140_00001.tif"
+        dictResult2 = UtilsPath.getSerialEMMovieFileNameParameters(topDir2, movieFullPath2)
+        refDict2 = {'directory': '/data/visitor/mx2112/cm01/20191029/RAW_DATA/mx2214/grid5/data/140',
+                    'movieName': 'grid5_data_140_mx2214_140_00001',
+                    'movieNumber': '00001',
+                    'prefix': 'grid5_data_140_mx2214_140',
+                    'suffix': 'tif'}
+        self.assertEqual(refDict2, dictResult2)
+
 
     def test_getMovieJpegMrcXml(self):
         movieFullPath = "/scisoft/pxsoft/data/cryoem/20171123/RAW_DATA/testsecretin-grid1/Images-Disc1/GridSquare_23722826/Data/FoilHole_23724105_Data_23724797_23724798_20171123_1448-3385.mrc"
@@ -134,7 +181,16 @@ class Test(unittest.TestCase):
  'thumbnailPng': '/scisoft/pxsoft/data/cryoem/testRunData/20171113/Runs/000056_ProtMotionCorr/extra/FoilHole_9208892_Data_9209286_9209287_20171109_1540-0539_thumbnail.png'}
         self.assertEqual(dictRef, dictResult)
 
-        
+    def test_getSerialEMAlignMoviesPngLogFilePath(self):
+        mrcFilePath = "/scisoft/pxsoft/data/cryoem/testRunData/20191028/Runs/000064_ProtMotionCorr/extra/data_mx2214_00005_aligned_mic.mrc"
+        dictResult = UtilsPath.getSerialEMAlignMoviesPngLogFilePath(mrcFilePath)
+        dictRef = {
+            'doseWeightMrc': '/scisoft/pxsoft/data/cryoem/testRunData/20191028/Runs/000064_ProtMotionCorr/extra/data_mx2214_00005_aligned_mic_DW.mrc',
+            'globalShiftPng': '/scisoft/pxsoft/data/cryoem/testRunData/20191028/Runs/000064_ProtMotionCorr/extra/data_mx2214_00005_global_shifts.png',
+            'logFileFullPath': '/scisoft/pxsoft/data/cryoem/testRunData/20191028/Runs/000064_ProtMotionCorr/logs/run.log',
+            'thumbnailPng': '/scisoft/pxsoft/data/cryoem/testRunData/20191028/Runs/000064_ProtMotionCorr/extra/data_mx2214_00005_thumbnail.png'}
+        self.assertEqual(dictRef, dictResult)
+
     def test_getShiftData(self):
         mrcFilePath = "/scisoft/pxsoft/data/cryoem/testRunData/20171113/Runs/000056_ProtMotionCorr/extra/FoilHole_9208892_Data_9209286_9209287_20171109_1540-0539_aligned_mic.mrc"
         dictResult = UtilsPath.getShiftData(mrcFilePath)
@@ -144,17 +200,58 @@ class Test(unittest.TestCase):
     def test_getXmlMetaData(self):
         xmlMetaDataFullPath = "/scisoft/pxsoft/data/cryoem/testMetaData/supervisor_20171115_150623/Images-Disc1/GridSquare_15441375/Data/FoilHole_15445484_Data_15444206_15444207_20171115_1620.xml"
         dictResult = UtilsPath.getXmlMetaData(xmlMetaDataFullPath)
-        dictRef = {'accelerationVoltage': '300000',
- 'acquisitionDateTime': '2017-11-15T16:20:52.2530023+01:00',
- 'dose': '2.3276455783574426E+21',
- 'nominalMagnification': '130000',
- 'numberOffractions': '30',
- 'phasePlateUsed': 'true',
- 'positionX': '0.00026971729600000011',
- 'positionY': '0.00014176793600000005',
- 'superResolutionFactor': '1'}
+        dictRef = {
+            'accelerationVoltage': '300000',
+            'acquisitionDateTime': '2017-11-15T16:20:52.2530023+01:00',
+            'dose': '2.3276455783574426E+21',
+            'nominalMagnification': '130000',
+            'numberOffractions': '30',
+            'phasePlateUsed': 'true',
+            'positionX': '0.00026971729600000011',
+            'positionY': '0.00014176793600000005',
+            'superResolutionFactor': '1'
+        }
         self.assertEqual(dictRef, dictResult)
-    
+
+    def test_getMdocMetaData(self):
+        mdocMetaDataFullPath = "/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214/data/mx2214_00005.tif.mdoc"
+        dictResult = UtilsPath.getMdocMetaData(mdocMetaDataFullPath)
+        import pprint
+        pprint.pprint(dictResult)
+        dictRef = {
+            'Binning': '1',
+            'CameraIndex': '1',
+            'CountsPerElectron': '1',
+            'DateTime': '05-Sep-19  15:52:08',
+            'DefectFile': 'defects_bgal-215k-img-shift_0001.txt',
+            'Defocus': '0.0853802',
+            'DividedBy2': '0',
+            'ExposureDose': '0',
+            'ExposureTime': '6',
+            'FilterSlitAndLoss': '20 0',
+            'FrameDosesAndNumber': '0 40',
+            'GainReference': 'CountRef_mx2214_00005.dm4',
+            'ImageShift': '-0.643144 -0.233229',
+            'Intensity': '0.116205',
+            'MagIndex': '32',
+            'Magnification': '130000',
+            'MultishotHoleAndPosition': '1 1',
+            'NavigatorLabel': '78-1',
+            'NumSubFrames': '40',
+            'OperatingMode': '1',
+            'PixelSpacing': '1.082',
+            'RotationAngle': '174.52',
+            'SpotSize': '6',
+            'StagePosition': '-62.6189 730.271',
+            'StageZ': '-32.565',
+            'SubFramePath': 'X:\\DoseFractions\\mx2214\\data\\mx2214_00005.tif',
+            'T': 'SerialEM: Acquired on Titan Krios D3693                 05-Sep-19  11:24:48',
+            'TargetDefocus': '-2.6',
+            'TiltAngle': '0.00577417',
+            'Voltage': '300',
+            '[FrameSet': '0]'
+        }
+        self.assertEqual(dictRef, dictResult)
 
     def test_getCtfMetaData(self):
         workingDir = "/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf"
@@ -193,7 +290,30 @@ class Test(unittest.TestCase):
         mrcFilePath = "/mntdirect/_data_cm01_cmihr2/IH-LS3198/20181203/RAW_DATA/EPU_IH_LS3198/Images-Disc1/GridSquare_3087308/GridSquare_20181204_115820.jpg"
         pyarchFilePath = UtilsPath.getPyarchFilePath(mrcFilePath)
         self.assertEqual("/data/pyarch/2019/cm01/IH-LS3198/20181203/RAW_DATA/EPU_IH_LS3198/Images-Disc1/GridSquare_3087308/GridSquare_20181204_115820.jpg", pyarchFilePath)
-        
+
+    def test_findDefectFilePath(self):
+        topDirectory = "/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214"
+        tifDir, firstTifFileName, defectFilePath, dm4FilePath = UtilsPath.findSerialEMFilePaths(topDirectory)
+        print(tifDir)
+        print(firstTifFileName)
+        print(defectFilePath)
+        print(dm4FilePath)
+        self.assertTrue(os.path.exists(os.path.join(tifDir, firstTifFileName)))
+        self.assertTrue(os.path.exists(defectFilePath))
+        self.assertTrue(os.path.exists(dm4FilePath))
+
+    def test_serialEMFilesPattern(self):
+        topDirectory = "/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214"
+        tifDir = "/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214/data"
+        filesPattern = UtilsPath.serialEMFilesPattern(topDirectory, tifDir)
+        print(filesPattern)
+        self.assertEqual('*/*.tif', filesPattern)
+        topDirectory = "/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214"
+        tifDir = "/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214/grid5/data/140"
+        filesPattern = UtilsPath.serialEMFilesPattern(topDirectory, tifDir)
+        print(filesPattern)
+        self.assertEqual('*/*/*/*.tif', filesPattern)
+
 
     def tes_copyToPyarchPath(self):
         # Can only be tested on a computer which can write to /data/pyarch

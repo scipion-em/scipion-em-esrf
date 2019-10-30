@@ -29,25 +29,28 @@ import os
 import sys
 import glob
 import time
-import getopt
+import shutil
+import argparse
 import datetime
 import tempfile
 from pyworkflow.project.manager import Manager
 from pyworkflow.protocol import getProtocolFromDb
+
 from esrf.utils.esrf_utils_ispyb import UtilsISPyB
 from esrf.utils.esrf_utils_path import UtilsPath
+from esrf.utils.esrf_utils_serialem import UtilsSerialEM
 
-if not 'SCIPION_ESRF_CONFIG' in os.environ:
-    # Set up config for DB and ISPyB
-    modulePath = os.path.dirname(__file__)
-    installPath = os.path.dirname(modulePath)
-    configPath = os.path.join(installPath, 'config', 'esrf.properties')
-    if not os.path.exists(configPath):
-        raise RuntimeError(
-            'No configuration file found at {0}!'.format(configPath)
-        )
-    print(configPath)
-    os.environ['SCIPION_ESRF_CONFIG'] = configPath
+# if not 'SCIPION_ESRF_CONFIG' in os.environ:
+#     # Set up config for DB and ISPyB
+#     modulePath = os.path.dirname(__file__)
+#     installPath = os.path.dirname(modulePath)
+#     configPath = os.path.join(installPath, 'config', 'esrf.properties')
+#     if not os.path.exists(configPath):
+#         raise RuntimeError(
+#             'No configuration file found at {0}!'.format(configPath)
+#         )
+#     print(configPath)
+#     os.environ['SCIPION_ESRF_CONFIG'] = configPath
 
 
 def getUpdatedProtocol(protocol):
@@ -62,110 +65,178 @@ def getUpdatedProtocol(protocol):
     return prot2
 
 
-# Parse command line
-usage = "\nUsage: cryoemProcess --directory <dir> " + \
-        "[--filesPattern <filesPattern>]  " + \
-        "[--scipionProjectName <name>]  " + \
-        "--protein <name>  " + \
-        "--sample <name>  " + \
-        "--doseInitial <dose>  " + \
-        "--dosePerFrame <dose>  " + \
-        "[--samplingRate <samplingRate>]  " + \
-        "[--startMotioncorFrame startFrame]  " + \
-        "[--endMotioncorFrame endFrame]" + \
-        "[--phasePlateData]" + \
-        "[--onlyISPyB]" + \
-        "\n"    
+# usage = "\nUsage: cryoemProcess --directory <dir> " + \
+#         "[--filesPattern <filesPattern>]  " + \
+#         "[--scipionProjectName <name>]  " + \
+#         "--protein <name>  " + \
+#         "--sample <name>  " + \
+#         "--doseInitial <dose>  " + \
+#         "--dosePerFrame <dose>  " + \
+#         "[--samplingRate <samplingRate>]  " + \
+#         "[--startMotioncorFrame startFrame]  " + \
+#         "[--endMotioncorFrame endFrame]" + \
+#         "[--phasePlateData]" + \
+#         "[--onlyISPyB]" + \
+#         "\n"
 
-try:
-    opts, args = getopt.getopt(
-        sys.argv[1:], 
-        "", 
-        [
-            "directory=", 
-            "filesPattern=", 
-            "scipionProjectName=", 
-            "protein=", 
-            "sample=", 
-            "doseInitial=", 
-            "dosePerFrame=", 
-            "samplingRate=", 
-            "startMotioncorFrame=", 
-            "endMotioncorFrame=", 
-            "phasePlateData",
-            "onlyISPyB",
-            "help"
-        ]
-    )
-except getopt.GetoptError:
-    print(usage)
-    sys.exit(1)
+parser = argparse.ArgumentParser(
+    description="Application for starting Scipion workflow for CM01")
+parser._action_groups.pop()
+required = parser.add_argument_group('required arguments')
+optional = parser.add_argument_group('optional arguments')
+required.add_argument(
+    "--directory",
+    action="store",
+    help="top EM directory",
+    required=True
+)
+required.add_argument(
+    "--protein",
+    action="store",
+    help="Protein acronym, must be the one used in the A-form.",
+    required=True
+)
+required.add_argument(
+    "--sample",
+    action="store",
+    help="Sample name, for example 'grid1'.",
+    required=True
+)
+required.add_argument(
+    "--dosePerFrame",
+    action="store",
+    help="Dose per frame.",
+    required=True
+)
+optional.add_argument(
+    "--samplingRate",
+    action="store",
+    help="Sampling rate.",
+    default=None,
+    required=True
+)
+optional.add_argument(
+    "--filesPattern",
+    action="store",
+    help="file pattern for finding EM movies, default pattern " +
+         "'Images-Disc1/GridSquare_*/Data/FoilHole_*-*.mrc'",
+    default=None
+)
+optional.add_argument(
+    "--scipionProjectName",
+    action="store",
+    help="Scipion project name, is only used internally in Scipion."
+)
+optional.add_argument(
+    "--doseInitial",
+    action="store",
+    help="Initial dose, default zero.",
+    default=0.0
+)
+optional.add_argument(
+    "--startMotioncorFrame",
+    action="store",
+    help="Start frame for motion correction, default 1.",
+    default=1
+)
+optional.add_argument(
+    "--endMotioncorFrame",
+    action="store",
+    help="End frame for motion correction, default last frame.",
+    default=0
+)
+optional.add_argument(
+    "--phasePlateData",
+    action="store_true",
+    help="Phase plate used, default 'False'.",
+    default=False
+)
+optional.add_argument(
+    "--onlyISPyB",
+    action="store_true",
+    help="Only upload data to ISPyB i.e. no processing, default 'False'.",
+    default=False
+)
 
-if len(args) != 0:
-    print(usage)
-    sys.exit(1)
+results = parser.parse_args()
 
-dataDirectory = None
-filesPattern = None
-scipionProjectName = None
-proteinAcronym = None
-sampleAcronym = None
-doseInitial = 0.0
-dosePerFrame = None
-samplingRate = None
+dataDirectory = results.directory
+filesPattern = results.filesPattern
+scipionProjectName = results.scipionProjectName
+proteinAcronym = results.protein
+sampleAcronym = results.sample
+doseInitial = float(results.doseInitial)
+dosePerFrame = float(results.dosePerFrame)
 dataStreaming = "true"
-alignFrame0 = 1
-alignFrameN = 0
-phasePlateData = False
-onlyISPyB = False
+alignFrame0 = int(results.startMotioncorFrame)
+alignFrameN = int(results.endMotioncorFrame)
+phasePlateData = results.phasePlateData
+onlyISPyB = results.onlyISPyB
+samplingRate = float(results.samplingRate)
 
+################################################################################
+#
+# First find out if we use serial em or not:
+#
 
-for opt, arg in opts:
-    if opt in ["-h", "--help"]:
-        print(usage)
-        sys.exit()
-    elif opt in ["--directory"]:
-        dataDirectory = arg
-    elif opt in ["--filesPattern"]:
-        filesPattern = arg
-    elif opt in ["--scipionProjectName"]:
-        scipionProjectName = arg
-    elif opt in ["--protein"]:
-        proteinAcronym = arg
-    elif opt in ["--sample"]:
-        sampleAcronym = arg
-    elif opt in ["--doseInitial"]:
-        doseInitial = float(arg)
-    elif opt in ["--dosePerFrame"]:
-        dosePerFrame = float(arg)
-    elif opt in ["--samplingRate"]:
-        samplingRate = float(arg)
-    elif opt in ["--startMotioncorFrame"]:
-        alignFrame0 = float(arg)
-    elif opt in ["--endMotioncorFrame"]:
-        alignFrameN = float(arg)
-    elif opt in ["--phasePlateData"]:
-        phasePlateData = True
-    elif opt in ["--onlyISPyB"]:
-        onlyISPyB = True
-
-# Check mandatory parameters
-if not all([dataDirectory, proteinAcronym, sampleAcronym, dosePerFrame]):
-    print(usage)
-    sys.exit(1)
-    
 if filesPattern is None:
+    # No filesPattern, let's assume that we are dealing with EPU data
     filesPattern = "Images-Disc1/GridSquare_*/Data/FoilHole_*-*.mrc"
+    # Check how many movies are present on disk
+    listMovies = glob.glob(os.path.join(dataDirectory, filesPattern))
+    noMovies = len(listMovies)
+    if noMovies > 0:
+        # We have EPU data
+        serialEM = False
+        print("********** EPU data **********")
+    else:
+        # So, no mrc movies found, let's try to find some serialEM files:
+        # Look for first tif, defect file and dm4 file
+        tifDir, firstTifFileName, defectFilePath, dm4FilePath = \
+            UtilsPath.findSerialEMFilePaths(dataDirectory)
+        if tifDir is not None:
+            # We have serial EM data
+            filesPattern = UtilsPath.serialEMFilesPattern(dataDirectory, tifDir)
+            listMovies = glob.glob(os.path.join(dataDirectory, filesPattern))
+            noMovies = len(listMovies)
+            if noMovies > 0:
+                # We have EPU data
+                serialEM = True
+                print("********** SerialEM data **********")
 
-# Check how many movies are present on disk
-listMovies = glob.glob(os.path.join(dataDirectory, filesPattern))
-noMovies = len(listMovies)
 if noMovies == 0:
     print("ERROR! No movies available in directory {0} with the filesPattern {1}.".format(dataDirectory, filesPattern))
     sys.exit(1)
+
+print("Number of movies available on disk: {0}".format(noMovies))
+firstMovieFullPath = listMovies[0]
+print("First movie full path file: {0}".format(firstMovieFullPath))
+
+if serialEM:
+    if defectFilePath is None:
+        print("ERROR - No defect file path found in directory {0}!".format(tifDir))
+        sys.exit(1)
+    if dm4FilePath is None:
+        print("ERROR - No dm4 file path found in directory {0}!".format(tifDir))
+        sys.exit(1)
+    # Create directory for holding defect map and gain reference image
+    defectGainDir = os.path.join(dataDirectory, "Defect_and_Gain_images")
+    if os.path.exists(defectGainDir):
+        # Directory exists - we remove it
+        print("Removing existing defect and gain maps")
+        shutil.rmtree(defectGainDir)
+    os.makedirs(defectGainDir, 0o755)
+    defectMapPath = UtilsSerialEM.createDefectMapFile(
+        defectFilePath, firstMovieFullPath, defectGainDir)
+    gainFilePath = UtilsSerialEM.createGainFile(dm4FilePath, defectGainDir)
+    extraParams2 = "-Gain {0} -DefectMap {1}".format(
+        gainFilePath, defectMapPath
+    )
 else:
-    print("Number of movies available on disk: {0}".format(noMovies))
-    
+    extraParams2 = ""
+
+
+
 # Set up location
 if "RAW_DATA" in dataDirectory:
     location = dataDirectory.replace("RAW_DATA", "PROCESSED_DATA")
@@ -197,8 +268,6 @@ allParamsJsonFile = os.path.join(location, "allParams.json")
 
 doPhaseShiftEstimation = "false"
 
-firstMovieFullPath = listMovies[0]
-print("First movie full path file: {0}".format(firstMovieFullPath))
 
 # Check proposal
 # db=0: production
@@ -228,7 +297,7 @@ if proposal is None:
     print("WARNING! No data will be uploaded to ISPyB.")
     db = 3
 else:
-    if proposal == "mx415":
+    if proposal == "mx415" or proposal == "mx2112":
         # Use valid data base
         print("ISPyB valid data base used")
         db = 1
@@ -237,28 +306,39 @@ else:
         print("ISPyB production data base used")
         db = 0
 
-jpeg, mrc, xml, gridSquareThumbNail =  UtilsPath.getMovieJpegMrcXml(firstMovieFullPath)
+if serialEM:
+    jpeg, mdoc, gridSquareSnapshot = UtilsPath.getSerialEMMovieJpegMdoc(dataDirectory, firstMovieFullPath)
+    if mdoc is None:
+        print("*"*80)
+        print("*"*80)
+        print("*"*80)
+        print("Error! Cannot find metadata files in the directory which contains the following movie:")
+        print(firstMovieFullPath)
+        print("*"*80)
+        print("*"*80)
+        print("*"*80)
+        sys.exit(1)
+    dictResults = UtilsPath.getMdocMetaData(mdoc)
+    nominalMagnification = int(dictResults["Magnification"])
 
-if xml is None:
-    print("*"*80)
-    print("*"*80)
-    print("*"*80)
-    print("Error! Cannot find metadata files in the directory which contains the following movie:")
-    print(firstMovieFullPath)
-    print("*"*80)
-    print("*"*80)
-    print("*"*80)
-    sys.exit(1)
+else:
+    jpeg, mrc, xml, gridSquareThumbNail = UtilsPath.getMovieJpegMrcXml(firstMovieFullPath)
 
+    if xml is None:
+        print("*"*80)
+        print("*"*80)
+        print("*"*80)
+        print("Error! Cannot find metadata files in the directory which contains the following movie:")
+        print(firstMovieFullPath)
+        print("*"*80)
+        print("*"*80)
+        print("*"*80)
+        sys.exit(1)
 
+    dictResults = UtilsPath.getXmlMetaData(xml)
+    doPhaseShiftEstimation = dictResults["phasePlateUsed"]
+    nominalMagnification = int(dictResults["nominalMagnification"])
 
-dictResults = UtilsPath.getXmlMetaData(xml)
-doPhaseShiftEstimation = dictResults["phasePlateUsed"]
-nominalMagnification = int(dictResults["nominalMagnification"])
-superResolutionFactor = int(dictResults["superResolutionFactor"])
-
-if samplingRate is None:
-    samplingRate = 1.1 / float(superResolutionFactor)
 
 if not phasePlateData and doPhaseShiftEstimation:
     print("!"*100)
@@ -316,14 +396,22 @@ print("{0:30s}{1:8.1f}".format("phaseShiftT",phaseShiftT))
 print("{0:30s}{1:8.3f}".format("lowRes",lowRes))
 print("{0:30s}{1:8.3f}".format("highRes",highRes))
 print("{0:30s}{1:8.0f}".format("nominalMagnification",nominalMagnification))
-print("{0:30s}{1:8.2f}".format("superResolutionFactor",superResolutionFactor))
 print("{0:30s}{1:8.2f}".format("samplingRate",samplingRate))
 print("{0:30s}{1:>8s}".format("dataStreaming",dataStreaming))
 print("")
 print("Scipion project name: {0}".format(scipionProjectName))
 print("Scipion user data location: {0}".format(location))
 print("All param json file: {0}".format(allParamsJsonFile))
-print("Metadata file: {0}".format(xml))
+print("")
+
+if serialEM:
+    print("SerialEM specific parameters:")
+    print("Metadata file: {0}".format(mdoc))
+    print("DefectMap file: {0}".format(defectMapPath))
+    print("Gain file: {0}".format(gainFilePath))
+else:
+    print("EPU specific parameters:")
+    print("Metadata file: {0}".format(xml))
 
 
 if onlyISPyB:
@@ -333,6 +421,11 @@ else:
 
 
 # Create json file
+
+if serialEM:
+    doSerialEM = "true"
+else:
+    doSerialEM = "false"
 
 protImportMovies = """
     {
@@ -382,7 +475,7 @@ protMotionCorr = """
         "runName": null,
         "runMode": 0,
         "gpuMsg": "True",
-        "GPUIDs": "0 1",
+        "gpuList": "0 1",
         "alignFrame0": %d,
         "alignFrameN": %d,
         "useAlignToSum": true,
@@ -410,13 +503,13 @@ protMotionCorr = """
         "scaleMaj": 1.0,
         "scaleMin": 1.0,
         "angDist": 0.0,
-        "extraParams2": "",
+        "extraParams2": "%s",
         "doSaveUnweightedMic": true,
         "hostName": "localhost",
         "numberOfThreads": 1,
         "numberOfMpi": 1,
         "inputMovies": "2.outputMovies"
-    }"""  % (alignFrame0, alignFrameN)
+    }"""  % (alignFrame0, alignFrameN, extraParams2)
 
 protGctf = """
     {
@@ -474,9 +567,10 @@ protMonitorISPyB_ESRF = """
         "allParamsJsonFile": "%s",
         "samplingRate": "%s",
         "doseInitial": "%s",
-        "dosePerFrame": "%s"
+        "dosePerFrame": "%s",
+        "serialEM": "%s"
     }"""  % (inputProtocols, proposal, proteinAcronym, sampleAcronym, db, allParamsJsonFile,
-        samplingRate, doseInitial, dosePerFrame)
+        samplingRate, doseInitial, dosePerFrame, doSerialEM)
 
 if onlyISPyB:
     jsonString = """[{0},
@@ -551,3 +645,78 @@ while doContinue:
     time.sleep(5)
         
     
+# # Parse command line
+# usage = "\nUsage: cryoemProcess --directory <dir> " + \
+#         "[--filesPattern <filesPattern>]  " + \
+#         "[--scipionProjectName <name>]  " + \
+#         "--protein <name>  " + \
+#         "--sample <name>  " + \
+#         "--doseInitial <dose>  " + \
+#         "--dosePerFrame <dose>  " + \
+#         "[--samplingRate <samplingRate>]  " + \
+#         "[--startMotioncorFrame startFrame]  " + \
+#         "[--endMotioncorFrame endFrame]" + \
+#         "[--phasePlateData]" + \
+#         "[--onlyISPyB]" + \
+#         "\n"
+
+# try:
+#     opts, args = getopt.getopt(
+#         sys.argv[1:],
+#         "",
+#         [
+#             "directory=",
+#             "filesPattern=",
+#             "scipionProjectName=",
+#             "protein=",
+#             "sample=",
+#             "doseInitial=",
+#             "dosePerFrame=",
+#             "samplingRate=",
+#             "startMotioncorFrame=",
+#             "endMotioncorFrame=",
+#             "phasePlateData",
+#             "onlyISPyB",
+#             "help"
+#         ]
+#     )
+# except getopt.GetoptError:
+#     print(usage)
+#     sys.exit(1)
+#
+# if len(args) != 0:
+#     print(usage)
+#     sys.exit
+# for opt, arg in opts:
+#     if opt in ["-h", "--help"]:
+#         print(usage)
+#         sys.exit()
+#     elif opt in ["--directory"]:
+#         dataDirectory = arg
+#     elif opt in ["--filesPattern"]:
+#         filesPattern = arg
+#     elif opt in ["--scipionProjectName"]:
+#         scipionProjectName = arg
+#     elif opt in ["--protein"]:
+#         proteinAcronym = arg
+#     elif opt in ["--sample"]:
+#         sampleAcronym = arg
+#     elif opt in ["--doseInitial"]:
+#         doseInitial = float(arg)
+#     elif opt in ["--dosePerFrame"]:
+#         dosePerFrame = float(arg)
+#     elif opt in ["--samplingRate"]:
+#         samplingRate = float(arg)
+#     elif opt in ["--startMotioncorFrame"]:
+#         alignFrame0 = float(arg)
+#     elif opt in ["--endMotioncorFrame"]:
+#         alignFrameN = float(arg)
+#     elif opt in ["--phasePlateData"]:
+#         phasePlateData = True
+#     elif opt in ["--onlyISPyB"]:
+#         onlyISPyB = True
+
+# # Check mandatory parameters
+# if not all([dataDirectory, proteinAcronym, sampleAcronym, dosePerFrame]):
+#     print(usage)
+#     sys.exit(1)

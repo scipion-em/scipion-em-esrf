@@ -146,6 +146,12 @@ optional.add_argument(
     default=0
 )
 optional.add_argument(
+    "--superResolution",
+    action="store_true",
+    help="Super resolution used, default 'False'.",
+    default=False
+)
+optional.add_argument(
     "--phasePlateData",
     action="store_true",
     help="Phase plate used, default 'False'.",
@@ -173,6 +179,7 @@ alignFrameN = int(results.endMotioncorFrame)
 phasePlateData = results.phasePlateData
 onlyISPyB = results.onlyISPyB
 samplingRate = float(results.samplingRate)
+superResolution = results.superResolution
 
 ################################################################################
 #
@@ -372,6 +379,10 @@ else:
     lowRes = samplingRate / 30.0
     highRes = samplingRate / 4.0
 
+if superResolution:
+    binFactor = 2.0
+else:
+    binFactor = 1.0
     
 print("")
 print("Parameters:")
@@ -397,6 +408,7 @@ print("{0:30s}{1:8.3f}".format("lowRes",lowRes))
 print("{0:30s}{1:8.3f}".format("highRes",highRes))
 print("{0:30s}{1:8.0f}".format("nominalMagnification",nominalMagnification))
 print("{0:30s}{1:8.2f}".format("samplingRate",samplingRate))
+print("{0:30s}{1:8.1f}".format("binFactor",binFactor))
 print("{0:30s}{1:>8s}".format("dataStreaming",dataStreaming))
 print("")
 print("Scipion project name: {0}".format(scipionProjectName))
@@ -481,7 +493,7 @@ protMotionCorr = """
         "useAlignToSum": true,
         "sumFrame0": 1,
         "sumFrameN": 0,
-        "binFactor": 1.0,
+        "binFactor": %f,
         "cropOffsetX": 0,
         "cropOffsetY": 0,
         "cropDimX": 0,
@@ -509,7 +521,7 @@ protMotionCorr = """
         "numberOfThreads": 1,
         "numberOfMpi": 1,
         "inputMovies": "2.outputMovies"
-    }"""  % (alignFrame0, alignFrameN, extraParams2)
+    }"""  % (alignFrame0, alignFrameN, binFactor, extraParams2)
 
 protGctf = """
     {

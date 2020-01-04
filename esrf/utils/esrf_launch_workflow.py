@@ -32,11 +32,12 @@ import time
 import getopt
 import datetime
 import tempfile
-from pyworkflow.manager import Manager
-import pyworkflow.utils as pwutils
+
+from pyworkflow.project import Manager
 from pyworkflow.protocol import getProtocolFromDb
-from esrf_utils_ispyb import UtilsISPyB
-from esrf_utils_path import UtilsPath
+
+from .esrf_utils_ispyb import UtilsISPyB
+from .esrf_utils_path import UtilsPath
 
 
 def getUpdatedProtocol(protocol):
@@ -52,10 +53,13 @@ def getUpdatedProtocol(protocol):
 
 
 # Parse command line
-usage = "\nUsage: cryoemProcess --directory <dir> [--filesPattern <filesPattern>] [--scipionProjectName <name>] --protein <name> --sample <name> --doseInitial <dose> --dosePerFrame <dose> [--samplingRate <samplingRate>] [--startMotioncorFrame startFrame] [--endMotioncorFrame endFrame]\n"    
+usage = "\nUsage: cryoemProcess --directory <dir> [--filesPattern <filesPattern>] [--scipionProjectName <name>] --protein <name> --sample <name> --doseInitial <dose> --dosePerFrame <dose> [--samplingRate <samplingRate>] [--startMotioncorFrame startFrame] [--endMotioncorFrame endFrame]\n"
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "", ["directory=", "filesPattern=", "scipionProjectName=", "protein=", "sample=", "doseInitial=", "dosePerFrame=", "samplingRate=", "startMotioncorFrame=", "endMotioncorFrame=", "help"])
+    opts, args = getopt.getopt(sys.argv[1:], "",
+                               ["directory=", "filesPattern=", "scipionProjectName=", "protein=", "sample=",
+                                "doseInitial=", "dosePerFrame=", "samplingRate=", "startMotioncorFrame=",
+                                "endMotioncorFrame=", "help"])
 except getopt.GetoptError:
     print(usage)
     sys.exit(1)
@@ -75,7 +79,6 @@ samplingRate = None
 dataStreaming = "true"
 alignFrame0 = 1
 alignFrameN = 0
-
 
 for opt, arg in opts:
     if opt in ["-h", "--help"]:
@@ -106,7 +109,7 @@ for opt, arg in opts:
 if not all([dataDirectory, proteinAcronym, sampleAcronym, dosePerFrame]):
     print(usage)
     sys.exit(1)
-    
+
 if filesPattern is None:
     filesPattern = "Images-Disc1/GridSquare_*/Data/FoilHole_*-*.mrc"
 
@@ -125,11 +128,11 @@ if noMovies == 0:
     sys.exit(1)
 else:
     print("Number of movies available on disk: {0}".format(noMovies))
-    
+
 # Set up location
 if "RAW_DATA" in dataDirectory:
     location = dataDirectory.replace("RAW_DATA", "PROCESSED_DATA")
-#elif "cm01/inhouse" in dataDirectory:
+# elif "cm01/inhouse" in dataDirectory:
 #    location = "/users/opcm01/PROCESSED_DATA"
 else:
     location = tempfile.mkdtemp(prefix="ScipionUserData_")
@@ -145,10 +148,10 @@ if scipionProjectName is None:
         dataStreaming = "false"
 
 if not os.path.exists(location):
-    os.makedirs(location, 0755)
+    os.makedirs(location, 0o755)
 else:
-    os.chmod(location, 0755)
-        
+    os.chmod(location, 0o755)
+
 # All param json file
 allParamsJsonFile = os.path.join(location, "allParams.json")
 
@@ -172,17 +175,17 @@ proposal = UtilsISPyB.getProposal(firstMovieFullPath)
 if proposal is None:
     print("WARNING! No valid proposal could be found for movie {0}.".format(firstMovieFullPath))
     print("")
-    answer = raw_input("Would you like to enter a valid proposal name now (yes/no)? ")
-    while answer != "yes" and answer !="no":
+    answer = input("Would you like to enter a valid proposal name now (yes/no)? ")
+    while answer != "yes" and answer != "no":
         print("")
-        answer = raw_input("Please answer 'yes' or 'no'. Would you like to enter a valid proposal name now? ")
+        answer = input("Please answer 'yes' or 'no'. Would you like to enter a valid proposal name now? ")
     if answer == "yes":
-        proposal = raw_input("Please enter a valid proposal name: ")
+        proposal = input("Please enter a valid proposal name: ")
         code, number = UtilsISPyB.splitProposalInCodeAndNumber(proposal)
         while code is None:
             print("'{0}' is not a valid proposal name.".format(proposal))
             print("")
-            proposal = raw_input("Please enter a valid proposal name (mxXXXX, ih-lsXXXX etc): ")
+            proposal = input("Please enter a valid proposal name (mxXXXX, ih-lsXXXX etc): ")
             code, number = UtilsISPyB.splitProposalInCodeAndNumber(proposal)
     else:
         proposal = None
@@ -201,10 +204,9 @@ else:
         print("ISPyB production data base used")
         db = 0
 
-jpeg, mrc, xml, gridSquareThumbNail =  UtilsPath.getMovieJpegMrcXml(firstMovieFullPath)
+jpeg, mrc, xml, gridSquareThumbNail = UtilsPath.getMovieJpegMrcXml(firstMovieFullPath)
 
 print("Metadata file: {0}".format(xml))
-
 
 dictResults = UtilsPath.getXmlMetaData(xml)
 doPhaseShiftEstimation = dictResults["phasePlateUsed"]
@@ -357,7 +359,7 @@ jsonString = """[
         "dosePerFrame": "%s"
     }
 ]""" % (dataDirectory, filesPattern, nominalMagnification, samplingRate,
-        doseInitial, dosePerFrame, dataStreaming, alignFrame0, alignFrameN,  
+        doseInitial, dosePerFrame, dataStreaming, alignFrame0, alignFrameN,
         doPhaseShiftEstimation, proposal,
         proteinAcronym, sampleAcronym, db, allParamsJsonFile,
         samplingRate, doseInitial, dosePerFrame)
@@ -366,15 +368,16 @@ jsonString = """[
 fd, jsonFile = tempfile.mkstemp(suffix=".json", prefix="scipion_workflow_", dir=location)
 os.write(fd, jsonString)
 os.close(fd)
-os.chmod(jsonFile, 0644)
+os.chmod(jsonFile, 0o644)
 print("Scipion project json fFile: {0}".format(jsonFile))
-
 
 # Create a new project
 manager = Manager()
 
+
 def getNewScipionProjectName(scipionProjectName, index):
     return "{0}_{1}".format(scipionProjectName, index)
+
 
 if manager.hasProject(scipionProjectName):
     print("WARNING! There is already a Scipion project with this name: '{0}'".format(scipionProjectName))
@@ -391,7 +394,7 @@ project = manager.createProject(scipionProjectName, location=location)
 
 if jsonFile is not None:
     protDict = project.loadProtocols(jsonFile)
-    
+
 # Start the project
 runs = project.getRuns()
 
@@ -400,18 +403,15 @@ runs = project.getRuns()
 for prot in runs:
     project.scheduleProtocol(prot)
 
-
 # Monitor the execution:
 doContinue = True
 while doContinue:
     doContinue = False
     updatedRuns = [getUpdatedProtocol(p) for p in runs]
-    print("") 
-    print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')) 
+    print("")
+    print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     for prot in updatedRuns:
         print("{0} status: {1}".format(prot.getRunName(), prot.getStatusMessage()))
         if prot.isActive():
             doContinue = True
     time.sleep(5)
-        
-    

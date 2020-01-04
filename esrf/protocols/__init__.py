@@ -25,4 +25,4 @@
 # *
 # **************************************************************************
 
-from protocol_monitor_ispyb_esrf import ProtMonitorISPyB_ESRF
+from .protocol_monitor_ispyb_esrf import ProtMonitorISPyB_ESRF

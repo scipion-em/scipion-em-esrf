@@ -32,15 +32,11 @@
 import os
 import sys
 import time
-import logging
 # Temporary hard-wired path for PyTango
 sys.path.insert(0, "/opt/pxsoft/scipion/vESRF_dev/debian90-x86_64/scipion_dev/software/lib/python2.7/site-packages/pytango-9.2.0-py2.7-linux-x86_64.egg")
-import traceback
-from email.mime.text import MIMEText
-import smtplib
+
 
 class MetadataManagerClient(object):
-
     """
     A client for the MetadataManager and MetaExperiment tango Devices
 
@@ -67,7 +63,6 @@ class MetadataManagerClient(object):
         MetadataManagerClient.metadataManager = PyTango.client.Device(metadataManagerName)
         MetadataManagerClient.metaExperiment = PyTango.client.Device(metaExperimentName)
 
-
     def printStatus(self):
         print("DataRoot: %s" % MetadataManagerClient.metaExperiment.dataRoot)
         print("Proposal: %s" % MetadataManagerClient.metaExperiment.proposal)
@@ -80,7 +75,6 @@ class MetadataManagerClient(object):
         status += "Sample: %s\n" % MetadataManagerClient.metaExperiment.sample
         status += "Dataset: %s\n" % MetadataManagerClient.metadataManager.scanName
         return status
-
 
     def _setAttribute(self, proxy, attributeName, newValue):
         """
@@ -115,7 +109,6 @@ class MetadataManagerClient(object):
     def appendFile(self, filePath):
         self._setAttribute(MetadataManagerClient.metadataManager, "lastDataFile", filePath)
 
-
     def start(self, dataRoot, proposal, sampleName, datasetName):
         """ Starts a new dataset """
         # Check if in state RUNNING, if yes abort scan
@@ -144,14 +137,13 @@ class MetadataManagerClient(object):
         # Give the server some time to react
         time.sleep(1)
 
-
     def end(self):
         try:
             MetadataManagerClient.metadataManager.endScan()
             # Give the server some time to react
             time.sleep(1)
         except:
-            print "Unexpected error:", sys.exc_info()[0]
+            print("Unexpected error:", sys.exc_info()[0])
             raise
 
     def getMetadataManagerState(self):
@@ -189,10 +181,8 @@ if __name__ == "__main__":
         print(archivePath)
         client.appendFile(archivePath)
     dictMetadata = {"definition": "EM"}
-    for attributeName, value in dictMetadata.iteritems():
+    for attributeName, value in dictMetadata.items():
         print("Setting metadata client attribute '{0}' to '{1}'".format(attributeName, value))
         setattr(client.metadataManager, attributeName, str(value))
     client.printStatus()
     client.end()
-
-

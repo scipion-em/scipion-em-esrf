@@ -27,7 +27,7 @@
 # *
 # **************************************************************************
 
-_bibtexStr = """
+"""
 
 @article{Delageniere2011,
   author    = {Delageniere, Solange and
@@ -59,11 +59,3 @@ _bibtexStr = """
   timestamp = {Mon, 14 Nov 2011 15:11:21 +0100}
 }
 """
-
-from pyworkflow.utils import parseBibTex
-
-_bibtex = parseBibTex(_bibtexStr)  
-
-'''
-
-'''

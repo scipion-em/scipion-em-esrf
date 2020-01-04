@@ -25,14 +25,13 @@
 # *
 # **************************************************************************
 
-import os
 import time
 import unittest
 
-from  esrf.utils.esrf_utils_icat import UtilsIcat
+from ..utils.esrf_utils_icat import UtilsIcat
+
 
 class Test(unittest.TestCase):
-
 
     def tes_uploadToIcat(self):
         listFiles = [
@@ -54,11 +53,3 @@ class Test(unittest.TestCase):
             "EM_spherical_aberration": 9.0,
             "EM_voltage": 10.0}
         UtilsIcat.uploadToIcat(listFiles, directory, proposal, sample, dataSetName, dictMetadata)
-
-
-
-
-
-if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testName']
-    unittest.main()

@@ -25,28 +25,25 @@
 # *
 # **************************************************************************
 
-
 import os
 import sys
-import time
 import traceback
 
 # Temporary hard-wired path for PyTango
-sys.path.insert(0, "/opt/pxsoft/scipion/vESRF_dev/debian90-x86_64/scipion_dev/software/lib/python2.7/site-packages/pytango-9.2.0-py2.7-linux-x86_64.egg")
+sys.path.insert(0,
+                "/opt/pxsoft/scipion/vESRF_dev/debian90-x86_64/scipion_dev/software/lib/python2.7/site-packages/pytango-9.2.0-py2.7-linux-x86_64.egg")
 # import PyTango  # import isnt used in this file
 
-from ESRFMetadataManagerClient import MetadataManagerClient
+from .ESRFMetadataManagerClient import MetadataManagerClient
+
 
 class UtilsIcat(object):
-    
 
     @staticmethod
     def getDataFilesToBeArchived(allParams):
         listFiles = []
         return listFiles
 
-
-    
     @staticmethod
     def uploadToIcat(listFiles, directory, proposal, sample, dataSetName, dictMetadata={}, listGalleryPath=[]):
         errorMessage = None
@@ -63,14 +60,14 @@ class UtilsIcat(object):
                 client.start(directory, proposal, sample, dataSetName)
             except:
                 errorMessage = UtilsIcat.getStackTraceLog()
-                
+
         if errorMessage is None:
             try:
                 for filePath in listFiles:
                     archivePath = filePath.replace(directory + "/", "")
                     client.appendFile(archivePath)
                 dictMetadata["definition"] = "EM"
-                for attributeName, value in dictMetadata.iteritems():
+                for attributeName, value in dictMetadata.items():
                     setattr(client.metadataManager, attributeName, str(value))
             except:
                 errorMessage = UtilsIcat.getStackTraceLog()
@@ -104,11 +101,10 @@ class UtilsIcat(object):
             if "archived" in entry and not entry["archived"]:
                 gridSquare = entry["gridSquare"]
                 if gridSquare != gridSquareNotToArchive:
-                    if not gridSquare in dictGridSquares:
+                    if gridSquare not in dictGridSquares:
                         dictGridSquares[gridSquare] = []
                     dictGridSquares[gridSquare].append(key)
         return dictGridSquares
-
 
     @staticmethod
     def getStackTraceLog():

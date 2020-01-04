@@ -25,3 +25,8 @@
 # *
 # **************************************************************************
 
+from .test_esrf_utils_icat import *
+from .test_esrf_utils_icat_execution import *
+from .test_esrf_utils_ispyb import *
+from .test_esrf_utils_ispyb_execution import *
+from .test_esrf_utils_path import *

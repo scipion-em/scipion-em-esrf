@@ -27,7 +27,8 @@
 
 import os
 import unittest
-from  esrf.utils.esrf_utils_ispyb import UtilsISPyB
+from ..utils.esrf_utils_ispyb import UtilsISPyB
+
 
 class Test(unittest.TestCase):
 
@@ -72,7 +73,3 @@ class Test(unittest.TestCase):
         proposal = UtilsISPyB.findProposal(1, "OPCM01")
         self.assertEqual("OPCM", proposal.code)
         self.assertEqual("01", proposal.number)
-        
-if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testName']
-    unittest.main()

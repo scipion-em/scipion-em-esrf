@@ -26,13 +26,12 @@
 # **************************************************************************
 
 import os
-import pprint
 import unittest
 
-from  esrf.utils.esrf_utils_path import UtilsPath
+from ..utils.esrf_utils_path import UtilsPath
+
 
 class Test(unittest.TestCase):
-
 
     def test_getMovieFileNameParametersFromMotioncorrPath(self):
         # Test 1
@@ -69,7 +68,6 @@ class Test(unittest.TestCase):
  'prefix': 'FoilHole',
  'suffix': 'mrc'}
         self.assertEqual(refDict2, dictResult2)
-        
 
     def test_getMovieFileNameParameters(self):
         # Test1
@@ -104,11 +102,10 @@ class Test(unittest.TestCase):
  'prefix': 'FoilHole',
  'suffix': 'mrc'}
         self.assertEqual(refDict2, dictResult2)
-        
 
     def test_getMovieJpegMrcXml(self):
         movieFullPath = "/scisoft/pxsoft/data/cryoem/20171123/RAW_DATA/testsecretin-grid1/Images-Disc1/GridSquare_23722826/Data/FoilHole_23724105_Data_23724797_23724798_20171123_1448-3385.mrc"
-        jpeg, mrc, xml, gridSquareThumbNail =  UtilsPath.getMovieJpegMrcXml(movieFullPath)
+        jpeg, mrc, xml, gridSquareThumbNail = UtilsPath.getMovieJpegMrcXml(movieFullPath)
         jpegRef = "/scisoft/pxsoft/data/cryoem/20171123/RAW_DATA/testsecretin-grid1/Images-Disc1/GridSquare_23722826/Data/FoilHole_23724105_Data_23724797_23724798_20171123_1448.jpg"
         self.assertEqual(jpegRef, jpeg)
         mrcRef = "/scisoft/pxsoft/data/cryoem/20171123/RAW_DATA/testsecretin-grid1/Images-Disc1/GridSquare_23722826/Data/FoilHole_23724105_Data_23724797_23724798_20171123_1448.mrc"
@@ -118,7 +115,6 @@ class Test(unittest.TestCase):
         gridSquareThumbNailRef = "/scisoft/pxsoft/data/cryoem/20171123/RAW_DATA/testsecretin-grid1/Images-Disc1/GridSquare_23722826/GridSquare_20171123_144119.jpg" 
         self.assertEqual(gridSquareThumbNailRef, gridSquareThumbNail)
 
- 
     def test_getAlignMoviesPngLogFilePath(self):
         mrcFilePath = "/scisoft/pxsoft/data/cryoem/testRunData/20171113/Runs/000056_ProtMotionCorr/extra/FoilHole_9208892_Data_9209286_9209287_20171109_1540-0539_aligned_mic.mrc"
         dictResult = UtilsPath.getAlignMoviesPngLogFilePath(mrcFilePath)
@@ -128,7 +124,6 @@ class Test(unittest.TestCase):
  'thumbnailPng': '/scisoft/pxsoft/data/cryoem/testRunData/20171113/Runs/000056_ProtMotionCorr/extra/FoilHole_9208892_Data_9209286_9209287_20171109_1540-0539_thumbnail.png'}
         self.assertEqual(dictRef, dictResult)
 
-        
     def test_getShiftData(self):
         mrcFilePath = "/scisoft/pxsoft/data/cryoem/testRunData/20171113/Runs/000056_ProtMotionCorr/extra/FoilHole_9208892_Data_9209286_9209287_20171109_1540-0539_aligned_mic.mrc"
         dictResult = UtilsPath.getShiftData(mrcFilePath)
@@ -149,7 +144,6 @@ class Test(unittest.TestCase):
  'superResolutionFactor': '1'}
         self.assertEqual(dictRef, dictResult)
     
-
     def test_getCtfMetaData(self):
         workingDir = "/scisoft/pxsoft/data/cryoem/testRunData/20171017/000977_ProtGctf"
         mrcFilePath = "/scisoft/pxsoft/data/cryoem/testRunData/20171017/000859_ProtMotionCorr/extra/FoilHole_19150795_Data_19148847_19148848_20170619_2101-0344_aligned_mic.mrc"
@@ -209,9 +203,3 @@ class Test(unittest.TestCase):
         print(pyarchFilePath)
         pyarchFilePath = UtilsPath.copyToPyarchPath(testPath)
         print(pyarchFilePath)
-
-
-
-if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testName']
-    unittest.main()

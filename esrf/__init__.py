@@ -25,12 +25,14 @@
 # *
 # **************************************************************************
 
-from bibtex import _bibtex # Load bibtex dict with references
-import pyworkflow.em
+import pwem
+
 _logo = None
 _references = ['Delageniere2011']
 
-class Plugin(pyworkflow.em.Plugin):
+
+class Plugin(pwem.Plugin):
     pass
 
-pyworkflow.em.Domain.registerPlugin(__name__)
+
+pwem.Domain.registerPlugin(__name__)

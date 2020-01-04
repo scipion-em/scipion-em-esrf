@@ -26,7 +26,8 @@
 # **************************************************************************
 
 import unittest
-from  esrf.utils.esrf_utils_ispyb import UtilsISPyB
+from ..utils.esrf_utils_ispyb import UtilsISPyB
+
 
 class Test(unittest.TestCase):
 
@@ -36,7 +37,3 @@ class Test(unittest.TestCase):
     def tes_createSession(self):
         sessions = UtilsISPyB.createSession(1, "opcm01", "cm01")
         print(sessions)
-
-if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testName']
-    unittest.main()

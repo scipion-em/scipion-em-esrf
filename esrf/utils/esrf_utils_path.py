@@ -25,7 +25,6 @@
 # *
 # **************************************************************************
 
-
 import os
 import re
 import glob
@@ -37,9 +36,9 @@ import datetime
 import traceback
 import xml.etree.ElementTree
 
+
 class UtilsPath(object):
-    
-    
+
     @staticmethod
     def getMovieJpegMrcXml(movieFilePath):
         mrc = None
@@ -60,9 +59,8 @@ class UtilsPath(object):
         listSnapshot = glob.glob(os.path.join(gridSquareDir, "*.jpg"))
         if len(listSnapshot) > 0:
             gridSquareSnapshot = listSnapshot[-1]
-            
-        return jpeg, mrc, xml, gridSquareSnapshot
 
+        return jpeg, mrc, xml, gridSquareSnapshot
 
     @staticmethod
     def getAlignMoviesPngLogFilePath(mrcFilePath):
@@ -84,11 +82,11 @@ class UtilsPath(object):
             dictFileNameParameters = UtilsPath.getMovieFileNameParametersFromMotioncorrPath(mrcFile)
             movieNumber = dictFileNameParameters["movieNumber"]
             if "DW" in dictFileNameParameters["extra"] and mrcMovieNumber == movieNumber:
-                dictResult["doseWeightMrc"] = mrcFile            
-        # Find log file
+                dictResult["doseWeightMrc"] = mrcFile
+                # Find log file
         dictResult["logFileFullPath"] = os.path.join(os.path.dirname(mrcDirectory), "logs", "run.log")
         return dictResult
-    
+
     @staticmethod
     def etree_to_dict(t):
         p = re.compile("^\{(.*)\}")
@@ -97,11 +95,11 @@ class UtilsPath(object):
             t.tag = t.tag[m.span()[1]:]
         listTmp = map(UtilsPath.etree_to_dict, t.getchildren())
         if len(listTmp) > 0:
-            d = {t.tag : listTmp}
+            d = {t.tag: listTmp}
         else:
-            d = {t.tag : t.text}
+            d = {t.tag: t.text}
         return d
- 
+
     @staticmethod
     def get_recursively(search_dict, field):
         """
@@ -111,26 +109,26 @@ class UtilsPath(object):
         See: https://stackoverflow.com/questions/14962485/finding-a-key-recursively-in-a-dictionary
         """
         fields_found = []
-    
-        for key, value in search_dict.iteritems():
-    
+
+        for key, value in search_dict.items():
+
             if key == field:
                 fields_found.append(value)
-    
+
             elif isinstance(value, dict):
                 results = UtilsPath.get_recursively(value, field)
                 for result in results:
                     fields_found.append(result)
-    
+
             elif isinstance(value, list):
                 for item in value:
                     if isinstance(item, dict):
                         more_results = UtilsPath.get_recursively(item, field)
                         for another_result in more_results:
                             fields_found.append(another_result)
-    
+
         return fields_found
-    
+
     @staticmethod
     def getXmlMetaData(xmlMetaDataFullPath):
         dictResults = {}
@@ -149,13 +147,13 @@ class UtilsPath(object):
         dictResults["accelerationVoltage"] = UtilsPath.get_recursively(dictXML, "AccelerationVoltage")[0]
         dictResults["acquisitionDateTime"] = UtilsPath.get_recursively(dictXML, "acquisitionDateTime")[0]
         listKeyValue = UtilsPath.get_recursively(dictXML, "CameraSpecificInput")[0]
-        #print(listKeyValue)
+        # print(listKeyValue)
         for dictKeyValueOfstringanyType in listKeyValue:
             dictKey = dictKeyValueOfstringanyType["KeyValueOfstringanyType"][0]
             dictValue = dictKeyValueOfstringanyType["KeyValueOfstringanyType"][1]
             if dictKey["Key"] == "SuperResolutionFactor":
                 dictResults["superResolutionFactor"] = dictValue["Value"]
-        #dictResults["superResolutionFactor"] = UtilsPath.get_recursively(dictXML, "superResolutionFactor")
+        # dictResults["superResolutionFactor"] = UtilsPath.get_recursively(dictXML, "superResolutionFactor")
         return dictResults
 
     @staticmethod
@@ -171,10 +169,8 @@ class UtilsPath(object):
                     keyFound = False
                     break
         return value
-        
-    
-    
-    @ staticmethod
+
+    @staticmethod
     def getCtfMetaData(workingDir, mrcFilePath):
         dictResults = {
             "spectraImageSnapshotFullPath": None,
@@ -207,7 +203,7 @@ class UtilsPath(object):
                 index = 0
                 for index in range(len(lines)):
                     if "Final Values" in lines[index]:
-                        listLabels = lines[index-1].split()
+                        listLabels = lines[index - 1].split()
                         listValues = lines[index].split()
                         for label, value in zip(listLabels, listValues):
                             dictResults[label] = value
@@ -223,53 +219,54 @@ class UtilsPath(object):
             dictResults["logFilePath"] = logFilePath
         return dictResults
 
-    @ staticmethod
+    @staticmethod
     def getMovieFileNameParameters(mrcFilePath):
         """
         FoilHole_19150795_Data_19148847_19148848_20170619_2101-0344.mrc
         """
         dictResult = {}
-        p = re.compile("^(.*)/(GridSquare_[0-9]*)/Data/(.*)_([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)-([0-9]*)(_?.*)\.(.*)")
+        p = re.compile(
+            "^(.*)/(GridSquare_[0-9]*)/Data/(.*)_([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)-([0-9]*)(_?.*)\.(.*)")
         m = p.match(mrcFilePath)
         dictResult["directory"] = os.path.dirname(mrcFilePath)
-        dictResult["gridSquare"] = m.group(2)   
-        dictResult["prefix"] = m.group(3)   
-        dictResult["id1"] = m.group(4)   
-        dictResult["id2"] = m.group(5)   
-        dictResult["id3"] = m.group(6)   
-        dictResult["date"] = m.group(7)   
-        dictResult["hour"] = m.group(8)   
-        dictResult["movieNumber"] = m.group(9)   
-        dictResult["extra"] = m.group(10)   
-        dictResult["suffix"] = m.group(11)   
-        dictResult["movieName"] = "{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}-{movieNumber}".format(**dictResult) 
+        dictResult["gridSquare"] = m.group(2)
+        dictResult["prefix"] = m.group(3)
+        dictResult["id1"] = m.group(4)
+        dictResult["id2"] = m.group(5)
+        dictResult["id3"] = m.group(6)
+        dictResult["date"] = m.group(7)
+        dictResult["hour"] = m.group(8)
+        dictResult["movieNumber"] = m.group(9)
+        dictResult["extra"] = m.group(10)
+        dictResult["suffix"] = m.group(11)
+        dictResult["movieName"] = "{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}-{movieNumber}".format(**dictResult)
         return dictResult
 
-    @ staticmethod
+    @staticmethod
     def getMovieFileNameParametersFromMotioncorrPath(mrcFilePath):
         """
         FoilHole_19150795_Data_19148847_19148848_20170619_2101-0344.mrc
         """
         dictResult = {}
-        p = re.compile("^(.*)/(GridSquare_[0-9]*)*(_Data_)*(.*)_([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)-([0-9]*)(_?.*)\.(.*)")
+        p = re.compile(
+            "^(.*)/(GridSquare_[0-9]*)*(_Data_)*(.*)_([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)-([0-9]*)(_?.*)\.(.*)")
         m = p.match(mrcFilePath)
         dictResult["directory"] = os.path.dirname(mrcFilePath)
-        dictResult["gridSquare"] = m.group(2)   
-        dictResult["data"] = m.group(3)   
-        dictResult["prefix"] = m.group(4)   
-        dictResult["id1"] = m.group(5)   
-        dictResult["id2"] = m.group(6)   
-        dictResult["id3"] = m.group(7)   
-        dictResult["date"] = m.group(8)   
-        dictResult["hour"] = m.group(9)   
-        dictResult["movieNumber"] = m.group(10)   
-        dictResult["extra"] = m.group(11)   
-        dictResult["suffix"] = m.group(12)   
-        dictResult["movieName"] = "{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}-{movieNumber}".format(**dictResult) 
+        dictResult["gridSquare"] = m.group(2)
+        dictResult["data"] = m.group(3)
+        dictResult["prefix"] = m.group(4)
+        dictResult["id1"] = m.group(5)
+        dictResult["id2"] = m.group(6)
+        dictResult["id3"] = m.group(7)
+        dictResult["date"] = m.group(8)
+        dictResult["hour"] = m.group(9)
+        dictResult["movieNumber"] = m.group(10)
+        dictResult["extra"] = m.group(11)
+        dictResult["suffix"] = m.group(12)
+        dictResult["movieName"] = "{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}-{movieNumber}".format(**dictResult)
         return dictResult
-    
-    
-    @ staticmethod
+
+    @staticmethod
     def getPyarchFilePath(workingDir):
         """
         This method translates from a "visitor" path to a "pyarch" path:
@@ -279,53 +276,52 @@ class UtilsPath(object):
         list_directory = workingDir.split(os.sep)
         list_beamline = ["cm01"]
         # Check that we have at least four levels of directories:
-        if (len(list_directory) > 5):
-            topDirectory = list_directory[ 1 ]
-            secondDirectory = list_directory[ 2 ]
+        if len(list_directory) > 5:
+            topDirectory = list_directory[1]
+            secondDirectory = list_directory[2]
             proposal = None
             beamline = None
-            year = list_directory[ 5 ][0:4]
+            year = list_directory[5][0:4]
             # Check that we have a year that make sense...
             try:
                 intYear = int(year)
-                if intYear < 2017 and intYear > 2100:
+                if 2100 < intYear < 2017:
                     # Something looks wrong, take the current year...
                     year = str(datetime.datetime.now().year)
             except:
                 # Something looks wrong, take the current year...
                 year = str(datetime.datetime.now().year)
-            
+
             # Work around for ihls2975...
             if list_directory[4] == "IH-LS-2975":
                 year = "2018"
                 beamline = "cm01"
                 proposal = "ihls2975"
-                listOfRemainingDirectories = list_directory[ 5: ]
+                listOfRemainingDirectories = list_directory[5:]
                 listOfRemainingDirectories.insert(0, list_directory[3])
-              
-            
+
             elif topDirectory == "mntdirect" and secondDirectory == "_data_visitor":
-                proposal = list_directory[ 3 ]
-                beamline = list_directory[ 4 ]
-                listOfRemainingDirectories = list_directory[ 5: ]
+                proposal = list_directory[3]
+                beamline = list_directory[4]
+                listOfRemainingDirectories = list_directory[5:]
 
             elif topDirectory == "mntdirect" and secondDirectory == "_data_cm01_inhouse":
-                proposal = list_directory[ 3 ]
-                beamline = list_directory[ 4 ]
-                listOfRemainingDirectories = list_directory[ 5: ]
-    
+                proposal = list_directory[3]
+                beamline = list_directory[4]
+                listOfRemainingDirectories = list_directory[5:]
+
             elif topDirectory == "data" and secondDirectory == "visitor":
-                proposal = list_directory[ 3 ]
-                beamline = list_directory[ 4 ]
-                listOfRemainingDirectories = list_directory[ 5: ]
-    
+                proposal = list_directory[3]
+                beamline = list_directory[4]
+                listOfRemainingDirectories = list_directory[5:]
+
             elif topDirectory == "data" and secondDirectory in list_beamline:
                 beamline = secondDirectory
-                proposal = list_directory[ 4 ]
-                listOfRemainingDirectories = list_directory[ 5: ]
-    
-            if ((proposal != None) and
-                (beamline != None)):
+                proposal = list_directory[4]
+                listOfRemainingDirectories = list_directory[5:]
+
+            if ((proposal is not None) and
+                    (beamline is not None)):
                 pyarchFilePath = os.path.join(os.sep, "data")
                 pyarchFilePath = os.path.join(pyarchFilePath, "pyarch")
                 pyarchFilePath = os.path.join(pyarchFilePath, year)
@@ -333,12 +329,12 @@ class UtilsPath(object):
                 pyarchFilePath = os.path.join(pyarchFilePath, proposal)
                 for directory in listOfRemainingDirectories:
                     pyarchFilePath = os.path.join(pyarchFilePath, directory)
-    
-        if (pyarchFilePath is None):
+
+        if pyarchFilePath is None:
             print("ERROR! Directory path not converted for pyarch: %s" % workingDir)
         return pyarchFilePath
 
-    @ staticmethod
+    @staticmethod
     def copyToPyarchPath(filePath):
         pyarchFilePath = None
         if filePath is not None and os.path.exists(filePath):
@@ -348,7 +344,7 @@ class UtilsPath(object):
                     pyarchFilePath = UtilsPath.getPyarchFilePath(filePath)
                     pyarchFileDir = os.path.dirname(pyarchFilePath)
                     if not os.path.exists(pyarchFileDir):
-                        os.makedirs(pyarchFileDir, 0755)
+                        os.makedirs(pyarchFileDir, 0o755)
                     shutil.copy(filePath, pyarchFilePath)
                 else:
                     # Test path:
@@ -365,13 +361,13 @@ class UtilsPath(object):
                             time.sleep(1)
                         else:
                             pyarchFilePath = os.path.join(timePath, fileName)
-                            if "linsvensson" in socket.gethostname(): 
+                            if "linsvensson" in socket.gethostname():
                                 if os.path.getsize(filePath) < 1e6:
                                     # For the moment, only copy file if smaller than 1 MB
                                     os.system("ssh mxhpc2-1705 'mkdir -p {0}'".format(timePath))
                                     os.system("scp {0} mxhpc2-1705:{1}".format(filePath, pyarchFilePath))
                             else:
-                                os.makedirs(timePath, 0755)
+                                os.makedirs(timePath, 0o755)
                                 shutil.copy(filePath, pyarchFilePath)
                             isDone = True
             except:
@@ -380,9 +376,8 @@ class UtilsPath(object):
             if pyarchFilePath is None or not os.path.exists(pyarchFilePath):
                 pyarchFilePath = filePath
         return pyarchFilePath
-        
-                
-    @ staticmethod
+
+    @staticmethod
     def getShiftData(filePath):
         dictResults = {}
         logFile = os.path.join(os.path.dirname(os.path.dirname(filePath)), "logs", "run.stdout")
@@ -406,21 +401,20 @@ class UtilsPath(object):
                     if "Full-frame alignment shift" in line:
                         foundShiftTable = True
                     elif foundShiftTable:
-                        #print(indexMrc, [line])
+                        # print(indexMrc, [line])
                         if len(line) > 1:
                             listLine = line.split()
-                            #print(listLine)
+                            # print(listLine)
                             xShift = float(listLine[5])
                             yShift = float(listLine[6].strip())
                             listXShift.append(xShift)
                             listYShift.append(yShift)
-                            totalMotion += math.sqrt(xShift**2 + yShift**2)
+                            totalMotion += math.sqrt(xShift ** 2 + yShift ** 2)
                             noPoints += 1
                         else:
                             foundShiftTable = False
                             foundMrc = False
-                    
-                    
+
                 index += 1
                 if index >= len(listLines):
                     done = True
@@ -428,4 +422,3 @@ class UtilsPath(object):
             dictResults["totalMotion"] = round(totalMotion, 1)
             dictResults["averageMotionPerFrame"] = round(totalMotion / noPoints, 1)
         return dictResults
- 

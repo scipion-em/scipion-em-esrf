@@ -53,5 +53,5 @@ setup(
     package_data={  # Optional
        'esrf': ['protocols.conf'],
     },
-    install_requires=['suds'],
+    install_requires=['suds-py3', 'pytango'],
 )

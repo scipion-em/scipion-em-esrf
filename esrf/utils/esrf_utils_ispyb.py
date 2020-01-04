@@ -25,53 +25,43 @@
 # *
 # **************************************************************************
 
-
 import os
-import re
 import sys
-import glob
-import math
-import time
-import socket
-import shutil
-import pprint
 import datetime
-import traceback
-import ConfigParser
-import xml.etree.ElementTree
+from configparser import ConfigParser
 
 sys.path.insert(0, "/opt/pxsoft/EDNA/vMX/edna/libraries/suds-0.4")
 
 from suds.client import Client
 from suds.transport.http import HttpAuthenticated
 
+
 class UtilsISPyB(object):
-
-
 
     @staticmethod
     def getHttpAuthenticated():
-        credentialsConfig = ConfigParser.ConfigParser()
+        credentialsConfig = ConfigParser()
         credentialsConfig.read(os.path.join(os.path.dirname(__file__), 'credentials.properties'))
         username = str(credentialsConfig.get('Credential', 'user'))
         password = str(credentialsConfig.get('Credential', 'password'))
-        return HttpAuthenticated(username = username, password = password )
-    
+        return HttpAuthenticated(username=username, password=password)
+
     @staticmethod
     def getUrlBase(dbNumber):
-        config = ConfigParser.ConfigParser()
+        config = ConfigParser()
         # Configuration files
-        config.read(os.path.join(os.path.dirname(__file__), 'ispyb.properties'))    
+        config.read(os.path.join(os.path.dirname(__file__), 'ispyb.properties'))
         # URL
         urlBase = str(config.get('UrlBase', 'url_{0}'.format(dbNumber)))
         return urlBase
-    
+
     @staticmethod
     def splitProposalInCodeAndNumber(proposal):
         code = None
         number = None
         if proposal is not None:
-            listCodes = ["fx", "mxihr", "mx", "bx", "ix", "in", "im", "ih-ls", "blc", "bm161", "sc", "tc", "opcm", "opid"]
+            listCodes = ["fx", "mxihr", "mx", "bx", "ix", "in", "im", "ih-ls", "blc", "bm161", "sc", "tc", "opcm",
+                         "opid"]
             proposalLowerCase = proposal.lower()
             for tmpCode in listCodes:
                 if proposalLowerCase.startswith(tmpCode):
@@ -82,13 +72,13 @@ class UtilsISPyB(object):
                         code = None
                         number = None
         return code, number
-    
+
     @staticmethod
     def getClient(url):
         # Authentication
         httpAuthenticated = UtilsISPyB.getHttpAuthenticated()
-        client = Client( url, transport = httpAuthenticated, cache = None, timeout = 15 )
-        return client  
+        client = Client(url, transport=httpAuthenticated, cache=None, timeout=15)
+        return client
 
     @staticmethod
     def updateProposalFromSMIS(dbNumber, proposal):
@@ -98,7 +88,7 @@ class UtilsISPyB(object):
         code, number = UtilsISPyB.splitProposalInCodeAndNumber(proposal)
         response = client.service.updateProposalFromSMIS(code, number)
         print(response)
- 
+
     @staticmethod
     def findSessions(dbNumber, proposal, beamline):
         urlBase = UtilsISPyB.getUrlBase(dbNumber)
@@ -108,8 +98,8 @@ class UtilsISPyB(object):
         code, number = UtilsISPyB.splitProposalInCodeAndNumber(proposal)
         # print(code, number, beamline)
         sessions = client.service.findSessionsByProposalAndBeamLine(code, number, beamline)
-        return sessions      
-    
+        return sessions
+
     @staticmethod
     def findProposal(dbNumber, proposal):
         urlBase = UtilsISPyB.getUrlBase(dbNumber)
@@ -120,8 +110,7 @@ class UtilsISPyB(object):
         # print(code, number)
         proposal = client.service.findProposal(code, number)
         return proposal
-    
-    
+
     @staticmethod
     def createSession(dbNumber, proposal, beamline):
         sessions = []
@@ -131,9 +120,9 @@ class UtilsISPyB(object):
             startTime = datetime.datetime.combine(currentTime, datetime.time(0, 0))
             tomorrow = startTime + datetime.timedelta(days=1)
             endTime = datetime.datetime.combine(tomorrow, datetime.time(7, 59, 59))
-    
+
             # Create a session
-            newSessionDict = {}
+            newSessionDict = dict()
             newSessionDict['proposalId'] = proposalDict["proposalId"]
             newSessionDict['startDate'] = startTime
             newSessionDict['endDate'] = endTime
@@ -141,7 +130,7 @@ class UtilsISPyB(object):
             newSessionDict['scheduled'] = 0
             newSessionDict['nbShifts'] = 3
             newSessionDict['comments'] = "Session created by Scipion"
-            
+
             urlBase = UtilsISPyB.getUrlBase(dbNumber)
             url = os.path.join(urlBase, "ToolsForCollectionWebService?wsdl")
             print(url)
@@ -151,7 +140,6 @@ class UtilsISPyB(object):
             print(code, number, beamline)
             sessions = client.service.storeOrUpdateSession(newSessionDict)
         return sessions
-
 
     @staticmethod
     def getProposal(movieFilePath):
@@ -168,8 +156,3 @@ class UtilsISPyB(object):
             if proposalCode is not None:
                 proposal = proposalFromDirectory.lower()
         return proposal
-        
-    
-    
-    
- 

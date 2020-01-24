@@ -172,8 +172,7 @@ configDict["doPhaseShiftEstimation"] = False
 # Check proposal
 # db=0: production
 # db=1: valid
-# db=2: lindemaria
-# db=3: localhost
+# db=2: linsvensson
 proposal = UtilsISPyB.getProposal(firstMovieFullPath)
 if proposal is None:
     print("WARNING! No valid proposal could be found for movie {0}.".format(firstMovieFullPath))
@@ -286,8 +285,8 @@ else:
     configDict["binFactor"] = 1.0
 
 configDict["motioncor2Gpu"] = "0"
-configDict["gctfGpu"] = "1"
-configDict["gl2dGpu"] = "1"
+configDict["gctfGpu"] = "0"
+configDict["gl2dGpu"] = "0"
 configDict["relionGpu"] = "1"
 configDict["numCpus"] = 16
 configDict["sampling2D"] = 3.0

@@ -31,6 +31,7 @@ from collections import OrderedDict
 from pyworkflow.em.protocol import ProtImportMovies
 from pyworkflow.em.protocol import ProtUnionSet
 from pyworkflow.em.protocol import ProtMonitorSummary
+from esrf.protocols.protocol_monitor_ispyb_esrf import ProtMonitorISPyB_ESRF
 
 from pyworkflow.object import Pointer
 import pyworkflow.utils as pwutils
@@ -459,6 +460,24 @@ def preprocessWorkflow(configDict):
     # --------- SUMMARY MONITOR -----------------------
     protMonitor = project.newProtocol(ProtMonitorSummary,
                                       objLabel='Scipion - Summary Monitor',
-                                      samplingInterval=20)
+                                      samplingInterval=20,
+                                      publishCmd="rsync -avL %(REPORT_FOLDER)s {0}".format(configDict["dataDirectory"]))
     protMonitor.inputProtocols.set(summaryList)
     _registerProt(protMonitor, 'monitor')
+
+    # --------- ISPyB MONITOR -----------------------
+    ispybMonitor = project.newProtocol(ProtMonitorISPyB_ESRF,
+                                       objLabel='ISPyB monitor',
+                                       samplingInterval=10,
+                                       proposal=configDict["proposal"],
+                                       proteinAcronym=configDict["proteinAcronym"],
+                                       sampleAcronym=configDict["sampleAcronym"],
+                                       db=configDict["db"],
+                                       allParamsJsonFile=configDict["allParamsJsonFile"],
+                                       samplingRate=configDict["samplingRate"],
+                                       doseInitial=configDict["doseInitial"],
+                                       dosePerFrame=configDict["dosePerFrame"],
+                                       serialEM=configDict["serialEM"]
+                                       )
+    ispybMonitor.inputProtocols.set([protImport, protMA, protCTF2])
+    _registerProt(ispybMonitor, 'ispybMonitor')

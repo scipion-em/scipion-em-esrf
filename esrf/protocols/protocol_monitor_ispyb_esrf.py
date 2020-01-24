@@ -82,7 +82,7 @@ class ProtMonitorISPyB_ESRF(ProtMonitor):
                         help="Set if Serial EM is used, if not set assumes EPU.")
 
         group2.addParam('db', params.EnumParam,
-                        choices=["production", "valid", "lindemaria", "test"],
+                        choices=["production", "valid", "linsvensson"],
                         label="Database",
                         help="Select which ISPyB database you want to use.")
 
@@ -104,6 +104,7 @@ class ProtMonitorISPyB_ESRF(ProtMonitor):
         dbNumber = self.db.get()
         urlBase = UtilsISPyB.getUrlBase(dbNumber)
         url = os.path.join(urlBase, "ToolsForEMWebService?wsdl")
+        self.info("ISPyB URL: {0}".format(url))
         self.client = UtilsISPyB.getClient(url)
         
         # Update proposal
@@ -260,7 +261,10 @@ class MonitorISPyB_ESRF(Monitor):
             self.info("Import movies: movieName: {0}".format(movieName))
             processDir = os.path.join(os.path.dirname(movieFullPath), "process", movieName)
             if not os.path.exists(processDir):
-                os.makedirs(processDir, 0755)
+                try:
+                    os.makedirs(processDir, 0o755)
+                except OSError as e:
+                    processDir = None
 
             self.movieDirectory = os.path.dirname(movieFullPath)
 
@@ -290,6 +294,9 @@ class MonitorISPyB_ESRF(Monitor):
             micrographPyarchPath = None
             xmlMetaDataPyarchPath = None
             gridSquareSnapshotPyarchPath = None
+            voltage = None
+            magnification = None
+            imagesCount = None
             positionX = None
             positionY = None
             dosePerImage = None
@@ -413,7 +420,10 @@ class MonitorISPyB_ESRF(Monitor):
             self.info("Import movies: movieName: {0}".format(movieName))
             processDir = os.path.join(os.path.dirname(movieFullPath), "process", movieName)
             if not os.path.exists(processDir):
-                os.makedirs(processDir, 0o755)
+                try:
+                    os.makedirs(processDir, 0o755)
+                except OSError as e:
+                    processDir = None
             self.movieDirectory = os.path.dirname(movieFullPath)
             # Get SerialEM metadata
             mdocFullPath = movieFullPath + ".mdoc"
@@ -627,10 +637,11 @@ class MonitorISPyB_ESRF(Monitor):
                 correctedDoseMicrographPyarchPath = None
                 micrographSnapshotPyarchPath = UtilsPath.copyToPyarchPath(micrographSnapshotFullPath)
                 logFilePyarchPath = UtilsPath.copyToPyarchPath(logFileFullPath)
-                
-                shutil.copy(micrographFullPath, self.allParams[movieName]["processDir"])
-                shutil.copy(correctedDoseMicrographFullPath, self.allParams[movieName]["processDir"])
-                shutil.copy(logFileFullPath, self.allParams[movieName]["processDir"])
+
+                if self.allParams[movieName]["processDir"] is not None:
+                    shutil.copy(micrographFullPath, self.allParams[movieName]["processDir"])
+                    shutil.copy(correctedDoseMicrographFullPath, self.allParams[movieName]["processDir"])
+                    shutil.copy(logFileFullPath, self.allParams[movieName]["processDir"])
                 try:
                     motionCorrectionObject = self.client.service.addMotionCorrection(
                         proposal=self.proposal,
@@ -701,8 +712,9 @@ class MonitorISPyB_ESRF(Monitor):
                     phaseShift = dictResults["Phase_shift"]
                     resolutionLimit = dictResults["resolutionLimit"]
                     estimatedBfactor = dictResults["estimatedBfactor"]
-                    shutil.copy(spectraImageFullPath, self.allParams[movieName]["processDir"])
-                    shutil.copy(dictResults["logFilePath"], self.allParams[movieName]["processDir"])
+                    if self.allParams[movieName]["processDir"] is not None:
+                        shutil.copy(spectraImageFullPath, self.allParams[movieName]["processDir"])
+                        shutil.copy(dictResults["logFilePath"], self.allParams[movieName]["processDir"])
                 except:
                     self.info("ERROR uploading CTF for movie {0}".format(movieFullPath))
                     traceback.print_exc()

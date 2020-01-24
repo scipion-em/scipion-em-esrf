@@ -33,10 +33,12 @@ from suds.client import Client
 from suds.transport.http import HttpAuthenticated
 from suds.cache import NoCache
 
+from esrf.utils.esrf_utils_ispyb import UtilsISPyB
+
 class Test(unittest.TestCase):
 
     def tes_updateProposalFromSMIS(self):
-        UtilsISPyB.updateProposalFromSMIS(1, "mx415")
+        UtilsISPyB.updateProposalFromSMIS(2, "mx415")
         
     def tes_createSession(self):
         sessions = UtilsISPyB.createSession(1, "opcm01", "cm01")

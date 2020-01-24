@@ -168,7 +168,7 @@ def preprocessWorkflow(configDict):
                  "#a1887f", "#ffd54f", "#dce775", "#4db6ac"]
     summaryList = []
 
-    timeout = 3600
+    timeout = 43200
 
     protImport = project.newProtocol(ProtImportMovies,
                                      objLabel='Import movies',

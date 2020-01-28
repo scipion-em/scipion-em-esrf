@@ -293,6 +293,9 @@ class MonitorISPyB_ESRF(Monitor):
             positionX = None
             positionY = None
             dosePerImage = None
+            imagesCount = None
+            voltage = None
+            magnification = None
             if micrographFullPath is not None:
                 micrographSnapshotPyarchPath = UtilsPath.copyToPyarchPath(micrographSnapshotFullPath)
                 xmlMetaDataPyarchPath = UtilsPath.copyToPyarchPath(xmlMetaDataFullPath)
@@ -584,14 +587,14 @@ class MonitorISPyB_ESRF(Monitor):
         self.info("ESRF ISPyB upload motion corr results")
         for micrograph in self.iter_updated_set(prot.outputMicrographs):
             micrographFullPath = os.path.join(self.currentDir, micrograph.getFileName())
-            self.info("*"*80)
-            self.info("Motion corr micrographFullPath: {0}".format(micrographFullPath))
+            # self.info("*"*80)
+            # self.info("Motion corr micrographFullPath: {0}".format(micrographFullPath))
             if self.serialEM:
                 dictFileNameParameters = UtilsPath.getSerialEMMovieFileNameParametersFromMotioncorrPath(micrographFullPath)
             else:
                 dictFileNameParameters = UtilsPath.getMovieFileNameParametersFromMotioncorrPath(micrographFullPath)
             movieName = dictFileNameParameters["movieName"]
-            self.info("Motion corr movie name: {0}".format(movieName))
+            # self.info("Motion corr movie name: {0}".format(movieName))
             if movieName in self.allParams and not "motionCorrectionId" in self.allParams[movieName]:
                 self.info("Align movies: movie {0}".format(os.path.basename(self.allParams[movieName]["movieFullPath"])))
                 movieFullPath = self.allParams[movieName]["movieFullPath"]

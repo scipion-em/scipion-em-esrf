@@ -584,13 +584,16 @@ class UtilsPath(object):
                         #print(indexMrc, [line])
                         if len(line) > 1:
                             listLine = line.split()
-                            #print(listLine)
-                            xShift = float(listLine[5])
-                            yShift = float(listLine[6].strip())
-                            listXShift.append(xShift)
-                            listYShift.append(yShift)
-                            totalMotion += math.sqrt(xShift**2 + yShift**2)
-                            noPoints += 1
+                            try:
+                                #print(listLine)
+                                xShift = float(listLine[5])
+                                yShift = float(listLine[6].strip())
+                                listXShift.append(xShift)
+                                listYShift.append(yShift)
+                                totalMotion += math.sqrt(xShift**2 + yShift**2)
+                                noPoints += 1
+                            except:
+                                pass
                         else:
                             foundShiftTable = False
                             foundMrc = False

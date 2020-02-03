@@ -163,7 +163,24 @@ optional.add_argument(
     help="Only upload data to ISPyB i.e. no processing, default 'False'.",
     default=False
 )
-
+optional.add_argument(
+    "--defectMapPath",
+    action="store",
+    help="Defect map file path",
+    default=None
+)
+optional.add_argument(
+    "--gainFilePath",
+    action="store",
+    help="Gain file path",
+    default=None
+)
+optional.add_argument(
+    "--noISPyB",
+    action="store_true",
+    help="Don't upload to ISPyB or iCAT, default 'False'.",
+    default=False
+)
 results = parser.parse_args()
 
 dataDirectory = results.directory
@@ -180,6 +197,9 @@ phasePlateData = results.phasePlateData
 onlyISPyB = results.onlyISPyB
 samplingRate = float(results.samplingRate)
 superResolution = results.superResolution
+defectMapPath = results.defectMapPath
+gainFilePath = results.gainFilePath
+noISPyB = results.noISPyB
 
 ################################################################################
 #
@@ -240,7 +260,19 @@ if serialEM:
         gainFilePath, defectMapPath
     )
 else:
-    extraParams2 = ""
+    if defectMapPath is not None or gainFilePath is not None:
+        if not os.path.exists(defectMapPath):
+            print("ERROR! Cannot find defect map file {0}".format(defectMapPath))
+            sys.exit(1)
+        elif not os.path.exists(gainFilePath):
+            print("ERROR! Cannot find gain file {0}".format(gainFilePath))
+            sys.exit(1)
+        else:
+            extraParams2 = "-Gain {0} -DefectMap {1}".format(
+                gainFilePath, defectMapPath
+            )
+    else:
+        extraParams2 = ""
 
 
 
@@ -262,10 +294,16 @@ if scipionProjectName is None:
         scipionProjectName = "{0}_{1}".format(os.path.splitext(filesPattern)[0], dateTime)
         dataStreaming = "false"
 
-if not os.path.exists(location):
-    os.makedirs(location, 0755)
-else:
-    os.chmod(location, 0755)
+try:
+    if not os.path.exists(location):
+        os.makedirs(location, 0o755)
+    else:
+        os.chmod(location, 0o755)
+except OSError as e:
+    print("ERROR! Cannot write into {0}".format(location))
+    print("Error message: {0}".format(e))
+    location = tempfile.mkdtemp(prefix=scipionProjectName)
+    print("New temporary location: {0}".format(location))
         
 # All param json file
 allParamsJsonFile = os.path.join(location, "allParams.json")
@@ -590,6 +628,12 @@ if onlyISPyB:
     ]
     """.format(protImportMovies, protMonitorISPyB_ESRF)
     
+elif noISPyB:
+    jsonString = """[{0},
+    {1},
+    {2}
+    ]
+    """.format(protImportMovies, protMotionCorr, protGctf)
 else:
     jsonString = """[{0},
     {1},

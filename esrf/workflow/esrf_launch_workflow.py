@@ -132,7 +132,21 @@ if configDict["serialEM"]:
         gainFilePath, defectMapPath
     )
 else:
-    configDict["extraParams2"] = ""
+    if "defectMapPath" in configDict or "gainFilePath" in configDict:
+        defectMapPath = configDict["defectMapPath"]
+        gainFilePath = configDict["gainFilePath"]
+        if not os.path.exists(defectMapPath):
+            print("ERROR! Cannot find defect map file {0}".format(defectMapPath))
+            sys.exit(1)
+        elif not os.path.exists(gainFilePath):
+            print("ERROR! Cannot find gain file {0}".format(gainFilePath))
+            sys.exit(1)
+        else:
+            configDict["extraParams2"] = "-Gain {0} -DefectMap {1}".format(
+                gainFilePath, defectMapPath
+            )
+    else:
+        configDict["extraParams2"] = ""
 
 
 
@@ -154,10 +168,16 @@ if configDict["scipionProjectName"] is None:
         configDict["scipionProjectName"] = "{0}_{1}".format(os.path.splitext(configDict["filesPattern"])[0], dateTime)
         configDict["dataStreaming"] = False
 
-if not os.path.exists(location):
-    os.makedirs(location, 0755)
-else:
-    os.chmod(location, 0755)
+try:
+    if not os.path.exists(location):
+        os.makedirs(location, 0o755)
+    else:
+        os.chmod(location, 0o755)
+except OSError as e:
+    print("ERROR! Cannot write into {0}".format(location))
+    print("Error message: {0}".format(e))
+    location = tempfile.mkdtemp(prefix=configDict["scipionProjectName"])
+    print("New temporary location: {0}".format(location))
         
 # All param json file
 configDict["allParamsJsonFile"] = os.path.join(location, "allParams.json")
@@ -169,44 +189,49 @@ configDict["location"] = location
 configDict["doPhaseShiftEstimation"] = False
 
 
-# Check proposal
-# db=0: production
-# db=1: valid
-# db=2: linsvensson
-proposal = UtilsISPyB.getProposal(firstMovieFullPath)
-if proposal is None:
-    print("WARNING! No valid proposal could be found for movie {0}.".format(firstMovieFullPath))
-    print("")
-    answer = raw_input("Would you like to enter a valid proposal name now (yes/no)? ")
-    while answer != "yes" and answer !="no":
-        print("")
-        answer = raw_input("Please answer 'yes' or 'no'. Would you like to enter a valid proposal name now? ")
-    if answer == "yes":
-        proposal = raw_input("Please enter a valid proposal name: ")
-        code, number = UtilsISPyB.splitProposalInCodeAndNumber(proposal)
-        while code is None:
-            print("'{0}' is not a valid proposal name.".format(proposal))
-            print("")
-            proposal = raw_input("Please enter a valid proposal name (mxXXXX, ih-lsXXXX etc): ")
-            code, number = UtilsISPyB.splitProposalInCodeAndNumber(proposal)
-    else:
-        proposal = None
-
-if proposal is None:
-    print("WARNING! No data will be uploaded to ISPyB.")
-    db = 3
+if configDict["noISPyB"]:
+    print("No upload to ISPyB or iCAT")
+    configDict["proposal"] = "None"
+    configDict["db"] = -1
 else:
-    if proposal == "mx415" or proposal == "mx2112":
-        # Use valid data base
-        print("ISPyB valid data base used")
-        db = 1
-    else:
-        # Use productiond data base
-        print("ISPyB production data base used")
-        db = 0
+    # Check proposal
+    # db=0: production
+    # db=1: valid
+    # db=2: linsvensson
+    proposal = UtilsISPyB.getProposal(firstMovieFullPath)
+    if proposal is None:
+        print("WARNING! No valid proposal could be found for movie {0}.".format(firstMovieFullPath))
+        print("")
+        answer = raw_input("Would you like to enter a valid proposal name now (yes/no)? ")
+        while answer != "yes" and answer !="no":
+            print("")
+            answer = raw_input("Please answer 'yes' or 'no'. Would you like to enter a valid proposal name now? ")
+        if answer == "yes":
+            proposal = raw_input("Please enter a valid proposal name: ")
+            code, number = UtilsISPyB.splitProposalInCodeAndNumber(proposal)
+            while code is None:
+                print("'{0}' is not a valid proposal name.".format(proposal))
+                print("")
+                proposal = raw_input("Please enter a valid proposal name (mxXXXX, ih-lsXXXX etc): ")
+                code, number = UtilsISPyB.splitProposalInCodeAndNumber(proposal)
+        else:
+            proposal = None
 
-configDict["proposal"] = proposal
-configDict["db"] = db
+    if proposal is None:
+        print("WARNING! No data will be uploaded to ISPyB.")
+        db = 3
+    else:
+        if proposal == "mx415" or proposal == "mx2112":
+            # Use valid data base
+            print("ISPyB valid data base used")
+            db = 1
+        else:
+            # Use productiond data base
+            print("ISPyB production data base used")
+            db = 0
+
+    configDict["proposal"] = proposal
+    configDict["db"] = db
 
 if configDict["nominalMagnification"] is None:
     if configDict["serialEM"]:

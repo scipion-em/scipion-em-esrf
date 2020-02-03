@@ -131,7 +131,24 @@ def getCommandlineOptions():
         help="Only upload data to ISPyB i.e. no processing, default 'False'.",
         default=False
     )
-
+    optional.add_argument(
+        "--defectMapPath",
+        action="store",
+        help="Defect map file path",
+        default=None
+    )
+    optional.add_argument(
+        "--gainFilePath",
+        action="store",
+        help="Gain file path",
+        default=None
+    )
+    optional.add_argument(
+        "--noISPyB",
+        action="store_true",
+        help="Don't upload to ISPyB or iCAT, default 'False'.",
+        default=False
+    )
     results = parser.parse_args()
 
     optDict = {
@@ -148,10 +165,13 @@ def getCommandlineOptions():
         "alignFrameN": int(results.endMotioncorFrame),
         "phasePlateData": results.phasePlateData,
         "onlyISPyB": results.onlyISPyB,
+        "noISPyB": results.noISPyB,
         "samplingRate": float(results.samplingRate),
         "superResolution": results.superResolution,
         "partSize": float(results.partSize),
-        "parts2class": int(results.parts2class)
+        "parts2class": int(results.parts2class),
+        "defectMapPath": results.defectMapPath,
+        "gainFilePath": results.gainFilePath
     }
 
     return optDict

@@ -466,18 +466,19 @@ def preprocessWorkflow(configDict):
     _registerProt(protMonitor, 'monitor')
 
     # --------- ISPyB MONITOR -----------------------
-    ispybMonitor = project.newProtocol(ProtMonitorISPyB_ESRF,
-                                       objLabel='ISPyB monitor',
-                                       samplingInterval=10,
-                                       proposal=configDict["proposal"],
-                                       proteinAcronym=configDict["proteinAcronym"],
-                                       sampleAcronym=configDict["sampleAcronym"],
-                                       db=configDict["db"],
-                                       allParamsJsonFile=configDict["allParamsJsonFile"],
-                                       samplingRate=configDict["samplingRate"],
-                                       doseInitial=configDict["doseInitial"],
-                                       dosePerFrame=configDict["dosePerFrame"],
-                                       serialEM=configDict["serialEM"]
-                                       )
-    ispybMonitor.inputProtocols.set([protImport, protMA, protCTF2])
-    _registerProt(ispybMonitor, 'ispybMonitor')
+    if not configDict["noISPyB"]:
+        ispybMonitor = project.newProtocol(ProtMonitorISPyB_ESRF,
+                                           objLabel='ISPyB monitor',
+                                           samplingInterval=10,
+                                           proposal=configDict["proposal"],
+                                           proteinAcronym=configDict["proteinAcronym"],
+                                           sampleAcronym=configDict["sampleAcronym"],
+                                           db=configDict["db"],
+                                           allParamsJsonFile=configDict["allParamsJsonFile"],
+                                           samplingRate=configDict["samplingRate"],
+                                           doseInitial=configDict["doseInitial"],
+                                           dosePerFrame=configDict["dosePerFrame"],
+                                           serialEM=configDict["serialEM"]
+                                           )
+        ispybMonitor.inputProtocols.set([protImport, protMA, protCTF2])
+        _registerProt(ispybMonitor, 'ispybMonitor')

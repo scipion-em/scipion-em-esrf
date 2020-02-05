@@ -152,6 +152,24 @@ optional.add_argument(
     default=False
 )
 optional.add_argument(
+    "--magnification",
+    action="store",
+    help="Nominal magnification.",
+    default=None
+)
+optional.add_argument(
+    "--imagesCount",
+    action="store",
+    help="Number of images per movie.",
+    default=None
+)
+optional.add_argument(
+    "--voltage",
+    action="store",
+    help="Voltage [V]",
+    default=None
+)
+optional.add_argument(
     "--phasePlateData",
     action="store_true",
     help="Phase plate used, default 'False'.",
@@ -200,6 +218,9 @@ superResolution = results.superResolution
 defectMapPath = results.defectMapPath
 gainFilePath = results.gainFilePath
 noISPyB = results.noISPyB
+nominalMagnification = int(results.magnification) if results.magnification is not None else None
+imagesCount = int(results.imagesCount) if results.imagesCount is not None else None
+voltage = int(results.voltage) if results.voltage is not None else None
 
 ################################################################################
 #
@@ -351,39 +372,55 @@ else:
         print("ISPyB production data base used")
         db = 0
 
-if serialEM:
-    jpeg, mdoc, gridSquareSnapshot = UtilsPath.getSerialEMMovieJpegMdoc(dataDirectory, firstMovieFullPath)
-    if mdoc is None:
-        print("*"*80)
-        print("*"*80)
-        print("*"*80)
-        print("Error! Cannot find metadata files in the directory which contains the following movie:")
-        print(firstMovieFullPath)
-        print("*"*80)
-        print("*"*80)
-        print("*"*80)
-        sys.exit(1)
-    dictResults = UtilsPath.getMdocMetaData(mdoc)
-    nominalMagnification = int(dictResults["Magnification"])
 
+if nominalMagnification is None or voltage is None or imagesCount is None:
+    if serialEM:
+        jpeg, mdoc, gridSquareSnapshot = UtilsPath.getSerialEMMovieJpegMdoc(dataDirectory, firstMovieFullPath)
+        if mdoc is None:
+            print("*"*80)
+            print("*"*80)
+            print("*"*80)
+            print("Error! Cannot find metadata files in the directory which contains the following movie:")
+            print(firstMovieFullPath)
+            print("*"*80)
+            print("*"*80)
+            print("*"*80)
+            sys.exit(1)
+        dictResults = UtilsPath.getMdocMetaData(mdoc)
+        nominalMagnification = int(dictResults["Magnification"])
+        voltage = int(dictResults["accelerationVoltage"])
+        imagesCount = int(dictResults["numberOffractions"])
+
+    else:
+        jpeg, mrc, xml, gridSquareThumbNail = UtilsPath.getMovieJpegMrcXml(firstMovieFullPath)
+
+        if xml is None:
+            print("*"*80)
+            print("*"*80)
+            print("*"*80)
+            print("Error! Cannot find metadata files in the directory which contains the following movie:")
+            print(firstMovieFullPath)
+            print("")
+            print("You must provide all these parameters on the command line: voltage, magnification and imagesCount")
+            print("")
+            print("*"*80)
+            print("*"*80)
+            print("*"*80)
+            sys.exit(1)
+
+        dictResults = UtilsPath.getXmlMetaData(xml)
+        doPhaseShiftEstimation = dictResults["phasePlateUsed"]
+        nominalMagnification = int(dictResults["nominalMagnification"])
+        voltage = int(dictResults["Voltage"])
+        imagesCount = int(dictResults["NumSubFrames"])
 else:
-    jpeg, mrc, xml, gridSquareThumbNail = UtilsPath.getMovieJpegMrcXml(firstMovieFullPath)
+    jpeg = None
+    mdoc = None
+    xml = None
+    gridSquareSnapshot = None
 
-    if xml is None:
-        print("*"*80)
-        print("*"*80)
-        print("*"*80)
-        print("Error! Cannot find metadata files in the directory which contains the following movie:")
-        print(firstMovieFullPath)
-        print("*"*80)
-        print("*"*80)
-        print("*"*80)
-        sys.exit(1)
-
-    dictResults = UtilsPath.getXmlMetaData(xml)
-    doPhaseShiftEstimation = dictResults["phasePlateUsed"]
-    nominalMagnification = int(dictResults["nominalMagnification"])
-
+if alignFrameN == 0:
+    alignFrameN = imagesCount
 
 if not phasePlateData and doPhaseShiftEstimation:
     print("!"*100)
@@ -425,29 +462,33 @@ else:
 print("")
 print("Parameters:")
 print("")
-print("{0:30s}{1:>8s}".format("proposal",proposal))
-print("{0:30s}{1:8s}".format("dataDirectory",dataDirectory))
-print("{0:30s}{1:>8s}".format("filesPattern",filesPattern))
-print("{0:30s}{1:>8s}".format("proteinAcronym",proteinAcronym))
-print("{0:30s}{1:>8s}".format("sampleAcronym",sampleAcronym))
-print("{0:30s}{1:8.2f}".format("doseInitial",doseInitial))
-print("{0:30s}{1:8.2f}".format("dosePerFrame",dosePerFrame))
-print("{0:30s}{1:8.1f}".format("sphericalAberration",sphericalAberration))
-print("{0:30s}{1:8.2f}".format("minDefocus",minDefocus))
-print("{0:30s}{1:8.2f}".format("maxDefocus",maxDefocus))
-print("{0:30s}{1:8.1f}".format("astigmatism",astigmatism))
-print("{0:30s}{1:8d}".format("convsize",convsize))
-print("{0:30s}{1:>8s}".format("doPhShEst",doPhShEst))
-print("{0:30s}{1:8.1f}".format("phaseShiftL",phaseShiftL))
-print("{0:30s}{1:8.1f}".format("phaseShiftH",phaseShiftH))
-print("{0:30s}{1:8.1f}".format("phaseShiftS",phaseShiftS))
-print("{0:30s}{1:8.1f}".format("phaseShiftT",phaseShiftT))
-print("{0:30s}{1:8.3f}".format("lowRes",lowRes))
-print("{0:30s}{1:8.3f}".format("highRes",highRes))
-print("{0:30s}{1:8.0f}".format("nominalMagnification",nominalMagnification))
-print("{0:30s}{1:8.2f}".format("samplingRate",samplingRate))
-print("{0:30s}{1:8.1f}".format("binFactor",binFactor))
-print("{0:30s}{1:>8s}".format("dataStreaming",dataStreaming))
+print("{0:30s}{1:>8s}".format("proposal", proposal))
+print("{0:30s}{1:8s}".format("dataDirectory", dataDirectory))
+print("{0:30s}{1:>8s}".format("filesPattern", filesPattern))
+print("{0:30s}{1:>8s}".format("proteinAcronym", proteinAcronym))
+print("{0:30s}{1:>8s}".format("sampleAcronym", sampleAcronym))
+print("{0:30s}{1:8.2f}".format("doseInitial", doseInitial))
+print("{0:30s}{1:8.2f}".format("voltage", voltage))
+print("{0:30s}{1:8.2f}".format("imagesCount", imagesCount))
+print("{0:30s}{1:8.2f}".format("dosePerFrame", dosePerFrame))
+print("{0:30s}{1:8.1f}".format("sphericalAberration", sphericalAberration))
+print("{0:30s}{1:8.2f}".format("minDefocus", minDefocus))
+print("{0:30s}{1:8.2f}".format("maxDefocus", maxDefocus))
+print("{0:30s}{1:8.1f}".format("astigmatism", astigmatism))
+print("{0:30s}{1:8d}".format("convsize", convsize))
+print("{0:30s}{1:>8s}".format("doPhShEst", doPhShEst))
+print("{0:30s}{1:8.1f}".format("phaseShiftL", phaseShiftL))
+print("{0:30s}{1:8.1f}".format("phaseShiftH", phaseShiftH))
+print("{0:30s}{1:8.1f}".format("phaseShiftS", phaseShiftS))
+print("{0:30s}{1:8.1f}".format("phaseShiftT", phaseShiftT))
+print("{0:30s}{1:8.3f}".format("lowRes", lowRes))
+print("{0:30s}{1:8.3f}".format("highRes", highRes))
+print("{0:30s}{1:8.0f}".format("nominalMagnification", nominalMagnification))
+print("{0:30s}{1:8.2f}".format("samplingRate", samplingRate))
+print("{0:30s}{1:8.1f}".format("binFactor", binFactor))
+print("{0:30s}{1:8.1f}".format("alignFrame0", alignFrame0))
+print("{0:30s}{1:8.1f}".format("alignFrameN", alignFrameN))
+print("{0:30s}{1:>8s}".format("dataStreaming", dataStreaming))
 print("")
 print("Scipion project name: {0}".format(scipionProjectName))
 print("Scipion user data location: {0}".format(location))
@@ -618,9 +659,16 @@ protMonitorISPyB_ESRF = """
         "samplingRate": "%s",
         "doseInitial": "%s",
         "dosePerFrame": "%s",
-        "serialEM": "%s"
-    }"""  % (inputProtocols, proposal, proteinAcronym, sampleAcronym, db, allParamsJsonFile,
-        samplingRate, doseInitial, dosePerFrame, doSerialEM)
+        "serialEM": "%s",
+        "voltage": %d,
+        "imagesCount": %d,
+        "magnification": %d,
+        "alignFrame0": %d,
+        "alignFrameN": %d
+    }"""  % (inputProtocols, proposal, proteinAcronym, sampleAcronym, db,
+             allParamsJsonFile, samplingRate, doseInitial, dosePerFrame,
+             doSerialEM, voltage, imagesCount, nominalMagnification,
+             alignFrame0, alignFrameN)
 
 if onlyISPyB:
     jsonString = """[{0},

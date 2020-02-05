@@ -75,6 +75,26 @@ class ProtMonitorISPyB_ESRF(ProtMonitor):
                       label="Protein acronym",
                       help="Name of the protein acronym")
 
+        group1.addParam('voltage', params.IntParam,
+                      label="Voltage",
+                      help="Voltage in [V]")
+
+        group1.addParam('magnification', params.IntParam,
+                      label="Nominal magnification",
+                      help="Nominal magnification")
+
+        group1.addParam('imagesCount', params.IntParam,
+                      label="Images count",
+                      help="Number of images per movie")
+
+        group1.addParam('alignFrame0', params.IntParam,
+                      label="Align Frame 0",
+                      help="Starting frame for motion correction")
+
+        group1.addParam('alignFrameN', params.IntParam,
+                      label="Align Frame N",
+                      help="End frame for motion correction")
+
         group2 = form.addGroup('Parameters')
 
         group2.addParam('serialEM', params.BooleanParam,
@@ -140,9 +160,11 @@ class MonitorISPyB_ESRF(Monitor):
         self.currentGridSquareLastMovieTime = None
         self.beamlineName = "cm01"
         self.serialEM = protocol.serialEM.get()
-        self.voltage = None
-        self.magnification = None
-        self.imagesCount = None
+        self.voltage = protocol.voltage.get()
+        self.magnification = protocol.magnification.get()
+        self.imagesCount = protocol.imagesCount.get()
+        self.alignFrame0 = protocol.alignFrame0.get()
+        self.alignFrameN = protocol.alignFrameN.get()
         self.positionX = None
         self.positionY = None
         self.collectionDate = None
@@ -280,11 +302,11 @@ class MonitorISPyB_ESRF(Monitor):
                     self.info("Import movies: waiting for meta-data files to appear on disk...")
                     timeNow = time.time()
                     deltaTime = timeNow - startTime
-                    if deltaTime > 30:
+                    if deltaTime > 5:
                         self.info("Import movies: Timeout waiting for meta-data files to appear on disk!!!")
                         doContinue = False
                     else:
-                        time.sleep(5)
+                        time.sleep(2)
                 else:
                     doContinue = False
 
@@ -294,12 +316,12 @@ class MonitorISPyB_ESRF(Monitor):
             micrographPyarchPath = None
             xmlMetaDataPyarchPath = None
             gridSquareSnapshotPyarchPath = None
-            voltage = None
-            magnification = None
-            imagesCount = None
-            positionX = None
-            positionY = None
-            dosePerImage = None
+            positionX = 0.0
+            positionY = 0.0
+            dosePerImage = 0.0
+            imagesCount = self.imagesCount
+            voltage = self.voltage
+            magnification = self.magnification
             if micrographFullPath is not None:
                 micrographSnapshotPyarchPath = UtilsPath.copyToPyarchPath(micrographSnapshotFullPath)
                 xmlMetaDataPyarchPath = UtilsPath.copyToPyarchPath(xmlMetaDataFullPath)
@@ -307,9 +329,6 @@ class MonitorISPyB_ESRF(Monitor):
 
                 try:
                     dictMetaData = UtilsPath.getXmlMetaData(xmlMetaDataFullPath)
-                    voltage = dictMetaData["accelerationVoltage"]
-                    magnification = dictMetaData["nominalMagnification"]
-                    imagesCount = dictMetaData["numberOffractions"]
                     positionX = dictMetaData["positionX"]
                     positionY = dictMetaData["positionY"]
                     dosePerImage = round(float(dictMetaData["dose"]) / 10.0 ** 20 / float(imagesCount), 2)
@@ -444,9 +463,6 @@ class MonitorISPyB_ESRF(Monitor):
                     doContinue = False
                     self.info("Import movies: mdocFullPath: {0}".format(mdocFullPath))
                     dictMetaData = UtilsPath.getMdocMetaData(mdocFullPath)
-                    self.voltage = dictMetaData['Voltage']
-                    self.magnification = dictMetaData['Magnification']
-                    self.imagesCount = dictMetaData['NumSubFrames']
                     self.positionX, self.positionY = dictMetaData['StagePosition'].split(' ')
                     self.collectionDate, self.collectionTime = dictMetaData['DateTime'].split('  ')
 
@@ -594,14 +610,14 @@ class MonitorISPyB_ESRF(Monitor):
         self.info("ESRF ISPyB upload motion corr results")
         for micrograph in self.iter_updated_set(prot.outputMicrographs):
             micrographFullPath = os.path.join(self.currentDir, micrograph.getFileName())
-            self.info("*"*80)
-            self.info("Motion corr micrographFullPath: {0}".format(micrographFullPath))
+            # self.info("*"*80)
+            # self.info("Motion corr micrographFullPath: {0}".format(micrographFullPath))
             if self.serialEM:
                 dictFileNameParameters = UtilsPath.getSerialEMMovieFileNameParametersFromMotioncorrPath(micrographFullPath)
             else:
                 dictFileNameParameters = UtilsPath.getMovieFileNameParametersFromMotioncorrPath(micrographFullPath)
             movieName = dictFileNameParameters["movieName"]
-            self.info("Motion corr movie name: {0}".format(movieName))
+            # self.info("Motion corr movie name: {0}".format(movieName))
             if movieName in self.allParams and not "motionCorrectionId" in self.allParams[movieName]:
                 self.info("Align movies: movie {0}".format(os.path.basename(self.allParams[movieName]["movieFullPath"])))
                 movieFullPath = self.allParams[movieName]["movieFullPath"]
@@ -628,8 +644,8 @@ class MonitorISPyB_ESRF(Monitor):
                 else:
                     averageMotionPerFrame = None
                 logFileFullPath = dictResult["logFileFullPath"]
-                firstFrame = 1
-                lastFrame = self.allParams[movieName]["imagesCount"]
+                firstFrame = self.alignFrame0
+                lastFrame = self.alignFrameN
                 dosePerFrame = self.allParams[movieName]["dosePerFrame"]
                 doseWeight = None
                 driftPlotPyarchPath = UtilsPath.copyToPyarchPath(driftPlotFullPath)

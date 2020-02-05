@@ -177,7 +177,7 @@ def preprocessWorkflow(configDict):
                                      filesPattern=configDict["filesPattern"],
                                      amplitudeContrast=0.1,
                                      sphericalAberration=configDict["sphericalAberration"],
-                                     voltage=300.0,
+                                     voltage=configDict["voltage"]/1000.0,
                                      samplingRate=configDict["samplingRate"],
                                      doseInitial=configDict["doseInitial"],
                                      dosePerFrame=configDict["dosePerFrame"],
@@ -478,7 +478,12 @@ def preprocessWorkflow(configDict):
                                            samplingRate=configDict["samplingRate"],
                                            doseInitial=configDict["doseInitial"],
                                            dosePerFrame=configDict["dosePerFrame"],
-                                           serialEM=configDict["serialEM"]
+                                           serialEM=configDict["serialEM"],
+                                           voltage=configDict["voltage"],
+                                           imagesCount=configDict["imagesCount"],
+                                           magnification=configDict["nominalMagnification"],
+                                           alignFrame0=configDict["alignFrame0"],
+                                           alignFrameN=configDict["alignFrameN"]
                                            )
         ispybMonitor.inputProtocols.set([protImport, protMA, protCTF2])
         _registerProt(ispybMonitor, 'ispybMonitor')

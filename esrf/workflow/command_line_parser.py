@@ -90,6 +90,18 @@ def getCommandlineOptions():
         default=None
     )
     optional.add_argument(
+        "--imagesCount",
+        action="store",
+        help="Number of images per movie.",
+        default=None
+    )
+    optional.add_argument(
+        "--voltage",
+        action="store",
+        help="Voltage [V]",
+        default=None
+    )
+    optional.add_argument(
         "--startMotioncorFrame",
         action="store",
         help="Start frame for motion correction, default 1.",
@@ -159,6 +171,8 @@ def getCommandlineOptions():
         "sampleAcronym": results.sample,
         "doseInitial": float(results.doseInitial),
         "nominalMagnification": int(results.magnification) if results.magnification is not None else None,
+        "imagesCount": int(results.imagesCount) if results.imagesCount is not None else None,
+        "voltage": int(results.voltage) if results.voltage is not None else None,
         "dosePerFrame": float(results.dosePerFrame),
         "dataStreaming": True,
         "alignFrame0": int(results.startMotioncorFrame),

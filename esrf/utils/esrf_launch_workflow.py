@@ -411,8 +411,8 @@ if nominalMagnification is None or voltage is None or imagesCount is None:
         dictResults = UtilsPath.getXmlMetaData(xml)
         doPhaseShiftEstimation = dictResults["phasePlateUsed"]
         nominalMagnification = int(dictResults["nominalMagnification"])
-        voltage = int(dictResults["Voltage"])
-        imagesCount = int(dictResults["NumSubFrames"])
+        voltage = int(dictResults["accelerationVoltage"])
+        imagesCount = int(dictResults["numberOffractions"])
 else:
     jpeg = None
     mdoc = None

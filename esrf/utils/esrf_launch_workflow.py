@@ -26,6 +26,7 @@
 # **************************************************************************
 
 import os
+import json
 import sys
 import glob
 import time
@@ -329,6 +330,21 @@ except OSError as e:
 # All param json file
 allParamsJsonFile = os.path.join(location, "allParams.json")
 
+# Create blacklist file with all movies already imported and motion corrected
+blacklistFile = "null"
+if os.path.exists(allParamsJsonFile):
+    with open(allParamsJsonFile, 'r') as f:
+        dictAllParams = json.loads(f.read())
+    blackList = []
+    for movieName in dictAllParams:
+        dictMovie = dictAllParams[movieName]
+        if all (key in dictMovie for key in ("motionCorrectionId", "CTFid")):
+            blackList.append(dictMovie["movieFullPath"])
+    blacklistFile = os.path.join(location, "blacklist.txt")
+    with open(blacklistFile, "w") as f:
+        for filePath in blackList:
+            f.write(filePath + "\n")
+    blacklistFile = '"' + blacklistFile + '"'
 
 # Get meta data like phasePlateUsed
 
@@ -553,9 +569,10 @@ protImportMovies = """
         "movieSuffix": "_frames.mrcs",
         "deleteFrames": false,
         "streamingSocket": false,
-        "socketPort": 5000
+        "socketPort": 5000,
+        "blacklistFile": %s
     }""" % (dataDirectory, filesPattern, nominalMagnification, samplingRate,
-        doseInitial, dosePerFrame, dataStreaming)
+        doseInitial, dosePerFrame, dataStreaming, blacklistFile)
 
 protMotionCorr = """
     {

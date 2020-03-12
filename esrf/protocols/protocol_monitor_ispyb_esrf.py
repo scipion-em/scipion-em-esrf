@@ -157,7 +157,7 @@ class MonitorISPyB_ESRF(Monitor):
         self.movieDirectory = None
         self.currentDir = os.getcwd()
         self.currentGridSquare = None
-        self.currentGridSquareLastMovieTime = None
+        self.currentGridSquareLastMovieTime = time.time()
         self.beamlineName = "cm01"
         self.serialEM = protocol.serialEM.get()
         self.voltage = protocol.voltage.get()
@@ -230,8 +230,8 @@ class MonitorISPyB_ESRF(Monitor):
             if self.currentGridSquareLastMovieTime is not None:
                 timeElapsed = int(time.time() - self.currentGridSquareLastMovieTime)
                 self.info("Time elapsed since last movie detected: {0} s".format(timeElapsed))
-                # Timeout for uploading last grid square to icat: 2h, 7200 s
-                if self.currentGridSquare is not None and timeElapsed > 7200:
+                # Timeout for uploading last grid square to icat: 1h, 3600 s
+                if self.currentGridSquare is not None and timeElapsed > 3600:
                     self.archiveGridSquare(self.currentGridSquare)
                     self.currentGridSquare = None
                     # Check if old grid squares
@@ -625,7 +625,10 @@ class MonitorISPyB_ESRF(Monitor):
                     dictResult = UtilsPath.getSerialEMAlignMoviesPngLogFilePath(micrographFullPath)
                 else:
                     dictResult = UtilsPath.getAlignMoviesPngLogFilePath(micrographFullPath)
-                driftPlotFullPath = dictResult["globalShiftPng"]
+                if "globalShiftPng" in dictResult:
+                    driftPlotFullPath = dictResult["globalShiftPng"]
+                else:
+                    driftPlotFullPath= None
                 if "doseWeightMrc" in dictResult:
                     correctedDoseMicrographFullPath = dictResult["doseWeightMrc"]
                 else:

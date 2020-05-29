@@ -458,7 +458,7 @@ if phasePlateData:
     highRes = samplingRate / 4.0
 else:
     sphericalAberration = 2.7
-    minDefocus = 0.25
+    minDefocus = 0.5
     maxDefocus = 4.0
     astigmatism = 100.0
     convsize = 85
@@ -635,18 +635,18 @@ protGctf = """
         "minDefocus": %f,
         "maxDefocus": %f,
         "astigmatism": %f,
-        "windowSize": 512,
+        "windowSize": 1024,
         "plotResRing": true,
         "GPUCore": 0,
         "doEPA": true,
         "EPAsmp": 4,
         "doBasicRotave": false,
-        "bfactor": 150,
+        "bfactor": 50,
         "overlap": 0.5,
         "convsize": %f,
         "doHighRes": true,
-        "HighResL": 30.0,
-        "HighResH": 5.0,
+        "HighResL": 15.0,
+        "HighResH": 4.0,
         "HighResBf": 50,
         "doValidate": false,
         "doPhShEst": %s,
@@ -654,7 +654,8 @@ protGctf = """
         "phaseShiftH": %f,
         "phaseShiftS": %f,
         "phaseShiftT": %f,
-        "inputMicrographs": "77.outputMicrographs"
+        "inputMicrographs": "77.outputMicrographs",
+        "step_focus": 100
     }"""  % (lowRes, highRes, minDefocus, maxDefocus, astigmatism, 
         convsize, doPhShEst, phaseShiftL, phaseShiftH, phaseShiftS, phaseShiftT)
 

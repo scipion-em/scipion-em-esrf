@@ -39,6 +39,8 @@ import pyworkflow.utils as pwutils
 from pyworkflow.project.manager import Manager
 from pyworkflow.project import Project
 from pyworkflow.protocol import getProtocolFromDb
+import json
+
 
 try:  # Xmipp plugin is mandatory to run this workflow
     from xmipp3.protocols import (XmippProtOFAlignment, XmippProtMovieGain,
@@ -53,8 +55,8 @@ try:  # Xmipp plugin is mandatory to run this workflow
                                   XmippProtReconstructSignificant, XmippProtRansac,
                                   XmippProtAlignVolume, XmippProtReconstructSwarm,
                                   XmippProtStrGpuCrrSimple, XmippProtGpuCrrCL2D,
-                                  XmippProtCropResizeVolumes, XmippProtEliminateEmptyClasses,
-                                  XmippProtDeepMicrographScreen)
+                                  XmippProtCropResizeVolumes, XmippProtEliminateEmptyClasses)
+#                                  XmippProtDeepMicrographScreen)
 except Exception as exc:
     pwutils.pluginNotFound('xmipp', errorMsg=exc, doRaise=True)
 
@@ -75,6 +77,10 @@ protPlugins = {'ProtMotionCorr': 'motioncorr.protocols',
                # 'ProtCryoSparcInitialModel': 'cryosparc2.protocols'
                }
 
+
+QUEUE_PARAMS = (u'gpu', {u'JOB_TIME': u'1',  # in hours
+                         u'JOB_MEMORY': u'2048',  # in Mb
+                         u'QUEUE_FOR_JOBS': u'N', })
 
 def getNewScipionProjectName(scipionProjectName, index):
     return "{0}_{1}".format(scipionProjectName, index)
@@ -312,6 +318,7 @@ def preprocessWorkflow(configDict):
 
     protPP2 = project.newProtocol(importPlugin('SphireProtCRYOLOPicking'),
                                   objLabel='Sphire - CrYolo auto-picking',
+                                  gpuList=configDict["cryoloGpu"],
                                   conservPickVar=0.03,
                                   streamingBatchSize=4,
                                   gpuList='0')  # CPU version installation

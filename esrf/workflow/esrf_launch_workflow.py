@@ -135,10 +135,10 @@ else:
     if "defectMapPath" in configDict or "gainFilePath" in configDict:
         defectMapPath = configDict["defectMapPath"]
         gainFilePath = configDict["gainFilePath"]
-        if not os.path.exists(defectMapPath):
+        if defectMapPath is not None and not os.path.exists(defectMapPath):
             print("ERROR! Cannot find defect map file {0}".format(defectMapPath))
             sys.exit(1)
-        elif not os.path.exists(gainFilePath):
+        elif gainFilePath is not None and not os.path.exists(gainFilePath):
             print("ERROR! Cannot find gain file {0}".format(gainFilePath))
             sys.exit(1)
         else:
@@ -246,6 +246,7 @@ if configDict["nominalMagnification"] is None:
             print("*"*80)
             print("*"*80)
             sys.exit(1)
+        
         dictResults = UtilsPath.getMdocMetaData(mdoc)
         configDict["nominalMagnification"] = int(dictResults["Magnification"])
 
@@ -266,6 +267,7 @@ if configDict["nominalMagnification"] is None:
         dictResults = UtilsPath.getXmlMetaData(xml)
         configDict["doPhaseShiftEstimation"] = dictResults["phasePlateUsed"]
         configDict["nominalMagnification"] = int(dictResults["nominalMagnification"])
+        configDict["voltage"] = int(dictResults["accelerationVoltage"])
 else:
     jpeg = None
     mdoc = None
@@ -312,7 +314,8 @@ else:
 configDict["motioncor2Gpu"] = "0"
 configDict["gctfGpu"] = "0"
 configDict["gl2dGpu"] = "0"
-configDict["relionGpu"] = "1"
+configDict["cryoloGpu"] = "1"
+configDict["relionGpu"] = "0"
 configDict["numCpus"] = 16
 configDict["sampling2D"] = 3.0
 
@@ -324,6 +327,7 @@ print("{0:30s}{1:8s}".format("dataDirectory",configDict["dataDirectory"]))
 print("{0:30s}{1:>8s}".format("filesPattern",configDict["filesPattern"]))
 print("{0:30s}{1:>8s}".format("proteinAcronym",configDict["proteinAcronym"]))
 print("{0:30s}{1:>8s}".format("sampleAcronym",configDict["sampleAcronym"]))
+print("{0:30s}{1:8.2f}".format("voltage",configDict["voltage"]))
 print("{0:30s}{1:8.2f}".format("doseInitial",configDict["doseInitial"]))
 print("{0:30s}{1:8.2f}".format("dosePerFrame",configDict["dosePerFrame"]))
 print("{0:30s}{1:8.1f}".format("sphericalAberration",configDict["sphericalAberration"]))

@@ -77,6 +77,10 @@ class Test(unittest.TestCase):
             UtilsISPyB.splitProposalInCodeAndNumber("ih-ls3046")
         )
         self.assertEqual(
+            ("ih-mx", "129"),
+            UtilsISPyB.splitProposalInCodeAndNumber("ih-mx129")
+        )
+        self.assertEqual(
             (None, None),
             UtilsISPyB.splitProposalInCodeAndNumber(None)
         )

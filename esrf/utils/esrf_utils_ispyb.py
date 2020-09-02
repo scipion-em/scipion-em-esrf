@@ -64,7 +64,7 @@ class UtilsISPyB(object):
         code = None
         number = None
         if proposal is not None:
-            listCodes = ["fx", "mxihr", "mx", "bx", "ix", "in", "im", "ih-ls", "blc", "bm161", "sc", "tc", "opcm", "opid"]
+            listCodes = ["fx", "mxihr", "mx", "bx", "ix", "in", "im", "ih-ls", "ih-mx", "blc", "bm161", "sc", "tc", "opcm", "opid"]
             proposalLowerCase = proposal.lower()
             for tmpCode in listCodes:
                 if proposalLowerCase.startswith(tmpCode):

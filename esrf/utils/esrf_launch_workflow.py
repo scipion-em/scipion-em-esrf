@@ -304,7 +304,15 @@ if "RAW_DATA" in dataDirectory:
 #elif "cm01/inhouse" in dataDirectory:
 #    location = "/users/opcm01/PROCESSED_DATA"
 else:
-    location = tempfile.mkdtemp(prefix="ScipionUserData_")
+    userName = os.getlogin()
+    topTmpDir = os.path.join("/tmp_14_days", "ScipionTmp")
+    if not os.path.exists(topTmpDir):
+        os.makedirs(topTmpDir)
+        os.chmod(topTmpDir, 0o777)
+    tmpDir = os.path.join(topTmpDir, userName)
+    if not os.path.exists(tmpDir):
+        os.makedirs(tmpDir, 0o700)
+    location = tempfile.mkdtemp(prefix="ScipionUserData_", dir=tmpDir)
 
 dateTime = time.strftime("%Y%m%d-%H%M%S", time.localtime(time.time()))
 

@@ -232,26 +232,26 @@ if filesPattern is None:
     # No filesPattern, let's assume that we are dealing with EPU data
     filesPattern = "Images-Disc1/GridSquare_*/Data/FoilHole_*-*.mrc"
     # Check how many movies are present on disk
-    listMovies = glob.glob(os.path.join(dataDirectory, filesPattern))
-    noMovies = len(listMovies)
-    if noMovies > 0:
-        # We have EPU data
-        serialEM = False
-        print("********** EPU data **********")
-    else:
-        # So, no mrc movies found, let's try to find some serialEM files:
-        # Look for first tif, defect file and dm4 file
-        tifDir, firstTifFileName, defectFilePath, dm4FilePath = \
-            UtilsPath.findSerialEMFilePaths(dataDirectory)
-        if tifDir is not None:
-            # We have serial EM data
-            filesPattern = UtilsPath.serialEMFilesPattern(dataDirectory, tifDir)
-            listMovies = glob.glob(os.path.join(dataDirectory, filesPattern))
-            noMovies = len(listMovies)
-            if noMovies > 0:
-                # We have EPU data
-                serialEM = True
-                print("********** SerialEM data **********")
+listMovies = glob.glob(os.path.join(dataDirectory, filesPattern))
+noMovies = len(listMovies)
+if noMovies > 0:
+    # We have EPU data
+    serialEM = False
+    print("********** EPU data **********")
+else:
+    # So, no mrc movies found, let's try to find some serialEM files:
+    # Look for first tif, defect file and dm4 file
+    tifDir, firstTifFileName, defectFilePath, dm4FilePath = \
+        UtilsPath.findSerialEMFilePaths(dataDirectory)
+    if tifDir is not None:
+        # We have serial EM data
+        filesPattern = UtilsPath.serialEMFilesPattern(dataDirectory, tifDir)
+        listMovies = glob.glob(os.path.join(dataDirectory, filesPattern))
+        noMovies = len(listMovies)
+        if noMovies > 0:
+            # We have EPU data
+            serialEM = True
+            print("********** SerialEM data **********")
 
 if noMovies == 0:
     print("ERROR! No movies available in directory {0} with the filesPattern {1}.".format(dataDirectory, filesPattern))

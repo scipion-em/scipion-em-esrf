@@ -140,7 +140,7 @@ class UtilsPath(object):
         m = p.match(t.tag)
         if m is not None:
             t.tag = t.tag[m.span()[1]:]
-        listTmp = map(UtilsPath.etree_to_dict, t.getchildren())
+        listTmp = list(map(UtilsPath.etree_to_dict, t.getchildren()))
         if len(listTmp) > 0:
             d = {t.tag : listTmp}
         else:
@@ -157,7 +157,7 @@ class UtilsPath(object):
         """
         fields_found = []
     
-        for key, value in search_dict.iteritems():
+        for key, value in search_dict.items():
     
             if key == field:
                 fields_found.append(value)
@@ -507,7 +507,7 @@ class UtilsPath(object):
                     pyarchFilePath = UtilsPath.getPyarchFilePath(filePath)
                     pyarchFileDir = os.path.dirname(pyarchFilePath)
                     if not os.path.exists(pyarchFileDir):
-                        os.makedirs(pyarchFileDir, 0755)
+                        os.makedirs(pyarchFileDir, 0o755)
                     shutil.copy(filePath, pyarchFilePath)
                 else:
                     # Test path:
@@ -543,7 +543,7 @@ class UtilsPath(object):
                                             filePath, pyarchFilePath)
                                     )
                             else:
-                                os.makedirs(timePath, 0755)
+                                os.makedirs(timePath, 0o755)
                                 shutil.copy(filePath, pyarchFilePath)
                             isDone = True
             except:

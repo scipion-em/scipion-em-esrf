@@ -29,9 +29,7 @@
 import os
 import sys
 import datetime
-import ConfigParser
-
-sys.path.insert(0, "/opt/pxsoft/EDNA/vMX/edna/libraries/suds-0.4")
+import configparser
 
 from suds.client import Client
 from suds.transport.http import HttpAuthenticated
@@ -42,7 +40,7 @@ class UtilsISPyB(object):
 
     @staticmethod
     def getHttpAuthenticated():
-        credentialsConfig = ConfigParser.ConfigParser()
+        credentialsConfig = configparser.ConfigParser()
         # credentialsConfig.read(os.path.join(os.environ['SCIPION_ESRF_CONFIG']))
         credentialsConfig.read('/opt/pxsoft/scipion/vESRF_2.0/debian90-x86_64/config/esrf.properties')
         username = str(credentialsConfig.get('ISPyB', 'user'))
@@ -51,7 +49,7 @@ class UtilsISPyB(object):
     
     @staticmethod
     def getUrlBase(dbNumber):
-        config = ConfigParser.ConfigParser()
+        config = configparser.ConfigParser()
         # Configuration files
         # config.read(os.path.join(os.environ['SCIPION_ESRF_CONFIG']))
         config.read('/opt/pxsoft/scipion/vESRF_2.0/debian90-x86_64/config/esrf.properties')
@@ -64,7 +62,7 @@ class UtilsISPyB(object):
         code = None
         number = None
         if proposal is not None:
-            listCodes = ["fx", "mxihr", "mx", "bx", "ix", "in", "im", "ih-ls", "blc", "bm161", "sc", "tc", "opcm", "opid"]
+            listCodes = ["fx", "mxihr", "mx", "bx", "ix", "in", "im", "ih-ls", "ih-mx", "blc", "bm161", "sc", "tc", "opcm", "opid"]
             proposalLowerCase = proposal.lower()
             for tmpCode in listCodes:
                 if proposalLowerCase.startswith(tmpCode):

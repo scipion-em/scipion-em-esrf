@@ -31,11 +31,7 @@ import sys
 import time
 import traceback
 
-# Temporary hard-wired path for PyTango
-sys.path.insert(0, "/opt/pxsoft/scipion/vESRF_dev/debian90-x86_64/scipion_dev/software/lib/python2.7/site-packages/pytango-9.2.0-py2.7-linux-x86_64.egg")
-# import PyTango  # import isnt used in this file
-
-from ESRFMetadataManagerClient import MetadataManagerClient
+from esrf.utils.ESRFMetadataManagerClient import MetadataManagerClient
 
 class UtilsIcat(object):
     

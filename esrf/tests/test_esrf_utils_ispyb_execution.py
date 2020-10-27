@@ -38,13 +38,13 @@ from esrf.utils.esrf_utils_ispyb import UtilsISPyB
 class Test(unittest.TestCase):
 
     def tes_updateProposalFromSMIS(self):
-        UtilsISPyB.updateProposalFromSMIS(2, "mx415")
+        UtilsISPyB.updateProposalFromSMIS(1, "mx415")
         
     def tes_createSession(self):
         sessions = UtilsISPyB.createSession(1, "opcm01", "cm01")
         print(sessions)
 
-    def test_addMovie(self):
+    def tes_addMovie(self):
         url = "http://linsvensson.esrf.fr:8090/ispyb/ispyb-ws/ispybWS/ToolsForEMWebService?wsdl"
         username = ""
         password = ""

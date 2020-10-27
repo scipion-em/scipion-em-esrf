@@ -33,8 +33,6 @@ import os
 import sys
 import time
 import logging
-# Temporary hard-wired path for PyTango
-sys.path.insert(0, "/opt/pxsoft/scipion/vESRF_dev/debian90-x86_64/scipion_dev/software/lib/python2.7/site-packages/pytango-9.2.0-py2.7-linux-x86_64.egg")
 import traceback
 from email.mime.text import MIMEText
 import smtplib
@@ -151,7 +149,7 @@ class MetadataManagerClient(object):
             # Give the server some time to react
             time.sleep(1)
         except:
-            print "Unexpected error:", sys.exc_info()[0]
+            print("Unexpected error:", sys.exc_info()[0])
             raise
 
     def getMetadataManagerState(self):

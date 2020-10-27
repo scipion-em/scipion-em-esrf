@@ -36,18 +36,16 @@ from esrf.utils.esrf_utils_icat import UtilsIcat
 class Test(unittest.TestCase):
 
     def test_findGridSquaresNotUploaded(self):
-        allParams = json.loads(
-            open("/scisoft/pxsoft/data/cryoem/testRunData/" +
-                 "20180423/allParams.json").read()
-        )
+        with open("/scisoft/pxsoft/data/cryoem/testRunData/" +
+                 "20180423/allParams.json") as fd:
+            allParams = json.loads(fd.read())
         dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(allParams)
         pprint.pprint(dictGridSquares)
 
     def test_findGridSquaresNotUploaded_2(self):
-        allParams = json.loads(
-            open("/scisoft/pxsoft/data/cryoem/testRunData/" +
-                 "20181105/allParams.json").read()
-        )
+        with open("/scisoft/pxsoft/data/cryoem/testRunData/" +
+                 "20181105/allParams.json") as fd:
+            allParams = json.loads(fd.read())
         dictGridSquares = \
             UtilsIcat.findGridSquaresNotUploaded(allParams,
                                                  "GridSquare_32013107")

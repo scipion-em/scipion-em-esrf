@@ -149,7 +149,7 @@ class MetadataManagerClient(object):
             # Give the server some time to react
             time.sleep(1)
         except:
-            print "Unexpected error:", sys.exc_info()[0]
+            print("Unexpected error:", sys.exc_info()[0])
             raise
 
     def getMetadataManagerState(self):

@@ -720,7 +720,7 @@ else:
 fd, jsonFile = tempfile.mkstemp(suffix=".json", prefix="scipion_workflow_", dir=location)
 os.write(fd, jsonString)
 os.close(fd)
-os.chmod(jsonFile, 0644)
+os.chmod(jsonFile, 0o644)
 print("Scipion project json file: {0}".format(jsonFile))
 print("Project location: {0}".format(location))
 

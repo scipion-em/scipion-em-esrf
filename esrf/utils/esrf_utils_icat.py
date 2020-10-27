@@ -31,7 +31,7 @@ import sys
 import time
 import traceback
 
-from ESRFMetadataManagerClient import MetadataManagerClient
+from esrf.utils.ESRFMetadataManagerClient import MetadataManagerClient
 
 class UtilsIcat(object):
     

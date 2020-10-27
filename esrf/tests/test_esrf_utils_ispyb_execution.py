@@ -42,10 +42,10 @@ class Test(unittest.TestCase):
         sessions = UtilsISPyB.createSession(1, "opcm01", "cm01")
         print(sessions)
 
-    def test_addMovie(self):
+    def tes_addMovie(self):
         url = "http://linsvensson.esrf.fr:8090/ispyb/ispyb-ws/ispybWS/ToolsForEMWebService?wsdl"
-        username = "ispybws1"
-        password = "I$pybws1"
+        username = ""
+        password = ""
         httpAuthenticated = HttpAuthenticated(username=username, password=password)
 
         client = Client(url, transport=httpAuthenticated, cache=NoCache(), timeout=15)

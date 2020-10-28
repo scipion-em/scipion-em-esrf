@@ -40,19 +40,16 @@ class UtilsISPyB(object):
 
     @staticmethod
     def getHttpAuthenticated():
-        credentialsConfig = configparser.ConfigParser()
-        # credentialsConfig.read(os.path.join(os.environ['SCIPION_ESRF_CONFIG']))
-        credentialsConfig.read('/opt/pxsoft/scipion/vESRF_2.0/debian90-x86_64/config/esrf.properties')
-        username = str(credentialsConfig.get('ISPyB', 'user'))
-        password = str(credentialsConfig.get('ISPyB', 'password'))
+        username = os.environ.get('ISPyB_user', None)
+        password = os.environ.get('ISPyB_pass', None)
+        if username is None or password is None:
+            raise RuntimeError("Missing ISPyB user name and / or password! Please ser ISPyB_user and ISPyB_pass.")
         return HttpAuthenticated(username=username, password=password)
     
     @staticmethod
     def getUrlBase(dbNumber):
         config = configparser.ConfigParser()
-        # Configuration files
-        # config.read(os.path.join(os.environ['SCIPION_ESRF_CONFIG']))
-        config.read('/opt/pxsoft/scipion/vESRF_2.0/debian90-x86_64/config/esrf.properties')
+        config.read('/opt/pxsoft/scipion/config/esrf.properties')
         # URL
         urlBase = str(config.get('UrlBase', 'url_{0}'.format(dbNumber)))
         return urlBase

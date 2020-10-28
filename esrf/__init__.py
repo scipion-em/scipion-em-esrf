@@ -25,23 +25,11 @@
 # *
 # **************************************************************************
 
-try:
-    from bibtex import _bibtex # Load bibtex dict with references
-except:
-    print('Error - cannot load bibtex')
 
-try:
-    import pyworkflow.em
-    _logo = None
-    _references = ['Delageniere2011']
+import pwem
 
 
-    class Plugin(pyworkflow.em.Plugin):
-        pass
 
-    pyworkflow.em.Domain.registerPlugin(__name__)
-except:
-    print('Error - cannot load pyworkflow.em')
-
-
+class Plugin(pwem.Plugin):
+    pass
 

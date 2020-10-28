@@ -202,17 +202,17 @@ else:
     if proposal is None:
         print("WARNING! No valid proposal could be found for movie {0}.".format(firstMovieFullPath))
         print("")
-        answer = raw_input("Would you like to enter a valid proposal name now (yes/no)? ")
+        answer = input("Would you like to enter a valid proposal name now (yes/no)? ")
         while answer != "yes" and answer !="no":
             print("")
-            answer = raw_input("Please answer 'yes' or 'no'. Would you like to enter a valid proposal name now? ")
+            answer = input("Please answer 'yes' or 'no'. Would you like to enter a valid proposal name now? ")
         if answer == "yes":
-            proposal = raw_input("Please enter a valid proposal name: ")
+            proposal = input("Please enter a valid proposal name: ")
             code, number = UtilsISPyB.splitProposalInCodeAndNumber(proposal)
             while code is None:
                 print("'{0}' is not a valid proposal name.".format(proposal))
                 print("")
-                proposal = raw_input("Please enter a valid proposal name (mxXXXX, ih-lsXXXX etc): ")
+                proposal = input("Please enter a valid proposal name (mxXXXX, ih-lsXXXX etc): ")
                 code, number = UtilsISPyB.splitProposalInCodeAndNumber(proposal)
         else:
             proposal = None
@@ -379,7 +379,7 @@ try:
 except:
     projectPath = manager.getProjectPath(configDict["scipionProjectName"])
 
-project = Project(projectPath)
+project = Project(projectPath, path=os.path.join(location, configDict["scipionProjectName"]))
 project.load()
 
 # Start the project
@@ -396,8 +396,8 @@ for prot in runs:
         protLabelName not in sys.argv[3:]):
         project.scheduleProtocol(prot)
     else:
-        print(pwutils.yellowStr("\nNot scheduling '%s' protocol named '%s'.\n"
-                                % (protClassName, protLabelName)))
+        print("\nNot scheduling '%s' protocol named '%s'.\n"
+                                % (protClassName, protLabelName))
 
 
 

@@ -34,6 +34,8 @@ import pprint
 import datetime
 import tempfile
 
+import pyworkflow
+
 from pyworkflow.project.manager import Manager
 from pyworkflow.project import Project
 from pyworkflow.protocol import getProtocolFromDb
@@ -367,7 +369,6 @@ else:
     print("EPU specific parameters:")
     print("Metadata file: {0}".format(xml))
 
-preprocessWorkflow(configDict)
 
 # if jsonFile is not None:
 #     protDict = project.loadProtocols(jsonFile)
@@ -379,8 +380,11 @@ try:
 except:
     projectPath = manager.getProjectPath(configDict["scipionProjectName"])
 
-project = Project(projectPath, path=os.path.join(location, configDict["scipionProjectName"]))
+preprocessWorkflow(configDict)
+
+project = Project(pyworkflow.Config.getDomain(), path=os.path.join(location, configDict["scipionProjectName"]))
 project.load()
+
 
 # Start the project
 runs = project.getRuns()

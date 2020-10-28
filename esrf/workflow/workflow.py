@@ -43,24 +43,24 @@ from pyworkflow.protocol import getProtocolFromDb
 import json
 
 
-# try:  # Xmipp plugin is mandatory to run this workflow
-#     from xmipp3.protocols import (XmippProtOFAlignment, XmippProtMovieGain,
-#                                   XmippProtMovieMaxShift, XmippProtCTFMicrographs,
-#                                   XmippProtMovieCorr, XmippProtCTFConsensus,
-#                                   XmippProtPreprocessMicrographs, XmippProtParticleBoxsize,
-#                                   XmippProtParticlePicking, XmippParticlePickingAutomatic,
-#                                   XmippProtConsensusPicking, XmippProtCL2D,
-#                                   XmippProtExtractParticles, XmippProtTriggerData,
-#                                   XmippProtEliminateEmptyParticles,
-#                                   XmippProtScreenParticles,
-#                                   XmippProtReconstructSignificant, XmippProtRansac,
-#                                   XmippProtAlignVolume, XmippProtReconstructSwarm,
-#                                   XmippProtStrGpuCrrSimple, XmippProtGpuCrrCL2D,
-#                                   XmippProtCropResizeVolumes, XmippProtEliminateEmptyClasses)
-# #                                  XmippProtDeepMicrographScreen)
-# except Exception as exc:
-#     raise
-#     pwutils.pluginNotFound('xmipp', errorMsg=exc, doRaise=True)
+try:  # Xmipp plugin is mandatory to run this workflow
+    from xmipp3.protocols import (XmippProtOFAlignment, XmippProtMovieGain,
+                                  XmippProtMovieMaxShift, XmippProtCTFMicrographs,
+                                  XmippProtMovieCorr, XmippProtCTFConsensus,
+                                  XmippProtPreprocessMicrographs, XmippProtParticleBoxsize,
+                                  XmippProtParticlePicking, XmippParticlePickingAutomatic,
+                                  XmippProtConsensusPicking, XmippProtCL2D,
+                                  XmippProtExtractParticles, XmippProtTriggerData,
+                                  XmippProtEliminateEmptyParticles,
+                                  XmippProtScreenParticles,
+                                  XmippProtReconstructSignificant, XmippProtRansac,
+                                  XmippProtAlignVolume, XmippProtReconstructSwarm,
+                                  XmippProtStrGpuCrrSimple, XmippProtGpuCrrCL2D,
+                                  XmippProtCropResizeVolumes, XmippProtEliminateEmptyClasses)
+#                                  XmippProtDeepMicrographScreen)
+except Exception as exc:
+    raise
+    pwutils.pluginNotFound('xmipp', errorMsg=exc, doRaise=True)
 
 protPlugins = {'ProtMotionCorr': 'motioncorr.protocols',
                'ProtCTFFind': 'grigoriefflab.protocols',
@@ -79,6 +79,9 @@ protPlugins = {'ProtMotionCorr': 'motioncorr.protocols',
                # 'ProtCryoSparcInitialModel': 'cryosparc2.protocols'
                }
 
+from motioncorr.protocols import ProtMotionCorr
+from cistem.protocols import CistemProtCTFFind
+from gctf.protocols import ProtGctf
 
 QUEUE_PARAMS = (u'gpu', {u'JOB_TIME': u'1',  # in hours
                          u'JOB_MEMORY': u'2048',  # in Mb
@@ -195,73 +198,73 @@ def preprocessWorkflow(configDict):
     _registerProt(protImport, label='Movies', toSummary=True)
 
     # # ----------- MOTIONCOR ----------------------------
-    # mcMpi = 1
-    # protMA = project.newProtocol(importPlugin('ProtMotionCorr'),
-    #                              objLabel='MotionCor2 - movie align.',
-    #                              gpuList=configDict["motioncor2Gpu"],
-    #                              numberOfThreads=mcMpi,
-    #                              doApplyDoseFilter=True,
-    #                              doSaveUnweightedMic=True,
-    #                              doSaveAveMic=True,
-    #                              doSaveMovie=False,
-    #                              doComputeMicThumbnail=True,
-    #                              computeAllFramesAvg=False,
-    #                              patchX=5, patchY=5,
-    #                              useEst=True,
-    #                              alignFrame0=configDict["alignFrame0"],
-    #                              alignFrameN=configDict["alignFrameN"],
-    #                              binFactor=configDict["binFactor"],
-    #                              extraParams2=configDict["extraParams2"])
-    # setExtendedInput(protMA.inputMovies, protImport, 'outputMovies')
-    # _registerProt(protMA, 'Movies')
+    mcMpi = 1
+    protMA = project.newProtocol(ProtMotionCorr,
+                                 objLabel='MotionCor2 - movie align.',
+                                 gpuList=configDict["motioncor2Gpu"],
+                                 numberOfThreads=mcMpi,
+                                 doApplyDoseFilter=True,
+                                 doSaveUnweightedMic=True,
+                                 doSaveAveMic=True,
+                                 doSaveMovie=False,
+                                 doComputeMicThumbnail=True,
+                                 computeAllFramesAvg=False,
+                                 patchX=5, patchY=5,
+                                 useEst=True,
+                                 alignFrame0=configDict["alignFrame0"],
+                                 alignFrameN=configDict["alignFrameN"],
+                                 binFactor=configDict["binFactor"],
+                                 extraParams2=configDict["extraParams2"])
+    setExtendedInput(protMA.inputMovies, protImport, 'outputMovies')
+    _registerProt(protMA, 'Movies')
     #
     # # ----------- MAX SHIFT -----------------------------
-    # protMax = project.newProtocol(XmippProtMovieMaxShift,
-    #                               objLabel='Xmipp - max shift')
-    # setExtendedInput(protMax.inputMovies, protMA, 'outputMovies')
-    # _registerProt(protMax, 'Movies', True)
-    #
-    # protCTF2 = project.newProtocol(importPlugin('ProtGctf'),
-    #                                objLabel='gCTF estimation',
-    #                                gpuList=configDict["gctfGpu"],
-    #                                lowRes=configDict["lowRes"],
-    #                                plotResRing=True,
-    #                                doEPA=True,
-    #                                doHighRes=True,
-    #                                convsize=configDict["convsize"],
-    #                                highRes=configDict["highRes"],
-    #                                minDefocus=configDict["minDefocus"],
-    #                                maxDefocus=configDict["maxDefocus"],
-    #                                astigmatism=configDict["astigmatism"],
-    #                                doPhShEst=configDict["doPhShEst"],
-    #                                phaseShiftL=configDict["phaseShiftL"],
-    #                                phaseShiftH=configDict["phaseShiftH"],
-    #                                phaseShiftS=configDict["phaseShiftS"],
-    #                                phaseShiftT=configDict["phaseShiftT"],
-    #
-    #                                )
-    # setExtendedInput(protCTF2.inputMicrographs,
-    #                  protMax, 'outputMicrographsDoseWeighted')
-    # _registerProt(protCTF2, 'CTF')
+    protMax = project.newProtocol(XmippProtMovieMaxShift,
+                                  objLabel='Xmipp - max shift')
+    setExtendedInput(protMax.inputMovies, protMA, 'outputMovies')
+    _registerProt(protMax, 'Movies', True)
+
+    protCTF2 = project.newProtocol(ProtGctf,
+                                   objLabel='gCTF estimation',
+                                   gpuList=configDict["gctfGpu"],
+                                   lowRes=configDict["lowRes"],
+                                   plotResRing=True,
+                                   doEPA=True,
+                                   doHighRes=True,
+                                   convsize=configDict["convsize"],
+                                   highRes=configDict["highRes"],
+                                   minDefocus=configDict["minDefocus"],
+                                   maxDefocus=configDict["maxDefocus"],
+                                   astigmatism=configDict["astigmatism"],
+                                   doPhShEst=configDict["doPhShEst"],
+                                   phaseShiftL=configDict["phaseShiftL"],
+                                   phaseShiftH=configDict["phaseShiftH"],
+                                   phaseShiftS=configDict["phaseShiftS"],
+                                   phaseShiftT=configDict["phaseShiftT"],
+
+                                   )
+    setExtendedInput(protCTF2.inputMicrographs,
+                     protMax, 'outputMicrographsDoseWeighted')
+    _registerProt(protCTF2, 'CTF')
     #
     # # --------- CTF ESTIMATION 1 ---------------------------
-    # protCTF1 = project.newProtocol(importPlugin('ProtCTFFind'),
-    #                                objLabel='GrigorieffLab - CTFfind',
-    #                                numberOfThreads=configDict["numCpus"],
-    #                                lowRes=configDict["lowRes"],
-    #                                highRes=configDict["highRes"],
-    #                                minDefocus=configDict["minDefocus"],
-    #                                maxDefocus=configDict["maxDefocus"],
-    #                                astigmatism=configDict["astigmatism"],
-    #                                doPhShEst=configDict["doPhShEst"],
-    #                                phaseShiftL=configDict["phaseShiftL"],
-    #                                phaseShiftH=configDict["phaseShiftH"],
-    #                                phaseShiftS=configDict["phaseShiftS"],
-    #                                phaseShiftT=configDict["phaseShiftT"],
-    #                                )
-    # setExtendedInput(protCTF1.inputMicrographs,
-    #                  protMax, 'outputMicrographsDoseWeighted')
-    # _registerProt(protCTF1, 'CTF')
+    protCTF1 = project.newProtocol(CistemProtCTFFind,
+                                   objLabel='Cistem - CTFfind',
+                                   numberOfThreads=configDict["numCpus"],
+                                   lowRes=configDict["lowRes"],
+                                   highRes=configDict["highRes"],
+                                   minDefocus=configDict["minDefocus"],
+                                   maxDefocus=configDict["maxDefocus"],
+                                   astigmatism=configDict["astigmatism"],
+                                   doPhShEst=configDict["doPhShEst"],
+                                   phaseShiftL=configDict["phaseShiftL"],
+                                   phaseShiftH=configDict["phaseShiftH"],
+                                   phaseShiftS=configDict["phaseShiftS"],
+                                   phaseShiftT=configDict["phaseShiftT"],
+                                   )
+    setExtendedInput(protCTF1.inputMicrographs,
+                     protMax, 'outputMicrographsDoseWeighted')
+    _registerProt(protCTF1, 'CTF')
     #
     # # --------- CTF CONSENSUS ---------------------------
     # isCtf2Xmipp = isinstance(protCTF2, XmippProtCTFMicrographs)

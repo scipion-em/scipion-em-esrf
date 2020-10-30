@@ -251,6 +251,8 @@ if configDict["nominalMagnification"] is None:
         
         dictResults = UtilsPath.getMdocMetaData(mdoc)
         configDict["nominalMagnification"] = int(dictResults["Magnification"])
+        if configDict["imagesCount"] is None:
+            raise RuntimeError("Number of images (imagesCount) is None!")
 
     else:
         jpeg, mrc, xml, gridSquareThumbNail = UtilsPath.getMovieJpegMrcXml(firstMovieFullPath)
@@ -270,6 +272,7 @@ if configDict["nominalMagnification"] is None:
         configDict["doPhaseShiftEstimation"] = dictResults["phasePlateUsed"]
         configDict["nominalMagnification"] = int(dictResults["nominalMagnification"])
         configDict["voltage"] = int(dictResults["accelerationVoltage"])
+        configDict["imagesCount"] = int(dictResults["numberOffractions"])
 else:
     jpeg = None
     mdoc = None
@@ -313,7 +316,7 @@ if configDict["superResolution"]:
 else:
     configDict["binFactor"] = 1.0
 
-configDict["motioncor2Gpu"] = "0"
+configDict["motioncor2Gpu"] = "0 1"
 configDict["gctfGpu"] = "0"
 configDict["gl2dGpu"] = "0"
 configDict["cryoloGpu"] = "1"

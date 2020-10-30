@@ -40,20 +40,16 @@ import shutil
 import traceback
 import collections
 
-
 import pyworkflow.protocol.params as params
-# from pyworkflow import VERSION_1_1
-from pyworkflow.protocol import Protocol
+
+from pyworkflow import VERSION_1_1
+from pyworkflow.protocol import getUpdatedProtocol
 from emfacilities.protocols import ProtMonitor, Monitor, PrintNotifier
-# from scipion import ProtMonitor
-# from pwem.protocols import ProtMonitor, Monitor, PrintNotifier
 from pwem.protocols import ProtImportMovies, ProtAlignMovies, ProtCTFMicrographs
-# from pyworkflow.protocol import getProtocolFromDb
-#
+
 from esrf.utils.esrf_utils_ispyb import UtilsISPyB
 from esrf.utils.esrf_utils_path import UtilsPath
 from esrf.utils.esrf_utils_icat import UtilsIcat
-from pyworkflow.utils import Message
 
 
 class ProtMonitorISPyB_ESRF(ProtMonitor):
@@ -61,7 +57,7 @@ class ProtMonitorISPyB_ESRF(ProtMonitor):
     Monitor to communicated with ISPyB system at ESRF.
     """
     _label = 'monitor to ISPyB at the ESRF'
-    # _lastUpdateVersion = VERSION_1_1
+    _lastUpdateVersion = VERSION_1_1
 
     def __init__(self, **kwargs):
         ProtMonitor.__init__(self, **kwargs)
@@ -153,7 +149,7 @@ class ProtMonitorISPyB_ESRF(ProtMonitor):
         url = os.path.join(urlBase, "ToolsForEMWebService?wsdl")
         self.info("ISPyB URL: {0}".format(url))
         self.client = UtilsISPyB.getClient(url)
-        
+
         # # Update proposal
         # UtilsISPyB.updateProposalFromSMIS(dbNumber, self.proposal.get())
         #
@@ -210,17 +206,6 @@ class MonitorISPyB_ESRF(Monitor):
             self.allParamsJsonFile = None
             self.allParams = collections.OrderedDict()
 
-    # def getUpdatedProtocol(self, protocol):
-    #     """ Retrieve the updated protocol and close db connections
-    #         """
-    #     prot2 = getProtocolFromDb(self.currentDir,
-    #                               protocol.getDbPath(),
-    #                               protocol.getObjId())
-    #     # Close DB connections
-    #     prot2.getProject().closeMapper()
-    #     prot2.closeMappers()
-    #     return prot2
-
     def step(self):
         self.info("MonitorISPyB: start step ------------------------")
         self.info("Number of movies in all params: {0}".format(len(self.allParams)))
@@ -229,9 +214,9 @@ class MonitorISPyB_ESRF(Monitor):
             print("WARNING! Proposal is 'None', no data uploaded to ISPyB")
             finished = True
         else:
-            runs = [self.getUpdatedProtocol(p.get()) for p in self.protocol.inputProtocols]
+            prots = [getUpdatedProtocol(p) for p in self.protocol.getInputProtocols()]
 
-            g = self.project.getGraphFromRuns(runs)
+            g = self.project.getGraphFromRuns(prots)
 
             nodes = g.getRoot().iterChildsBreadth()
 

@@ -87,9 +87,15 @@ from relion.protocols import ProtRelionAutopickLoG
 from relion.protocols import ProtRelionClassify2D
 from emfacilities.protocols import ProtMonitorSummary
 
-QUEUE_PARAMS = (u'gpu', {u'JOB_TIME': u'1',  # in hours
-                         u'JOB_MEMORY': u'2048',  # in Mb
-                         u'QUEUE_FOR_JOBS': u'N', })
+QUEUE_PARAMS_WITH_GPU = ('gpu', {'JOB_TIME': '150',  # in hours
+                                 'JOB_MEMORY': '10000',  # in Mb
+                                 'QUEUE_FOR_JOBS': 'N',
+                                 'JOB_GPU': '--gres=gpu:1'})
+
+QUEUE_PARAMS_WITHOUT_GPU = ('gpu', {'JOB_TIME': '150',  # in hours
+                                     'JOB_MEMORY': '10000',  # in Mb
+                                     'QUEUE_FOR_JOBS': 'N',
+                                     'JOB_GPU': ''})
 
 def getNewScipionProjectName(scipionProjectName, index):
     return "{0}_{1}".format(scipionProjectName, index)
@@ -330,6 +336,8 @@ def preprocessWorkflow(configDict):
                                   gpuList=configDict["cryoloGpu"],
                                   conservPickVar=0.03,
                                   streamingBatchSize=4)  # CPU version installation
+    protPP2._useQueue.set(True)
+    protPP2._queueParams.set(json.dumps(QUEUE_PARAMS_WITH_GPU))
     setBoxSize(protPP2.boxSize)
     setExtendedInput(protPP2.inputMicrographs, protPreMics, 'outputMicrographs')
     if waitManualPick:
@@ -342,11 +350,13 @@ def preprocessWorkflow(configDict):
     protPP4 = project.newProtocol(ProtRelionAutopickLoG,
                                   objLabel='Relion - LoG auto-picking',
                                   conservPickVar=0.03,
-                                  minDiameter=bxSize - 20,
-                                  maxDiameter=bxSize + 10,
-                                  maxResolution=-1,
-                                  threshold=-1,
+                                  minDiameter=configDict["partSize"] - 20,
+                                  maxDiameter=configDict["partSize"] + 10,
+                                  maxResolution=20,
+                                  threshold=0.0,
                                   streamingBatchSize=4)
+    protPP4._useQueue.set(True)
+    protPP4._queueParams.set(json.dumps(QUEUE_PARAMS_WITHOUT_GPU))
     setBoxSize(protPP4.boxSize)
     setExtendedInput(protPP4.inputMicrographs, protPreMics, 'outputMicrographs')
     if waitManualPick:
@@ -428,6 +438,8 @@ def preprocessWorkflow(configDict):
                                  numberOfClasses=16,
                                  numberOfMpi=configDict["numCpus"] - 8)
 
+    protCL._useQueue.set(True)
+    protCL._queueParams.set(json.dumps(QUEUE_PARAMS_WITHOUT_GPU))
     setExtendedInput(protCL.inputParticles, protTRIG2, 'outputParticles')
     _registerProt(protCL, '2Dclassify', True)
     classifiers.append(protCL)
@@ -446,6 +458,8 @@ def preprocessWorkflow(configDict):
                                   gpusToUse=configDict["relionGpu"],
                                   numberOfClasses=16,
                                   relionCPUs=3)
+    protCL2._useQueue.set(True)
+    protCL2._queueParams.set(json.dumps(QUEUE_PARAMS_WITH_GPU))
     setExtendedInput(protCL2.inputParticles, protTRIG2, 'outputParticles')
     _registerProt(protCL2, '2Dclassify', True)
     classifiers.append(protCL2)

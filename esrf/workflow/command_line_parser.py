@@ -123,7 +123,7 @@ def getCommandlineOptions():
         "--partSize",
         action="store",
         help="Particle size for auto picking",
-        default=250.0
+        default=125.0
     )
     optional.add_argument(
         "--superResolution",

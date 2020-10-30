@@ -44,7 +44,7 @@ import collections
 import pyworkflow.protocol.params as params
 # from pyworkflow import VERSION_1_1
 from pyworkflow.protocol import Protocol
-from emfacilities.protocols import ProtMonitor, Monitor
+from emfacilities.protocols import ProtMonitor, Monitor, PrintNotifier
 # from scipion import ProtMonitor
 # from pwem.protocols import ProtMonitor, Monitor, PrintNotifier
 from pwem.protocols import ProtImportMovies, ProtAlignMovies, ProtCTFMicrographs
@@ -56,14 +56,18 @@ from esrf.utils.esrf_utils_icat import UtilsIcat
 from pyworkflow.utils import Message
 
 
-class ProtMonitorISPyB_ESRF(Protocol):
+class ProtMonitorISPyB_ESRF(ProtMonitor):
     """ 
     Monitor to communicated with ISPyB system at ESRF.
     """
     _label = 'monitor to ISPyB at the ESRF'
     # _lastUpdateVersion = VERSION_1_1
 
+    def __init__(self, **kwargs):
+        ProtMonitor.__init__(self, **kwargs)
+
     def _defineParams(self, form):
+        ProtMonitor._defineParams(self, form)
 
         section1 = form.addSection(label='Names')
 
@@ -157,7 +161,7 @@ class ProtMonitorISPyB_ESRF(Protocol):
                                         samplingInterval=30, # 30 seconds                                        # samplingInterval=self.samplingInterval.get(),
                                         monitorTime=4*24*60) # 4*24 H max monitor time
 
-        # monitor.addNotifier(PrintNotifier())
+        monitor.addNotifier(PrintNotifier())
         monitor.loop()
 
 

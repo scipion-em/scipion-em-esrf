@@ -82,6 +82,10 @@ protPlugins = {'ProtMotionCorr': 'motioncorr.protocols',
 from motioncorr.protocols import ProtMotionCorr
 from cistem.protocols import CistemProtCTFFind
 from gctf.protocols import ProtGctf
+from sphire.protocols import SphireProtCRYOLOPicking
+from relion.protocols import ProtRelionAutopickLoG
+from relion.protocols import ProtRelionClassify2D
+from emfacilities.protocols import ProtMonitorSummary
 
 QUEUE_PARAMS = (u'gpu', {u'JOB_TIME': u'1',  # in hours
                          u'JOB_MEMORY': u'2048',  # in Mb
@@ -267,234 +271,234 @@ def preprocessWorkflow(configDict):
     _registerProt(protCTF1, 'CTF')
     #
     # # --------- CTF CONSENSUS ---------------------------
-    # isCtf2Xmipp = isinstance(protCTF2, XmippProtCTFMicrographs)
-    # protCTFs = project.newProtocol(XmippProtCTFConsensus,
-    #                                objLabel='Xmipp - CTF consensus',
-    #                                useDefocus=True,
-    #                                useAstigmatism=True,
-    #                                useResolution=True,
-    #                                resolution=5,
-    #                                useCritXmipp=isCtf2Xmipp,
-    #                                calculateConsensus=True,
-    #                                minConsResol=7)
-    # setExtendedInput(protCTFs.inputCTF, protCTF2, 'outputCTF')
-    # setExtendedInput(protCTFs.inputCTF2, protCTF1, 'outputCTF')
-    # _registerProt(protCTFs, 'CTF', True)
-    #
+    isCtf2Xmipp = isinstance(protCTF2, XmippProtCTFMicrographs)
+    protCTFs = project.newProtocol(XmippProtCTFConsensus,
+                                   objLabel='Xmipp - CTF consensus',
+                                   useDefocus=True,
+                                   useAstigmatism=True,
+                                   useResolution=True,
+                                   resolution=5,
+                                   useCritXmipp=isCtf2Xmipp,
+                                   calculateConsensus=True,
+                                   minConsResol=7)
+    setExtendedInput(protCTFs.inputCTF, protCTF2, 'outputCTF')
+    setExtendedInput(protCTFs.inputCTF2, protCTF1, 'outputCTF')
+    _registerProt(protCTFs, 'CTF', True)
+
     # # *************   PICKING   ********************************************
-    #
-    # pickers = []
-    # pickersOuts = []
-    #
+
+    pickers = []
+    pickersOuts = []
+
     # # --------- PREPROCESS MICS ---------------------------
-    # protPreMics0 = project.newProtocol(XmippProtPreprocessMicrographs,
-    #                                    objLabel='Xmipp - preprocess Mics',
-    #                                    doRemoveBadPix=True,
-    #                                    doInvert=False)
-    # setExtendedInput(protPreMics0.inputMicrographs,
-    #                  protCTFs, 'outputMicrographs')
-    # _registerProt(protPreMics0, 'Micrographs')
-    #
+    protPreMics0 = project.newProtocol(XmippProtPreprocessMicrographs,
+                                       objLabel='Xmipp - preprocess Mics',
+                                       doRemoveBadPix=True,
+                                       doInvert=False)
+    setExtendedInput(protPreMics0.inputMicrographs,
+                     protCTFs, 'outputMicrographs')
+    _registerProt(protPreMics0, 'Micrographs')
+
     # # Resizing to a larger sampling rate
-    # doDownSamp2D = 0 < configDict["sampling2D"] > configDict["samplingRate"]
-    # samp2D = configDict["sampling2D"] if doDownSamp2D else configDict["samplingRate"]
-    # if doDownSamp2D:
-    #     downSampPreMics = configDict["sampling2D"] / configDict["samplingRate"]
-    #     protPreMics = project.newProtocol(XmippProtPreprocessMicrographs,
-    #                                       objLabel='downSampling to 2D size',
-    #                                       doDownsample=True,
-    #                                       downFactor=downSampPreMics)
-    #     setExtendedInput(protPreMics.inputMicrographs,
-    #                      protPreMics0, 'outputMicrographs')
-    #     _registerProt(protPreMics, 'Micrographs')
-    # else:
-    #     # downSampPreMics = 1
-    #     protPreMics = protPreMics0
-    #
+    doDownSamp2D = 0 < configDict["sampling2D"] > configDict["samplingRate"]
+    samp2D = configDict["sampling2D"] if doDownSamp2D else configDict["samplingRate"]
+    if doDownSamp2D:
+        downSampPreMics = configDict["sampling2D"] / configDict["samplingRate"]
+        protPreMics = project.newProtocol(XmippProtPreprocessMicrographs,
+                                          objLabel='downSampling to 2D size',
+                                          doDownsample=True,
+                                          downFactor=downSampPreMics)
+        setExtendedInput(protPreMics.inputMicrographs,
+                         protPreMics0, 'outputMicrographs')
+        _registerProt(protPreMics, 'Micrographs')
+    else:
+        # downSampPreMics = 1
+        protPreMics = protPreMics0
+
     # # -------- XMIPP AUTO-BOXSIZE -------------------------
-    # waitManualPick = False
-    # protPrePick = None
-    # # protPrePick = project.newProtocol(XmippProtParticleBoxsize,
-    # #                                   objLabel='Xmipp - particle boxsize')
-    # # setExtendedInput(protPrePick.inputMicrographs,
-    # #                  protCTFs, 'outputMicrographs')
-    # # _registerProt(protPrePick, 'Picking')
-    # bxSize = getEvenPartSize(configDict["partSize"]/samp2D)
-    #
-    # protPP2 = project.newProtocol(importPlugin('SphireProtCRYOLOPicking'),
-    #                               objLabel='Sphire - CrYolo auto-picking',
-    #                               gpuList=configDict["cryoloGpu"],
-    #                               conservPickVar=0.03,
-    #                               streamingBatchSize=4)  # CPU version installation
-    # setBoxSize(protPP2.boxSize)
-    # setExtendedInput(protPP2.inputMicrographs, protPreMics, 'outputMicrographs')
-    # if waitManualPick:
-    #     protPP2.addPrerequisites(protPrePick.getObjId())
-    # _registerProt(protPP2, 'Picking')
-    #
-    # pickers.append(protPP2)
-    # pickersOuts.append('outputCoordinates')
-    #
-    # protPP4 = project.newProtocol(importPlugin('ProtRelionAutopickLoG'),
-    #                               objLabel='Relion - LoG auto-picking',
-    #                               conservPickVar=0.03,
-    #                               minDiameter=bxSize - 20,
-    #                               maxDiameter=bxSize + 10,
-    #                               maxResolution=-1,
-    #                               threshold=-1,
-    #                               streamingBatchSize=4)
-    # setBoxSize(protPP4.boxSize)
-    # setExtendedInput(protPP4.inputMicrographs, protPreMics, 'outputMicrographs')
-    # if waitManualPick:
-    #     protPP4.addPrerequisites(protPrePick.getObjId())
-    # _registerProt(protPP4, 'Picking')
-    #
-    # pickers.append(protPP4)
-    # pickersOuts.append('outputCoordinates')
-    #
+    waitManualPick = False
+    protPrePick = None
+    # protPrePick = project.newProtocol(XmippProtParticleBoxsize,
+    #                                   objLabel='Xmipp - particle boxsize')
+    # setExtendedInput(protPrePick.inputMicrographs,
+    #                  protCTFs, 'outputMicrographs')
+    # _registerProt(protPrePick, 'Picking')
+    bxSize = getEvenPartSize(configDict["partSize"]/samp2D)
+
+    protPP2 = project.newProtocol(SphireProtCRYOLOPicking,
+                                  objLabel='Sphire - CrYolo auto-picking',
+                                  gpuList=configDict["cryoloGpu"],
+                                  conservPickVar=0.03,
+                                  streamingBatchSize=4)  # CPU version installation
+    setBoxSize(protPP2.boxSize)
+    setExtendedInput(protPP2.inputMicrographs, protPreMics, 'outputMicrographs')
+    if waitManualPick:
+        protPP2.addPrerequisites(protPrePick.getObjId())
+    _registerProt(protPP2, 'Picking')
+
+    pickers.append(protPP2)
+    pickersOuts.append('outputCoordinates')
+
+    protPP4 = project.newProtocol(ProtRelionAutopickLoG,
+                                  objLabel='Relion - LoG auto-picking',
+                                  conservPickVar=0.03,
+                                  minDiameter=bxSize - 20,
+                                  maxDiameter=bxSize + 10,
+                                  maxResolution=-1,
+                                  threshold=-1,
+                                  streamingBatchSize=4)
+    setBoxSize(protPP4.boxSize)
+    setExtendedInput(protPP4.inputMicrographs, protPreMics, 'outputMicrographs')
+    if waitManualPick:
+        protPP4.addPrerequisites(protPrePick.getObjId())
+    _registerProt(protPP4, 'Picking')
+
+    pickers.append(protPP4)
+    pickersOuts.append('outputCoordinates')
+
     # # --------- CONSENSUS PICKING -----------------------
-    #
-    # consRadius = int(bxSize / 3) if bxSize else 10
-    # protCPand = project.newProtocol(XmippProtConsensusPicking,
-    #                                 objLabel='Xmipp - consensus picking (AND)',
-    #                                 consensusRadius=consRadius,
-    #                                 consensus=-1)
-    # setExtendedInput(protCPand.inputCoordinates, pickers, pickersOuts)
-    # _registerProt(protCPand, 'Picking', True)
-    #
-    # finalPicker = protCPand
-    # outputCoordsStr = 'consensusCoordinates'
-    # outCPor = 'consensusCoordinates'
-    #
-    # protExtractAnd = project.newProtocol(XmippProtExtractParticles,
-    #                                      objLabel='Xmipp - extract particles',
-    #                                      boxSize=-1,
-    #                                      downsampleType=1,  # Other to avoid a bug
-    #                                      doRemoveDust=True,
-    #                                      doNormalize=True,
-    #                                      doInvert=True,
-    #                                      doFlip=True)
-    # setExtendedInput(protExtractAnd.inputCoordinates, finalPicker, outputCoordsStr)
-    # setExtendedInput(protExtractAnd.inputMicrographs,
-    #                  protPreMics, 'outputMicrographs')
-    # setExtendedInput(protExtractAnd.ctfRelations, protCTFs, 'outputCTF')
-    # _registerProt(protExtractAnd, 'Particles')
-    #
+
+    consRadius = int(bxSize / 3) if bxSize else 10
+    protCPand = project.newProtocol(XmippProtConsensusPicking,
+                                    objLabel='Xmipp - consensus picking (AND)',
+                                    consensusRadius=consRadius,
+                                    consensus=-1)
+    setExtendedInput(protCPand.inputCoordinates, pickers, pickersOuts)
+    _registerProt(protCPand, 'Picking', True)
+
+    finalPicker = protCPand
+    outputCoordsStr = 'consensusCoordinates'
+    outCPor = 'consensusCoordinates'
+
+    protExtractAnd = project.newProtocol(XmippProtExtractParticles,
+                                         objLabel='Xmipp - extract particles',
+                                         boxSize=-1,
+                                         downsampleType=1,  # Other to avoid a bug
+                                         doRemoveDust=True,
+                                         doNormalize=True,
+                                         doInvert=True,
+                                         doFlip=True)
+    setExtendedInput(protExtractAnd.inputCoordinates, finalPicker, outputCoordsStr)
+    setExtendedInput(protExtractAnd.inputMicrographs,
+                     protPreMics, 'outputMicrographs')
+    setExtendedInput(protExtractAnd.ctfRelations, protCTFs, 'outputCTF')
+    _registerProt(protExtractAnd, 'Particles')
+
     # # ***********   CLEAN PARTICLES   ************************************
     # # --------- ELIM EMPTY PARTS AND ---------------------------
-    # protEEPand = project.newProtocol(XmippProtEliminateEmptyParticles,
-    #                                  objLabel='Xmipp - Elim. empty part.',
-    #                                  threshold=0.6)
-    # setExtendedInput(protEEPand.inputParticles, protExtractAnd, 'outputParticles')
-    # _registerProt(protEEPand, 'Particles')
-    #
+    protEEPand = project.newProtocol(XmippProtEliminateEmptyParticles,
+                                     objLabel='Xmipp - Elim. empty part.',
+                                     threshold=0.6)
+    setExtendedInput(protEEPand.inputParticles, protExtractAnd, 'outputParticles')
+    _registerProt(protEEPand, 'Particles')
+
     # # --------- TRIGGER PARTS AND ---------------------------
-    # protTRIGand = project.newProtocol(XmippProtTriggerData,
-    #                                   objLabel='Xmipp - trigger data to stats',
-    #                                   outputSize=1000, delay=30,
-    #                                   allImages=True,
-    #                                   splitImages=False)
-    # setExtendedInput(protTRIGand.inputImages, protEEPand, 'outputParticles')
-    # _registerProt(protTRIGand, 'Particles')
-    #
+    protTRIGand = project.newProtocol(XmippProtTriggerData,
+                                      objLabel='Xmipp - trigger data to stats',
+                                      outputSize=1000, delay=30,
+                                      allImages=True,
+                                      splitImages=False)
+    setExtendedInput(protTRIGand.inputImages, protEEPand, 'outputParticles')
+    _registerProt(protTRIGand, 'Particles')
+
     # # --------- SCREEN PARTS AND ---------------------------
-    # protSCRand = project.newProtocol(XmippProtScreenParticles,
-    #                                  objLabel='Xmipp - Screen particles')
-    # protSCRand.autoParRejection.set(XmippProtScreenParticles.REJ_MAXZSCORE)
-    # protSCRand.autoParRejectionSSNR.set(XmippProtScreenParticles.REJ_PERCENTAGE_SSNR)
-    # protSCRand.autoParRejectionVar.set(XmippProtScreenParticles.REJ_VARIANCE)
-    # setExtendedInput(protSCRand.inputParticles, protTRIGand, 'outputParticles')
-    # _registerProt(protSCRand, 'Particles', True)
+    protSCRand = project.newProtocol(XmippProtScreenParticles,
+                                     objLabel='Xmipp - Screen particles')
+    protSCRand.autoParRejection.set(XmippProtScreenParticles.REJ_MAXZSCORE)
+    protSCRand.autoParRejectionSSNR.set(XmippProtScreenParticles.REJ_PERCENTAGE_SSNR)
+    protSCRand.autoParRejectionVar.set(XmippProtScreenParticles.REJ_VARIANCE)
+    setExtendedInput(protSCRand.inputParticles, protTRIGand, 'outputParticles')
+    _registerProt(protSCRand, 'Particles', True)
     # # ----------------------------- END OF AND/SINGLE PICKING BRANCH --------
-    #
-    # allAvgs = []
-    # classifiers = []
+
+    allAvgs = []
+    classifiers = []
     # # --------- TRIGGER PARTS ---------------------------
-    # protTRIG2 = project.newProtocol(XmippProtTriggerData,
-    #                                 objLabel='Xmipp - trigger data to classify',
-    #                                 outputSize=configDict["parts2class"],
-    #                                 delay=30,
-    #                                 allImages=False)
-    # setExtendedInput(protTRIG2.inputImages, protSCRand, 'outputParticles')
-    # _registerProt(protTRIG2, '2Dclassify')
-    #
-    # protCL = project.newProtocol(XmippProtCL2D,
-    #                              objLabel='Xmipp - CL2D',
-    #                              doCore=False,
-    #                              numberOfClasses=16,
-    #                              numberOfMpi=configDict["numCpus"] - 8)
-    #
-    # setExtendedInput(protCL.inputParticles, protTRIG2, 'outputParticles')
-    # _registerProt(protCL, '2Dclassify', True)
-    # classifiers.append(protCL)
+    protTRIG2 = project.newProtocol(XmippProtTriggerData,
+                                    objLabel='Xmipp - trigger data to classify',
+                                    outputSize=configDict["parts2class"],
+                                    delay=30,
+                                    allImages=False)
+    setExtendedInput(protTRIG2.inputImages, protSCRand, 'outputParticles')
+    _registerProt(protTRIG2, '2Dclassify')
+
+    protCL = project.newProtocol(XmippProtCL2D,
+                                 objLabel='Xmipp - CL2D',
+                                 doCore=False,
+                                 numberOfClasses=16,
+                                 numberOfMpi=configDict["numCpus"] - 8)
+
+    setExtendedInput(protCL.inputParticles, protTRIG2, 'outputParticles')
+    _registerProt(protCL, '2Dclassify', True)
+    classifiers.append(protCL)
     # # Classes -> Averages
-    # protCl2Av1 = project.newProtocol(XmippProtEliminateEmptyClasses,
-    #                                  objLabel='Classes to averages (xmipp)',
-    #                                  threshold=-1,
-    #                                  usePopulation=False)
-    # setExtendedInput(protCl2Av1.inputClasses, protCL, 'outputClasses')
-    # _registerProt(protCl2Av1, '2Dclassify')
-    # allAvgs.append(protCl2Av1)
-    #
-    # protCL2 = project.newProtocol(importPlugin('ProtRelionClassify2D'),
-    #                               objLabel='Relion - 2D classifying',
-    #                               doGpu=True,
-    #                               gpusToUse=configDict["relionGpu"],
-    #                               numberOfClasses=16,
-    #                               relionCPUs=3)
-    # setExtendedInput(protCL2.inputParticles, protTRIG2, 'outputParticles')
-    # _registerProt(protCL2, '2Dclassify', True)
-    # classifiers.append(protCL2)
+    protCl2Av1 = project.newProtocol(XmippProtEliminateEmptyClasses,
+                                     objLabel='Classes to averages (xmipp)',
+                                     threshold=-1,
+                                     usePopulation=False)
+    setExtendedInput(protCl2Av1.inputClasses, protCL, 'outputClasses')
+    _registerProt(protCl2Av1, '2Dclassify')
+    allAvgs.append(protCl2Av1)
+
+    protCL2 = project.newProtocol(ProtRelionClassify2D,
+                                  objLabel='Relion - 2D classifying',
+                                  doGpu=True,
+                                  gpusToUse=configDict["relionGpu"],
+                                  numberOfClasses=16,
+                                  relionCPUs=3)
+    setExtendedInput(protCL2.inputParticles, protTRIG2, 'outputParticles')
+    _registerProt(protCL2, '2Dclassify', True)
+    classifiers.append(protCL2)
     # # Classes -> Averages
-    # protCl2Av2 = project.newProtocol(XmippProtEliminateEmptyClasses,
-    #                                  objLabel='Classes to averages (relion)',
-    #                                  threshold=-1,
-    #                                  usePopulation=False)
-    # setExtendedInput(protCl2Av2.inputClasses, protCL2, 'outputClasses')
-    # _registerProt(protCl2Av2, '2Dclassify')
-    # allAvgs.append(protCl2Av2)
-    #
-    # protJOIN = project.newProtocol(ProtUnionSet,
-    #                                objLabel='Scipion - Join all Averages')
-    # setExtendedInput(protJOIN.inputSets,
-    #                  allAvgs, ['outputAverages'] * len(allAvgs))
-    # _registerProt(protJOIN, '2Dclassify')
-    # allAvgsOut = 'outputSet'
-    #
-    # protCLSEL = project.newProtocol(XmippProtEliminateEmptyClasses,
-    #                                 objLabel='Xmipp - Auto class selection',
-    #                                 threshold=12,
-    #                                 usePopulation=False)
-    # setExtendedInput(protCLSEL.inputClasses, protJOIN, allAvgsOut)
-    # _registerProt(protCLSEL, 'initVol', True)
-    #
+    protCl2Av2 = project.newProtocol(XmippProtEliminateEmptyClasses,
+                                     objLabel='Classes to averages (relion)',
+                                     threshold=-1,
+                                     usePopulation=False)
+    setExtendedInput(protCl2Av2.inputClasses, protCL2, 'outputClasses')
+    _registerProt(protCl2Av2, '2Dclassify')
+    allAvgs.append(protCl2Av2)
+
+    protJOIN = project.newProtocol(ProtUnionSet,
+                                   objLabel='Scipion - Join all Averages')
+    setExtendedInput(protJOIN.inputSets,
+                     allAvgs, ['outputAverages'] * len(allAvgs))
+    _registerProt(protJOIN, '2Dclassify')
+    allAvgsOut = 'outputSet'
+
+    protCLSEL = project.newProtocol(XmippProtEliminateEmptyClasses,
+                                    objLabel='Xmipp - Auto class selection',
+                                    threshold=12,
+                                    usePopulation=False)
+    setExtendedInput(protCLSEL.inputClasses, protJOIN, allAvgsOut)
+    _registerProt(protCLSEL, 'initVol', True)
+
     # # --------- SUMMARY MONITOR -----------------------
-    # # protMonitor = project.newProtocol(ProtMonitorSummary,
-    # #                                   objLabel='Scipion - Summary Monitor',
-    # #                                   samplingInterval=20,
-    # #                                   publishCmd="rsync -avL %(REPORT_FOLDER)s {0}".format(configDict["dataDirectory"]))
-    # # protMonitor.inputProtocols.set(summaryList)
-    # # _registerProt(protMonitor, 'monitor')
-    #
+    protMonitor = project.newProtocol(ProtMonitorSummary,
+                                      objLabel='Scipion - Summary Monitor',
+                                      samplingInterval=20,
+                                      publishCmd="rsync -avL %(REPORT_FOLDER)s {0}".format(configDict["dataDirectory"]))
+    protMonitor.inputProtocols.set(summaryList)
+    _registerProt(protMonitor, 'monitor')
+
     # # --------- ISPyB MONITOR -----------------------
-    # if not configDict["noISPyB"]:
-    #     ispybMonitor = project.newProtocol(ProtMonitorISPyB_ESRF,
-    #                                        objLabel='ISPyB monitor',
-    #                                        samplingInterval=10,
-    #                                        proposal=configDict["proposal"],
-    #                                        proteinAcronym=configDict["proteinAcronym"],
-    #                                        sampleAcronym=configDict["sampleAcronym"],
-    #                                        db=configDict["db"],
-    #                                        allParamsJsonFile=configDict["allParamsJsonFile"],
-    #                                        samplingRate=configDict["samplingRate"],
-    #                                        doseInitial=configDict["doseInitial"],
-    #                                        dosePerFrame=configDict["dosePerFrame"],
-    #                                        serialEM=configDict["serialEM"],
-    #                                        voltage=configDict["voltage"],
-    #                                        imagesCount=configDict["imagesCount"],
-    #                                        magnification=configDict["nominalMagnification"],
-    #                                        alignFrame0=configDict["alignFrame0"],
-    #                                        alignFrameN=configDict["alignFrameN"]
-    #                                        )
-    #     ispybMonitor.inputProtocols.set([protImport, protMA, protCTF2])
-    #     _registerProt(ispybMonitor, 'ispybMonitor')
+    if not configDict["noISPyB"]:
+        ispybMonitor = project.newProtocol(ProtMonitorISPyB_ESRF,
+                                           objLabel='ISPyB monitor',
+                                           samplingInterval=10,
+                                           proposal=configDict["proposal"],
+                                           proteinAcronym=configDict["proteinAcronym"],
+                                           sampleAcronym=configDict["sampleAcronym"],
+                                           db=configDict["db"],
+                                           allParamsJsonFile=configDict["allParamsJsonFile"],
+                                           samplingRate=configDict["samplingRate"],
+                                           doseInitial=configDict["doseInitial"],
+                                           dosePerFrame=configDict["dosePerFrame"],
+                                           serialEM=configDict["serialEM"],
+                                           voltage=configDict["voltage"],
+                                           imagesCount=configDict["imagesCount"],
+                                           magnification=configDict["nominalMagnification"],
+                                           alignFrame0=configDict["alignFrame0"],
+                                           alignFrameN=configDict["alignFrameN"]
+                                           )
+        ispybMonitor.inputProtocols.set([protImport, protMA, protCTF2])
+        _registerProt(ispybMonitor, 'ispybMonitor')

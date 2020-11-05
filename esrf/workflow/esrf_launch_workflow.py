@@ -321,7 +321,7 @@ configDict["gctfGpu"] = "0"
 configDict["gl2dGpu"] = "0"
 configDict["cryoloGpu"] = "1"
 configDict["relionGpu"] = "0"
-configDict["numCpus"] = 16
+configDict["numCpus"] = 48
 configDict["sampling2D"] = 3.0
 
 print("")

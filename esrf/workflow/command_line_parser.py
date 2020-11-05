@@ -113,12 +113,12 @@ def getCommandlineOptions():
         help="End frame for motion correction, default last frame.",
         default=0
     )
-    optional.add_argument(
-        "--parts2class",
-        action="store",
-        help="Number of particles for classification",
-        default=5000
-    )
+    # optional.add_argument(
+    #     "--parts2class",
+    #     action="store",
+    #     help="Number of particles for classification",
+    #     default=5000
+    # )
     optional.add_argument(
         "--partSize",
         action="store",
@@ -156,6 +156,12 @@ def getCommandlineOptions():
         default=None
     )
     optional.add_argument(
+        "--noParticleElimination",
+        action="store_true",
+        help="Don't eliminate particles after extract particles.",
+        default=False
+    )
+    optional.add_argument(
         "--noISPyB",
         action="store_true",
         help="Don't upload to ISPyB or iCAT, default 'False'.",
@@ -180,10 +186,11 @@ def getCommandlineOptions():
         "phasePlateData": results.phasePlateData,
         "onlyISPyB": results.onlyISPyB,
         "noISPyB": results.noISPyB,
+        "noParticleElimination": results.noParticleElimination,
         "samplingRate": float(results.samplingRate),
         "superResolution": results.superResolution,
         "partSize": float(results.partSize),
-        "parts2class": int(results.parts2class),
+        # "parts2class": int(results.parts2class),
         "defectMapPath": results.defectMapPath,
         "gainFilePath": results.gainFilePath
     }

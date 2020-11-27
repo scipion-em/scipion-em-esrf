@@ -354,38 +354,32 @@ class MonitorISPyB_ESRF(Monitor):
             doseInitial = prot.doseInitial.get()
             dosePerFrame = prot.dosePerFrame.get()
 
-            try:
-                movieObject = self.client.service.addMovie(proposal=self.proposal,
-                                                           proteinAcronym=self.proteinAcronym,
-                                                           sampleAcronym=self.sampleAcronym,
-                                                           movieDirectory=self.movieDirectory,
-                                                           movieFullPath=movieFullPath,
-                                                           movieNumber=movieNumber,
-                                                           micrographFullPath=micrographPyarchPath,
-                                                           micrographSnapshotFullPath=micrographSnapshotPyarchPath,
-                                                           xmlMetaDataFullPath=xmlMetaDataPyarchPath,
-                                                           voltage=voltage,
-                                                           sphericalAberration=sphericalAberration,
-                                                           amplitudeContrast=amplitudeContrast,
-                                                           magnification=magnification,
-                                                           scannedPixelSize=samplingRate,
-                                                           imagesCount=imagesCount,
-                                                           dosePerImage=dosePerImage,
-                                                           positionX=positionX,
-                                                           positionY=positionY,
-                                                           beamlineName=self.beamlineName,
-                                                           gridSquareSnapshotFullPath=gridSquareSnapshotPyarchPath,
-                                                           )
-            except:
-                self.info("ERROR uploading movie {0}".format(movieFullPath))
-                traceback.print_exc()
-                movieObject = None
+            movieObject = self.client.service.addMovie(proposal=self.proposal,
+                                                       proteinAcronym=self.proteinAcronym,
+                                                       sampleAcronym=self.sampleAcronym,
+                                                       movieDirectory=self.movieDirectory,
+                                                       movieFullPath=movieFullPath,
+                                                       movieNumber=movieNumber,
+                                                       micrographFullPath=micrographPyarchPath,
+                                                       micrographSnapshotFullPath=micrographSnapshotPyarchPath,
+                                                       xmlMetaDataFullPath=xmlMetaDataPyarchPath,
+                                                       voltage=voltage,
+                                                       sphericalAberration=sphericalAberration,
+                                                       amplitudeContrast=amplitudeContrast,
+                                                       magnification=magnification,
+                                                       scannedPixelSize=samplingRate,
+                                                       imagesCount=imagesCount,
+                                                       dosePerImage=dosePerImage,
+                                                       positionX=positionX,
+                                                       positionY=positionY,
+                                                       beamlineName=self.beamlineName,
+                                                       gridSquareSnapshotFullPath=gridSquareSnapshotPyarchPath,
+                                                       )
 
             if movieObject is not None:
                 movieId = movieObject.movieId
             else:
-                self.info("ERROR: movieObject is None!")
-                movieId = None
+                raise RuntimeError("ISPyB Movie object is None!")
 
             self.allParams[movieName] = {
                 "movieNumber": movieNumber,
@@ -500,59 +494,53 @@ class MonitorISPyB_ESRF(Monitor):
             dosePerFrame = prot.dosePerFrame.get()
             doseInitial = prot.doseInitial.get()
             #
-            try:
-                self.info("proposal: {0}".format(self.proposal))
-                self.info("proteinAcronym: {0}".format(self.proteinAcronym))
-                self.info("sampleAcronym: {0}".format(self.sampleAcronym))
-                self.info("movieDirectory: {0}".format(self.movieDirectory))
-                self.info("movieFullPath: {0}".format(movieFullPath))
-                self.info("movieNumber: {0}".format(movieNumber))
-                self.info("micrographFullPath: {0}".format(micrographFullPath))
-                self.info("micrographSnapshotFullPath: {0}".format(micrographSnapshotFullPath))
-                self.info("xmlMetaDataFullPath: {0}".format(xmlMetaDataFullPath))
-                self.info("voltage: {0}".format(voltage))
-                self.info("sphericalAberration: {0}".format(sphericalAberration))
-                self.info("amplitudeContrast: {0}".format(amplitudeContrast))
-                self.info("magnification: {0}".format(magnification))
-                self.info("samplingRate: {0}".format(samplingRate))
-                self.info("imagesCount: {0}".format(imagesCount))
-                self.info("dosePerImage: {0}".format(dosePerImage))
-                self.info("positionX: {0}".format(positionX))
-                self.info("positionY: {0}".format(positionY))
-                self.info("beamlineName: {0}".format(self.beamlineName))
-                self.info("gridSquareSnapshotFullPath: {0}".format(gridSquareSnapshotFullPath))
-                movieObject = self.client.service.addMovie(proposal=self.proposal,
-                                                           proteinAcronym=self.proteinAcronym,
-                                                           sampleAcronym=self.sampleAcronym,
-                                                           movieDirectory=self.movieDirectory,
-                                                           movieFullPath=movieFullPath,
-                                                           movieNumber=movieNumber,
-                                                           micrographFullPath=micrographPyarchPath,
-                                                           micrographSnapshotFullPath=micrographSnapshotPyarchPath,
-                                                           xmlMetaDataFullPath=xmlMetaDataPyarchPath,
-                                                           voltage=voltage,
-                                                           sphericalAberration=sphericalAberration,
-                                                           amplitudeContrast=amplitudeContrast,
-                                                           magnification=magnification,
-                                                           scannedPixelSize=samplingRate,
-                                                           imagesCount=imagesCount,
-                                                           dosePerImage=dosePerImage,
-                                                           positionX=positionX,
-                                                           positionY=positionY,
-                                                           beamlineName=self.beamlineName,
-                                                           gridSquareSnapshotFullPath=gridSquareSnapshotPyarchPath,
-                                                           )
-            except:
-                raise
-                self.info("ERROR uploading movie {0}".format(movieFullPath))
-                traceback.print_exc()
-                movieObject = None
+            self.info("proposal: {0}".format(self.proposal))
+            self.info("proteinAcronym: {0}".format(self.proteinAcronym))
+            self.info("sampleAcronym: {0}".format(self.sampleAcronym))
+            self.info("movieDirectory: {0}".format(self.movieDirectory))
+            self.info("movieFullPath: {0}".format(movieFullPath))
+            self.info("movieNumber: {0}".format(movieNumber))
+            self.info("micrographFullPath: {0}".format(micrographFullPath))
+            self.info("micrographSnapshotFullPath: {0}".format(micrographSnapshotFullPath))
+            self.info("xmlMetaDataFullPath: {0}".format(xmlMetaDataFullPath))
+            self.info("voltage: {0}".format(voltage))
+            self.info("sphericalAberration: {0}".format(sphericalAberration))
+            self.info("amplitudeContrast: {0}".format(amplitudeContrast))
+            self.info("magnification: {0}".format(magnification))
+            self.info("samplingRate: {0}".format(samplingRate))
+            self.info("imagesCount: {0}".format(imagesCount))
+            self.info("dosePerImage: {0}".format(dosePerImage))
+            self.info("positionX: {0}".format(positionX))
+            self.info("positionY: {0}".format(positionY))
+            self.info("beamlineName: {0}".format(self.beamlineName))
+            self.info("gridSquareSnapshotFullPath: {0}".format(gridSquareSnapshotFullPath))
+            movieObject = self.client.service.addMovie(proposal=self.proposal,
+                                                       proteinAcronym=self.proteinAcronym,
+                                                       sampleAcronym=self.sampleAcronym,
+                                                       movieDirectory=self.movieDirectory,
+                                                       movieFullPath=movieFullPath,
+                                                       movieNumber=movieNumber,
+                                                       micrographFullPath=micrographPyarchPath,
+                                                       micrographSnapshotFullPath=micrographSnapshotPyarchPath,
+                                                       xmlMetaDataFullPath=xmlMetaDataPyarchPath,
+                                                       voltage=voltage,
+                                                       sphericalAberration=sphericalAberration,
+                                                       amplitudeContrast=amplitudeContrast,
+                                                       magnification=magnification,
+                                                       scannedPixelSize=samplingRate,
+                                                       imagesCount=imagesCount,
+                                                       dosePerImage=dosePerImage,
+                                                       positionX=positionX,
+                                                       positionY=positionY,
+                                                       beamlineName=self.beamlineName,
+                                                       gridSquareSnapshotFullPath=gridSquareSnapshotPyarchPath,
+                                                       )
 
             if movieObject is not None:
                 movieId = movieObject.movieId
             else:
-                self.info("ERROR: movieObject is None!")
-                movieId = None
+                raise RuntimeError("ISPyB Movie object is None!")
+
             gridSquare = "GridSquare_112345"
             self.allParams[movieName] = {
                 "movieNumber": movieNumber,
@@ -670,33 +658,27 @@ class MonitorISPyB_ESRF(Monitor):
                     shutil.copy(micrographFullPath, self.allParams[movieName]["processDir"])
                     shutil.copy(correctedDoseMicrographFullPath, self.allParams[movieName]["processDir"])
                     shutil.copy(logFileFullPath, self.allParams[movieName]["processDir"])
-                try:
-                    motionCorrectionObject = self.client.service.addMotionCorrection(
-                        proposal=self.proposal,
-                        movieFullPath=movieFullPath,
-                        firstFrame=firstFrame,
-                        lastFrame=lastFrame,
-                        dosePerFrame=dosePerFrame,
-                        doseWeight=doseWeight,
-                        totalMotion=totalMotion,
-                        averageMotionPerFrame=averageMotionPerFrame,
-                        driftPlotFullPath=driftPlotPyarchPath,
-                        micrographFullPath=micrographPyarchPath,
-                        correctedDoseMicrographFullPath=correctedDoseMicrographPyarchPath,
-                        micrographSnapshotFullPath=micrographSnapshotPyarchPath,
-                        logFileFullPath=logFilePyarchPath
-                    )
-                except:
-                    self.info("ERROR uploading motion correction for movie {0}".format(movieFullPath))
-                    traceback.print_exc()
-                    motionCorrectionObject = None
+                motionCorrectionObject = self.client.service.addMotionCorrection(
+                    proposal=self.proposal,
+                    movieFullPath=movieFullPath,
+                    firstFrame=firstFrame,
+                    lastFrame=lastFrame,
+                    dosePerFrame=dosePerFrame,
+                    doseWeight=doseWeight,
+                    totalMotion=totalMotion,
+                    averageMotionPerFrame=averageMotionPerFrame,
+                    driftPlotFullPath=driftPlotPyarchPath,
+                    micrographFullPath=micrographPyarchPath,
+                    correctedDoseMicrographFullPath=correctedDoseMicrographPyarchPath,
+                    micrographSnapshotFullPath=micrographSnapshotPyarchPath,
+                    logFileFullPath=logFilePyarchPath
+                )
 
                 if motionCorrectionObject is not None:
                     motionCorrectionId = motionCorrectionObject.motionCorrectionId
                 else:
-                    self.info("ERROR: motionCorrectionObject is None!")
-                    motionCorrectionId = None
-
+                    raise RuntimeError("ERROR: motionCorrectionObject is None!")
+                time.sleep(0.1)
                 self.allParams[movieName]["motionCorrectionId"] = motionCorrectionId
                 self.allParams[movieName]["totalMotion"] = totalMotion
                 self.allParams[movieName]["averageMotionPerFrame"] = averageMotionPerFrame
@@ -713,7 +695,7 @@ class MonitorISPyB_ESRF(Monitor):
             else:
                 dictFileNameParameters = UtilsPath.getMovieFileNameParametersFromMotioncorrPath(micrographFullPath)
             movieName = dictFileNameParameters["movieName"]
-            if movieName in self.allParams and not "CTFid" in self.allParams[movieName]:
+            if movieName in self.allParams and "motionCorrectionId" in self.allParams[movieName] and not "CTFid" in self.allParams[movieName]:
                 self.info("CTF: movie {0}".format(os.path.basename(self.allParams[movieName]["movieFullPath"])))
                 movieFullPath = self.allParams[movieName]["movieFullPath"]
                 spectraImageSnapshotFullPath = None
@@ -727,61 +709,54 @@ class MonitorISPyB_ESRF(Monitor):
                 phaseShift = None
                 resolutionLimit = None
                 estimatedBfactor = None
-                try:
-                    dictResults = UtilsPath.getCtfMetaData(workingDir, micrographFullPath)
-                    spectraImageSnapshotFullPath = dictResults["spectraImageSnapshotFullPath"]
-                    spectraImageSnapshotPyarchPath = UtilsPath.copyToPyarchPath(spectraImageSnapshotFullPath)
-                    spectraImageFullPath = dictResults["spectraImageFullPath"]
-                    spectraImagePyarchPath = None
-                    defocusU = dictResults["Defocus_U"]
-                    defocusV = dictResults["Defocus_V"]
-                    angle = dictResults["Angle"]
-                    crossCorrelationCoefficient = dictResults["CCC"]
-                    phaseShift = dictResults["Phase_shift"]
-                    resolutionLimit = dictResults["resolutionLimit"]
-                    estimatedBfactor = dictResults["estimatedBfactor"]
-                    if self.allParams[movieName]["processDir"] is not None:
-                        shutil.copy(spectraImageFullPath, self.allParams[movieName]["processDir"])
-                        shutil.copy(dictResults["logFilePath"], self.allParams[movieName]["processDir"])
-                except:
-                    self.info("ERROR uploading CTF for movie {0}".format(movieFullPath))
-                    traceback.print_exc()
-                    ctfObject = None
+
+                dictResults = UtilsPath.getCtfMetaData(workingDir, micrographFullPath)
+                spectraImageSnapshotFullPath = dictResults["spectraImageSnapshotFullPath"]
+                spectraImageSnapshotPyarchPath = UtilsPath.copyToPyarchPath(spectraImageSnapshotFullPath)
+                spectraImageFullPath = dictResults["spectraImageFullPath"]
+                spectraImagePyarchPath = None
+                defocusU = dictResults["Defocus_U"]
+                defocusV = dictResults["Defocus_V"]
+                angle = dictResults["Angle"]
+                crossCorrelationCoefficient = dictResults["CCC"]
+                phaseShift = dictResults["Phase_shift"]
+                resolutionLimit = dictResults["resolutionLimit"]
+                estimatedBfactor = dictResults["estimatedBfactor"]
+                if self.allParams[movieName]["processDir"] is not None:
+                    shutil.copy(spectraImageFullPath, self.allParams[movieName]["processDir"])
+                    shutil.copy(dictResults["logFilePath"], self.allParams[movieName]["processDir"])
 
                 logFilePath = UtilsPath.copyToPyarchPath(dictResults["logFilePath"])
-#                self.info("proposal : {0}".format(self.proposal))
-#                self.info("movieFullPath : {0}".format(movieFullPath))
-#                self.info("spectraImageSnapshotFullPath : {0}".format(spectraImageSnapshotPyarchPath))
-#                self.info("spectraImageFullPath : {0}".format(spectraImagePyarchPath))
-#                self.info("defocusU : {0}".format(defocusU))
-#                self.info("defocusV : {0}".format(defocusV))
-#                self.info("angle : {0}".format(angle))
-#                self.info("crossCorrelationCoefficient : {0}".format(crossCorrelationCoefficient))
-#                self.info("resolutionLimit : {0}".format(resolutionLimit))
-#                self.info("estimatedBfactor : {0}".format(estimatedBfactor))
-#                self.info("logFilePath : {0}".format(logFilePath))
-                try:
-                    ctfObject = self.client.service.addCTF(proposal=self.proposal,
-                                        movieFullPath=movieFullPath,
-                                        spectraImageSnapshotFullPath=spectraImageSnapshotPyarchPath,
-                                        spectraImageFullPath=spectraImagePyarchPath,
-                                        defocusU=defocusU,
-                                        defocusV=defocusV,
-                                        angle=angle,
-                                        crossCorrelationCoefficient=crossCorrelationCoefficient,
-                                        resolutionLimit=resolutionLimit,
-                                        estimatedBfactor=estimatedBfactor,
-                                        logFilePath=logFilePath)
-                except:
-                    self.info("ERROR uploading CTF for movie {0}".format(movieFullPath))
-                    traceback.print_exc()
-                    ctfObject = None
+                # self.info("proposal : {0}".format(self.proposal))
+                # self.info("movieFullPath : {0}".format(movieFullPath))
+                # self.info("spectraImageSnapshotFullPath : {0}".format(spectraImageSnapshotPyarchPath))
+                # self.info("spectraImageFullPath : {0}".format(spectraImagePyarchPath))
+                # self.info("defocusU : {0}".format(defocusU))
+                # self.info("defocusV : {0}".format(defocusV))
+                # self.info("angle : {0}".format(angle))
+                # self.info("crossCorrelationCoefficient : {0}".format(crossCorrelationCoefficient))
+                # self.info("resolutionLimit : {0}".format(resolutionLimit))
+                # self.info("estimatedBfactor : {0}".format(estimatedBfactor))
+                # self.info("logFilePath : {0}".format(logFilePath))
+
+                ctfObject = self.client.service.addCTF(proposal=self.proposal,
+                                    movieFullPath=movieFullPath,
+                                    spectraImageSnapshotFullPath=spectraImageSnapshotPyarchPath,
+                                    spectraImageFullPath=spectraImagePyarchPath,
+                                    defocusU=defocusU,
+                                    defocusV=defocusV,
+                                    angle=angle,
+                                    crossCorrelationCoefficient=crossCorrelationCoefficient,
+                                    resolutionLimit=resolutionLimit,
+                                    estimatedBfactor=estimatedBfactor,
+                                    logFilePath=logFilePath)
 
                 if ctfObject is not None:
                     CTFid = ctfObject.CTFid
                 else:
-                    self.info("ERROR: ctfObject is None!")
-                    CTFid = None
+                    raise RuntimeError("ISPyB: ctfObject is None!")
+
+                time.sleep(0.1)
 
                 self.allParams[movieName]["CTFid"] = CTFid
                 self.allParams[movieName]["phaseShift"] = phaseShift

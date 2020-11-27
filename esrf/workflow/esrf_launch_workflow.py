@@ -31,6 +31,7 @@ import glob
 import time
 import shutil
 import pprint
+import getpass
 import datetime
 import tempfile
 
@@ -40,8 +41,9 @@ from pyworkflow.project.manager import Manager
 from pyworkflow.project import Project
 from pyworkflow.protocol import getProtocolFromDb
 
-from esrf.utils.esrf_utils_ispyb import UtilsISPyB
 from esrf.utils.esrf_utils_path import UtilsPath
+from esrf.utils.esrf_utils_slurm import UtilsSlurm
+from esrf.utils.esrf_utils_ispyb import UtilsISPyB
 from esrf.utils.esrf_utils_serialem import UtilsSerialEM
 from esrf.workflow.command_line_parser import getCommandlineOptions
 from esrf.workflow.workflow import preprocessWorkflow
@@ -234,6 +236,17 @@ else:
 
     configDict["proposal"] = proposal
     configDict["db"] = db
+
+# Check slurm jobs
+userName = getpass.getuser()
+if UtilsSlurm.checkIfRunningProcesses(userName):
+    answer = input("There are running SLURM jobs - are you sure that you want to kill these jobs? (y/n): ")
+    if answer.lower().startswith('y'):
+        UtilsSlurm.killAllProcesses(userName)
+    else:
+        print("Ok, start of cryoemProcess3 aborted.")
+        sys.exit(1)
+
 
 if configDict["nominalMagnification"] is None:
     if configDict["serialEM"]:

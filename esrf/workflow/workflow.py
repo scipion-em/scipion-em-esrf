@@ -89,14 +89,20 @@ from emfacilities.protocols import ProtMonitorSummary
 
 from pwem.protocols.protocol_import import ProtImportParticles
 
-QUEUE_PARAMS_WITH_GPU = ('gpu', {'JOB_TIME': '150',  # in hours
-                                 'JOB_MEMORY': '4000',  # in Mb
+QUEUE_PARAMS_WITH_1_GPU_4_CPU = ('gpu', {'JOB_TIME': '150',  # in hours
+                                 'JOB_MEMORY': '100000',  # in Mb
+                                 'QUEUE_FOR_JOBS': 'N',
+                                 'JOB_GPU': '--gres=gpu:1',
+                                 'JOB_THREADS': 4})
+
+QUEUE_PARAMS_WITH_1_GPU_10_CPU = ('gpu', {'JOB_TIME': '150',  # in hours
+                                 'JOB_MEMORY': '100000',  # in Mb
                                  'QUEUE_FOR_JOBS': 'N',
                                  'JOB_GPU': '--gres=gpu:1',
                                  'JOB_THREADS': 10})
 
 QUEUE_PARAMS_WITHOUT_GPU = ('gpu', {'JOB_TIME': '150',  # in hours
-                                     'JOB_MEMORY': '4000',  # in Mb
+                                     'JOB_MEMORY': '100000',  # in Mb
                                      'QUEUE_FOR_JOBS': 'N',
                                      'JOB_GPU': '',
                                      'JOB_THREADS': 1})
@@ -287,7 +293,7 @@ def preprocessWorkflow(configDict):
                                    useDefocus=True,
                                    useAstigmatism=True,
                                    useResolution=True,
-                                   resolution=5,
+                                   resolution=7,
                                    useCritXmipp=isCtf2Xmipp,
                                    calculateConsensus=True,
                                    minConsResol=7)
@@ -339,10 +345,10 @@ def preprocessWorkflow(configDict):
                                   objLabel='Sphire - CrYolo auto-picking',
                                   gpuList=configDict["cryoloGpu"],
                                   conservPickVar=0.3,
-                                  numCpus=10,
+                                  numCpus=4,
                                   streamingBatchSize=4)  # CPU version installation
     protPP2._useQueue.set(True)
-    protPP2._queueParams.set(json.dumps(QUEUE_PARAMS_WITH_GPU))
+    protPP2._queueParams.set(json.dumps(QUEUE_PARAMS_WITH_1_GPU_4_CPU))
     setBoxSize(protPP2.boxSize)
     setExtendedInput(protPP2.inputMicrographs, protPreMics, 'outputMicrographs')
     if waitManualPick:
@@ -375,9 +381,9 @@ def preprocessWorkflow(configDict):
 
     consRadius = int(bxSize / 3) if bxSize else 10
     protCPand = project.newProtocol(XmippProtConsensusPicking,
-                                    objLabel='Xmipp - consensus picking (OR)',
+                                    objLabel='Xmipp - consensus picking (AND)',
                                     consensusRadius=consRadius,
-                                    consensus=1)
+                                    consensus=-1)
     setExtendedInput(protCPand.inputCoordinates, pickers, pickersOuts)
     _registerProt(protCPand, 'Picking', True)
 
@@ -414,8 +420,8 @@ def preprocessWorkflow(configDict):
     _registerProt(protExtractNoFlip, 'Particles')
 
     if not configDict["noParticleElimination"]:
-        # # ***********   CLEAN PARTICLES   ************************************
-        # # --------- ELIM EMPTY PARTS AND ---------------------------
+        # ***********   CLEAN PARTICLES   ************************************
+        # --------- ELIM EMPTY PARTS AND ---------------------------
         protEEPandFlip = project.newProtocol(XmippProtEliminateEmptyParticles,
                                          objLabel='Xmipp - Elim. empty part. - flip',
                                          threshold=0.6)
@@ -428,7 +434,7 @@ def preprocessWorkflow(configDict):
         setExtendedInput(protEEPandNoFlip.inputParticles, protExtractNoFlip, 'outputParticles')
         _registerProt(protEEPandNoFlip, 'Particles')
 
-        # # --------- TRIGGER PARTS AND ---------------------------
+        # --------- TRIGGER PARTS AND ---------------------------
         protTRIGandFlip = project.newProtocol(XmippProtTriggerData,
                                           objLabel='Xmipp - trigger data to stats - flip',
                                           outputSize=1000, delay=30,
@@ -445,7 +451,7 @@ def preprocessWorkflow(configDict):
         setExtendedInput(protTRIGandNoFlip.inputImages, protEEPandNoFlip, 'outputParticles')
         _registerProt(protTRIGandNoFlip, 'Particles')
 
-        # # --------- SCREEN PARTS AND ---------------------------
+        # --------- SCREEN PARTS AND ---------------------------
         protSCRandFlip = project.newProtocol(XmippProtScreenParticles,
                                          objLabel='Xmipp - Screen particles - flip')
         protSCRandFlip.autoParRejection.set(XmippProtScreenParticles.REJ_MAXZSCORE)
@@ -474,7 +480,7 @@ def preprocessWorkflow(configDict):
     for outputSize in [5000, 20000, 50000, 100000]:
         allAvgs = []
         classifiers = []
-        # # --------- TRIGGER PARTS ---------------------------
+        # --------- TRIGGER PARTS ---------------------------
         protTRIG2Flip = project.newProtocol(XmippProtTriggerData,
                                         objLabel='Xmipp - trigger {0} - flip'.format(outputSize),
                                         outputSize=outputSize,
@@ -528,7 +534,7 @@ def preprocessWorkflow(configDict):
                                       numberOfThreads=10,
                                       maskDiameterA=configDict["partSize"])
         protCL2._useQueue.set(True)
-        protCL2._queueParams.set(json.dumps(QUEUE_PARAMS_WITH_GPU))
+        protCL2._queueParams.set(json.dumps(QUEUE_PARAMS_WITH_1_GPU_10_CPU))
         setExtendedInput(protCL2.inputParticles, protTRIG2NoFlip, 'outputParticles')
         _registerProt(protCL2, '2Dclassify', True)
         classifiers.append(protCL2)
@@ -583,5 +589,5 @@ def preprocessWorkflow(configDict):
                                            alignFrame0=configDict["alignFrame0"],
                                            alignFrameN=configDict["alignFrameN"]
                                            )
-        ispybMonitor.inputProtocols.set([protImport, protMA, protCTF2])
+        ispybMonitor.inputProtocols.set([protImport, protMax, protCTF2])
         _registerProt(ispybMonitor, 'ispybMonitor')

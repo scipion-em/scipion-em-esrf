@@ -66,7 +66,7 @@ class UtilsIcat(object):
                     archivePath = filePath.replace(directory + "/", "")
                     client.appendFile(archivePath)
                 dictMetadata["definition"] = "EM"
-                for attributeName, value in dictMetadata.iteritems():
+                for attributeName, value in dictMetadata.items():
                     setattr(client.metadataManager, attributeName, str(value))
             except:
                 errorMessage = UtilsIcat.getStackTraceLog()

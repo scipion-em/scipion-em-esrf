@@ -85,6 +85,7 @@ from gctf.protocols import ProtGctf
 from sphire.protocols import SphireProtCRYOLOPicking
 from relion.protocols import ProtRelionAutopickLoG
 from relion.protocols import ProtRelionClassify2D
+from relion.protocols import ProtRelionExtractParticles
 from emfacilities.protocols import ProtMonitorSummary
 
 from pwem.protocols.protocol_import import ProtImportParticles
@@ -95,11 +96,11 @@ QUEUE_PARAMS_WITH_1_GPU_4_CPU = ('gpu', {'JOB_TIME': '150',  # in hours
                                  'JOB_GPU': '--gres=gpu:1',
                                  'JOB_THREADS': 4})
 
-QUEUE_PARAMS_WITH_1_GPU_10_CPU = ('gpu', {'JOB_TIME': '150',  # in hours
+QUEUE_PARAMS_WITH_1_GPU_15_CPU = ('gpu', {'JOB_TIME': '150',  # in hours
                                  'JOB_MEMORY': '100000',  # in Mb
                                  'QUEUE_FOR_JOBS': 'N',
                                  'JOB_GPU': '--gres=gpu:1',
-                                 'JOB_THREADS': 10})
+                                 'JOB_THREADS': 15})
 
 QUEUE_PARAMS_WITHOUT_GPU = ('gpu', {'JOB_TIME': '150',  # in hours
                                      'JOB_MEMORY': '100000',  # in Mb
@@ -358,24 +359,24 @@ def preprocessWorkflow(configDict):
     pickers.append(protPP2)
     pickersOuts.append('outputCoordinates')
 
-    protPP4 = project.newProtocol(ProtRelionAutopickLoG,
-                                  objLabel='Relion - LoG auto-picking',
-                                  conservPickVar=0.3,
-                                  minDiameter=configDict["partSize"] * 0.8,
-                                  maxDiameter=configDict["partSize"] * 1.2,
-                                  maxResolution=20,
-                                  threshold=0.0,
-                                  streamingBatchSize=4)
-    protPP4._useQueue.set(True)
-    protPP4._queueParams.set(json.dumps(QUEUE_PARAMS_WITHOUT_GPU))
-    setBoxSize(protPP4.boxSize)
-    setExtendedInput(protPP4.inputMicrographs, protPreMics, 'outputMicrographs')
-    if waitManualPick:
-        protPP4.addPrerequisites(protPrePick.getObjId())
-    _registerProt(protPP4, 'Picking')
-
-    pickers.append(protPP4)
-    pickersOuts.append('outputCoordinates')
+    # protPP4 = project.newProtocol(ProtRelionAutopickLoG,
+    #                               objLabel='Relion - LoG auto-picking',
+    #                               conservPickVar=0.3,
+    #                               minDiameter=configDict["partSize"] * 0.8,
+    #                               maxDiameter=configDict["partSize"] * 1.2,
+    #                               maxResolution=20,
+    #                               threshold=0.0,
+    #                               streamingBatchSize=4)
+    # protPP4._useQueue.set(True)
+    # protPP4._queueParams.set(json.dumps(QUEUE_PARAMS_WITHOUT_GPU))
+    # setBoxSize(protPP4.boxSize)
+    # setExtendedInput(protPP4.inputMicrographs, protPreMics, 'outputMicrographs')
+    # if waitManualPick:
+    #     protPP4.addPrerequisites(protPrePick.getObjId())
+    # _registerProt(protPP4, 'Picking')
+    #
+    # pickers.append(protPP4)
+    # pickersOuts.append('outputCoordinates')
 
     # # --------- CONSENSUS PICKING -----------------------
 
@@ -391,9 +392,11 @@ def preprocessWorkflow(configDict):
     outputCoordsStr = 'consensusCoordinates'
     outCPor = 'consensusCoordinates'
 
+    extracBoxSize = getEvenPartSize(bxSize * 1.25)
+
     protExtractFlip = project.newProtocol(XmippProtExtractParticles,
                                          objLabel='Xmipp - extract particles - flip',
-                                         boxSize=bxSize * 1.25,
+                                         boxSize=extracBoxSize,
                                          downsampleType=1,  # Other to avoid a bug
                                          doRemoveDust=True,
                                          doNormalize=True,
@@ -405,19 +408,31 @@ def preprocessWorkflow(configDict):
     setExtendedInput(protExtractFlip.ctfRelations, protCTFs, 'outputCTF')
     _registerProt(protExtractFlip, 'Particles')
 
-    protExtractNoFlip = project.newProtocol(XmippProtExtractParticles,
-                                         objLabel='Xmipp - extract particles - no flip',
-                                         boxSize=bxSize * 1.25,
-                                         downsampleType=1,  # Other to avoid a bug
-                                         doRemoveDust=True,
-                                         doNormalize=True,
-                                         doInvert=True,
-                                         doFlip=False)
+    # protExtractNoFlip = project.newProtocol(XmippProtExtractParticles,
+    #                                         objLabel='Xmipp - extract particles - no flip',
+    #                                         boxSize=extracBoxSize,
+    #                                         downsampleType=1,  # Other to avoid a bug
+    #                                         doRemoveDust=True,
+    #                                         doNormalize=True,
+    #                                         doInvert=True,
+    #                                         doFlip=False)
+    # setExtendedInput(protExtractNoFlip.inputCoordinates, finalPicker, outputCoordsStr)
+    # setExtendedInput(protExtractNoFlip.inputMicrographs,
+    #                  protPreMics, 'outputMicrographs')
+    # setExtendedInput(protExtractNoFlip.ctfRelations, protCTFs, 'outputCTF')
+    # _registerProt(protExtractNoFlip, 'Particles')
+
+    protExtractNoFlip = project.newProtocol(ProtRelionExtractParticles,
+                                   objLabel='Relion - extract particles',
+                                   boxSize=extracBoxSize,
+                                   doInvert=True
+                                   )
     setExtendedInput(protExtractNoFlip.inputCoordinates, finalPicker, outputCoordsStr)
     setExtendedInput(protExtractNoFlip.inputMicrographs,
                      protPreMics, 'outputMicrographs')
     setExtendedInput(protExtractNoFlip.ctfRelations, protCTFs, 'outputCTF')
     _registerProt(protExtractNoFlip, 'Particles')
+
 
     if not configDict["noParticleElimination"]:
         # ***********   CLEAN PARTICLES   ************************************
@@ -477,7 +492,7 @@ def preprocessWorkflow(configDict):
             no_classes = int(no_particles / 1000)
         return no_classes
 
-    for outputSize in [5000, 20000, 50000, 100000]:
+    for outputSize in [5000, 20000, 50000, 100000, 200000]:
         allAvgs = []
         classifiers = []
         # --------- TRIGGER PARTS ---------------------------
@@ -509,7 +524,7 @@ def preprocessWorkflow(configDict):
                                      objLabel='Xmipp - CL2D',
                                      doCore=False,
                                      numberOfClasses=getNoClasses(outputSize),
-                                     numberOfMpi=24)
+                                     numberOfMpi=10)
 
         protCL._useQueue.set(True)
         protCL._queueParams.set(json.dumps(QUEUE_PARAMS_WITHOUT_GPU))
@@ -531,10 +546,10 @@ def preprocessWorkflow(configDict):
                                       gpusToUse=configDict["relionGpu"],
                                       numberOfClasses=getNoClasses(outputSize),
                                       numberOfMpi=1,
-                                      numberOfThreads=10,
+                                      numberOfThreads=15,
                                       maskDiameterA=configDict["partSize"])
         protCL2._useQueue.set(True)
-        protCL2._queueParams.set(json.dumps(QUEUE_PARAMS_WITH_1_GPU_10_CPU))
+        protCL2._queueParams.set(json.dumps(QUEUE_PARAMS_WITH_1_GPU_15_CPU))
         setExtendedInput(protCL2.inputParticles, protTRIG2NoFlip, 'outputParticles')
         _registerProt(protCL2, '2Dclassify', True)
         classifiers.append(protCL2)
@@ -556,7 +571,7 @@ def preprocessWorkflow(configDict):
 
         protCLSEL = project.newProtocol(XmippProtEliminateEmptyClasses,
                                         objLabel='Xmipp - Auto class selection - {0}'.format(outputSize),
-                                        threshold=12,
+                                        threshold=-1,
                                         usePopulation=False)
         setExtendedInput(protCLSEL.inputClasses, protJOIN, allAvgsOut)
         _registerProt(protCLSEL, 'initVol', True)

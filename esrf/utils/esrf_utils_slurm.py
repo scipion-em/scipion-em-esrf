@@ -34,7 +34,7 @@ class UtilsSlurm(object):
     @staticmethod
     def checkIfRunningProcesses(userName="opcm01"):
         stdout = subprocess.check_output("squeue").decode('utf-8')
-        isRunning = userName in stdout
+        isRunning = userName in stdout and not "srun" in stdout
         return isRunning
 
     @staticmethod

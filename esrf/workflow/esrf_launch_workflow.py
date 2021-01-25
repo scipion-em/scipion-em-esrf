@@ -27,6 +27,7 @@
 
 import os
 import sys
+import json
 import glob
 import time
 import shutil
@@ -187,6 +188,21 @@ except OSError as e:
 configDict["allParamsJsonFile"] = os.path.join(location, "allParams.json")
 configDict["location"] = location
 
+# Create blacklist file with all movies already imported and motion corrected
+configDict["blacklistFile"] = None
+if os.path.exists(configDict["allParamsJsonFile"]):
+    with open(configDict["allParamsJsonFile"], 'r') as f:
+        dictAllParams = json.loads(f.read())
+    blackList = []
+    for movieName in dictAllParams:
+        dictMovie = dictAllParams[movieName]
+        if all (key in dictMovie for key in ("motionCorrectionId", "CTFid")):
+            blackList.append(dictMovie["movieFullPath"])
+    blacklistFile = os.path.join(location, "blacklist.txt")
+    with open(blacklistFile, "w") as f:
+        for filePath in blackList:
+            f.write(filePath + "\n")
+    configDict["blacklistFile"] = blacklistFile
 
 # Get meta data like phasePlateUsed
 

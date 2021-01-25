@@ -46,7 +46,7 @@ from pyworkflow import VERSION_1_1
 from pyworkflow.protocol import getUpdatedProtocol
 from emfacilities.protocols import ProtMonitor, Monitor, PrintNotifier
 from pwem.protocols import ProtImportMovies, ProtAlignMovies, ProtCTFMicrographs
-
+from xmipp3.protocols import XmippProtMovieMaxShift
 from esrf.utils.esrf_utils_ispyb import UtilsISPyB
 from esrf.utils.esrf_utils_path import UtilsPath
 from esrf.utils.esrf_utils_icat import UtilsIcat
@@ -231,7 +231,7 @@ class MonitorISPyB_ESRF(Monitor):
                 if isinstance(prot, ProtImportMovies):
                     self.uploadImportMovies(prot)
                     isActiveImportMovies = prot.isActive()
-                elif isinstance(prot, ProtAlignMovies) and hasattr(prot, 'outputMicrographs'):
+                elif isinstance(prot, XmippProtMovieMaxShift) and hasattr(prot, 'outputMicrographs'):
                     self.uploadAlignMovies(prot)
                     isActiveAlignMovies = prot.isActive()
                 elif isinstance(prot, ProtCTFMicrographs) and hasattr(prot, 'outputCTF'):
@@ -815,6 +815,7 @@ class MonitorISPyB_ESRF(Monitor):
                 self.info(errorMessage)
 
     def archiveOldGridSquares(self, gridSquareNotToArchive=None):
+        self.info("Archiving old grid squares (in any)")
         # Check if there are remaining grid squares to be uploaded:
         dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(self.allParams, gridSquareNotToArchive)
         for gridSquareToBeArchived in dictGridSquares:

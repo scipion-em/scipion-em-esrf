@@ -97,7 +97,7 @@ class UtilsIcat(object):
         dictGridSquares = {}
         for key in allParams:
             entry = allParams[key]
-            if "archived" in entry and not entry["archived"]:
+            if "archived" in entry and not entry["archived"] and "gridSquare" in entry:
                 gridSquare = entry["gridSquare"]
                 if gridSquare != gridSquareNotToArchive:
                     if not gridSquare in dictGridSquares:

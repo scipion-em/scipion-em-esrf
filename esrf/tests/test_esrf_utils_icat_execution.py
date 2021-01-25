@@ -26,6 +26,7 @@
 # **************************************************************************
 
 import os
+import sys
 import json
 import time
 import pprint
@@ -62,6 +63,20 @@ class Test(unittest.TestCase):
             listFiles, directory, proposal, sample, dataSetName, dictMetadata
         )
 
+    def findStartEndTime(self, listMovies):
+        startTime = None
+        endTime = None
+        for moviePath in listMovies:
+            movieDateTime = " ".join(moviePath.split("_")[-2:])
+            movieDateTime = movieDateTime.split("-")[0]
+            # print(movieDateTime)
+            if startTime is None or startTime > movieDateTime:
+                startTime = movieDateTime
+            if endTime is None or endTime < movieDateTime:
+                endTime = movieDateTime
+        # print(startTime, endTime)
+        return startTime, endTime
+
     def archiveGridSquare(self, proposal, sampleAcronym, allParams, gridSquareToBeArchived):
         # Archive remaining movies
         print("Archiving grid square: {0}".format(gridSquareToBeArchived))
@@ -87,9 +102,21 @@ class Test(unittest.TestCase):
             else:
                 meanPositionX = None
                 meanPositionY = None
+            startTime, endTime = self.findStartEndTime(listPathsToBeArchived)
             dictIcatMetaData = dict(allParams["EM_meta_data"])
             dictIcatMetaData["EM_position_x"] = meanPositionX
             dictIcatMetaData["EM_position_y"] = meanPositionY
+            #  '20201002 220415'
+            startTime = startTime[0:4] + "-" + startTime[4:6] + \
+                        "-" + startTime[6:8] + \
+                        "T" + startTime[9:11] + ":" + startTime[11:13] + \
+                        ":" + startTime[13:15]
+            endTime = endTime[0:4] + "-" + endTime[4:6] + \
+                        "-" + endTime[6:8] + \
+                        "T" + endTime[9:11] + ":" + endTime[11:13] + \
+                        ":" + endTime[13:15]
+            dictIcatMetaData["startTime"] = startTime
+            dictIcatMetaData["endTime"] = endTime
             directory = dictIcatMetaData["EM_directory"]
             listGalleryPath = allParams[gridSquareToBeArchived]["listGalleryPath"]
             dataSetName = "{0}_{1}".format(gridSquareToBeArchived, round(time.time()))
@@ -108,16 +135,42 @@ class Test(unittest.TestCase):
                 print(errorMessage)
 
 
-    # def tes_archive_blc2531(self):
-    #     proposal = "blc12531"
-    #     sampleAcronym = "grid3"
-    #     allParamsFile = "/data/cm01/commissioning/BLC12531/ApoF/20201118/PROCESSED_DATA/BLC12531-ApoF-19112020-grid3-EPU/allParams.json"
+    # def tes_archive_blc12442(self):
+    #     proposal = "blc12442"
+    #     sampleAcronym = "Grid2"
+    #     allParamsFile = "/home/esrf/svensson/CryoEM_archiving/BLC12442/allParams.json"
     #     with open(allParamsFile) as fd:
     #         allParams = json.loads(fd.read())
+    #     # Set all archived to false
+    #     # for key in allParams:
+    #     #     allParams[key]["archived"] = False
+    #     # pprint.pprint(allParams)
     #     dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(allParams)
+    #     pprint.pprint(dictGridSquares.keys())
     #     for gridSquareToBeArchived in dictGridSquares:
     #         self.archiveGridSquare(proposal, sampleAcronym, allParams, gridSquareToBeArchived)
+    #         with open(allParamsFile, "w") as fd:
+    #             fd.write(json.dumps(allParams, indent=4))
+    #         sys.exit(0)
 
+
+    def tes_archive_mx2261_20201104(self):
+        proposal = "mx2261"
+        sampleAcronym = "Grid1"
+        allParamsFile = "/home/esrf/svensson/CryoEM_archiving/mx2261_20201104/allParams.json"
+        with open(allParamsFile) as fd:
+            allParams = json.loads(fd.read())
+        # Set all archived to false
+        # for key in allParams:
+        #     allParams[key]["archived"] = False
+        # pprint.pprint(allParams)
+        dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(allParams)
+        pprint.pprint(dictGridSquares.keys())
+        for gridSquareToBeArchived in dictGridSquares:
+            self.archiveGridSquare(proposal, sampleAcronym, allParams, gridSquareToBeArchived)
+            with open(allParamsFile, "w") as fd:
+                fd.write(json.dumps(allParams, indent=4))
+            sys.exit(0)
 
 
 if __name__ == "__main__":

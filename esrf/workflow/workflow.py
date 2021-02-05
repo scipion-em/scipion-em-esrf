@@ -102,6 +102,12 @@ QUEUE_PARAMS_WITH_1_GPU_15_CPU = ('gpu', {'JOB_TIME': '150',  # in hours
                                  'JOB_GPU': '--gres=gpu:1',
                                  'JOB_THREADS': 15})
 
+QUEUE_PARAMS_WITH_2_GPU_16_CPU = ('gpu', {'JOB_TIME': '150',  # in hours
+                                 'JOB_MEMORY': '100000',  # in Mb
+                                 'QUEUE_FOR_JOBS': 'N',
+                                 'JOB_GPU': '--gres=gpu:2',
+                                 'JOB_THREADS': 16})
+
 QUEUE_PARAMS_WITHOUT_GPU = ('gpu', {'JOB_TIME': '150',  # in hours
                                      'JOB_MEMORY': '100000',  # in Mb
                                      'QUEUE_FOR_JOBS': 'N',
@@ -251,7 +257,7 @@ def preprocessWorkflow(configDict):
                                    gpuList=configDict["gctfGpu"],
                                    lowRes=configDict["lowRes"],
                                    plotResRing=True,
-                                   doEPA=True,
+                                   doEPA=False,
                                    doHighRes=True,
                                    convsize=configDict["convsize"],
                                    highRes=configDict["highRes"],
@@ -345,12 +351,12 @@ def preprocessWorkflow(configDict):
 
     protPP2 = project.newProtocol(SphireProtCRYOLOPicking,
                                   objLabel='Sphire - CrYolo auto-picking',
-                                  gpuList=configDict["cryoloGpu"],
+                                  useGpu=False,
                                   conservPickVar=0.3,
-                                  numCpus=4,
+                                  numCpus=16,
                                   streamingBatchSize=4)  # CPU version installation
-    protPP2._useQueue.set(True)
-    protPP2._queueParams.set(json.dumps(QUEUE_PARAMS_WITH_1_GPU_4_CPU))
+    # protPP2._useQueue.set(True)
+    # protPP2._queueParams.set(json.dumps(QUEUE_PARAMS_WITH_1_GPU_4_CPU))
     setBoxSize(protPP2.boxSize)
     setExtendedInput(protPP2.inputMicrographs, protPreMics, 'outputMicrographs')
     if waitManualPick:
@@ -426,8 +432,8 @@ def preprocessWorkflow(configDict):
     protExtractNoFlip = project.newProtocol(ProtRelionExtractParticles,
                                    objLabel='Relion - extract particles',
                                    boxSize=extracBoxSize,
-                                   doInvert=True
-                                   )
+                                   doInvert=True,
+                                   numberOfMpi=16)
     setExtendedInput(protExtractNoFlip.inputCoordinates, finalPicker, outputCoordsStr)
     setExtendedInput(protExtractNoFlip.inputMicrographs,
                      protPreMics, 'outputMicrographs')
@@ -525,7 +531,7 @@ def preprocessWorkflow(configDict):
                                      objLabel='Xmipp - CL2D',
                                      doCore=False,
                                      numberOfClasses=getNoClasses(outputSize),
-                                     numberOfMpi=10)
+                                     numberOfMpi=16)
 
         protCL._useQueue.set(True)
         protCL._queueParams.set(json.dumps(QUEUE_PARAMS_WITHOUT_GPU))
@@ -550,7 +556,7 @@ def preprocessWorkflow(configDict):
                                       numberOfThreads=15,
                                       maskDiameterA=configDict["partSize"])
         protCL2._useQueue.set(True)
-        protCL2._queueParams.set(json.dumps(QUEUE_PARAMS_WITH_1_GPU_15_CPU))
+        protCL2._queueParams.set(json.dumps(QUEUE_PARAMS_WITH_2_GPU_16_CPU))
         setExtendedInput(protCL2.inputParticles, protTRIG2NoFlip, 'outputParticles')
         _registerProt(protCL2, '2Dclassify', True)
         classifiers.append(protCL2)

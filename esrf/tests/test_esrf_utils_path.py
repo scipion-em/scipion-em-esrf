@@ -27,6 +27,7 @@
 
 import os
 import sys
+import glob
 import unittest
 
 from  esrf.utils.esrf_utils_path import UtilsPath
@@ -282,14 +283,14 @@ class Test(unittest.TestCase):
         self.assertEqual("/data/pyarch/2018/cm01/ihls2975/Hons/RAW_DATA/grid1/Images-Disc1/GridSquare_20174003/Data/GridSquare_20174003_test2/Runs/000056_ProtMotionCorr/extra/FoilHole_20182354_Data_20179605_20179606_20170620_1523-1198_aligned_mic.mrc", pyarchFilePath)
         mrcFilePath = "/mntdirect/_data_cm01_inhouse/opcm01/20171108/RAW_DATA/nicetest/Frame.mrc"
         pyarchFilePath = UtilsPath.getPyarchFilePath(mrcFilePath)
-        self.assertEqual("/data/pyarch/2020/20171108/opcm01/RAW_DATA/nicetest/Frame.mrc", pyarchFilePath)
+        self.assertEqual("/data/pyarch/2021/20171108/opcm01/RAW_DATA/nicetest/Frame.mrc", pyarchFilePath)
         # CRYOEM-25 : New paths for inhouse research...
         mrcFilePath = "/data/cm01/cmihr2/IH-LS3198/20181203/RAW_DATA/EPU_IH_LS3198/Images-Disc1/GridSquare_3087556/Data/FoilHole_4118111_Data_5127341_5127342_20181205_1023.jpg"
         pyarchFilePath = UtilsPath.getPyarchFilePath(mrcFilePath)
         self.assertEqual("/data/pyarch/2018/cm01/IH-LS3198/20181203/RAW_DATA/EPU_IH_LS3198/Images-Disc1/GridSquare_3087556/Data/FoilHole_4118111_Data_5127341_5127342_20181205_1023.jpg", pyarchFilePath)
         mrcFilePath = "/mntdirect/_data_cm01_cmihr2/IH-LS3198/20181203/RAW_DATA/EPU_IH_LS3198/Images-Disc1/GridSquare_3087308/GridSquare_20181204_115820.jpg"
         pyarchFilePath = UtilsPath.getPyarchFilePath(mrcFilePath)
-        self.assertEqual("/data/pyarch/2020/cm01/IH-LS3198/20181203/RAW_DATA/EPU_IH_LS3198/Images-Disc1/GridSquare_3087308/GridSquare_20181204_115820.jpg", pyarchFilePath)
+        self.assertEqual("/data/pyarch/2021/cm01/IH-LS3198/20181203/RAW_DATA/EPU_IH_LS3198/Images-Disc1/GridSquare_3087308/GridSquare_20181204_115820.jpg", pyarchFilePath)
 
     def test_findDefectFilePath(self):
         topDirectory = "/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214"
@@ -328,6 +329,16 @@ class Test(unittest.TestCase):
         print(pyarchFilePath)
         pyarchFilePath = UtilsPath.copyToPyarchPath(testPath)
         print(pyarchFilePath)
+
+
+    def test_getBlackFileList(self):
+        dataDirectory = "/data/visitor/mx2260/cm01/20210122/RAW_DATA/mx2260_grid5_EXTs_EPU"
+        filesPattern = "Images-Disc1/GridSquare_*/Data/FoilHole_*-*.mrc"
+        listMovies = glob.glob(os.path.join(dataDirectory, filesPattern))
+        allParamsJsonFile = "/data/visitor/mx2260/cm01/20210122/PROCESSED_DATA/mx2260_grid5_EXTs_EPU/allParams.json"
+        blackList = UtilsPath.getBlacklist(listMovies, allParamsJsonFile)
+        import pprint
+        pprint.pprint(blackList)
 
 
 

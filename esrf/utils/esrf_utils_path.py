@@ -28,6 +28,7 @@
 import os
 import re
 import glob
+import json
 import math
 import time
 import socket
@@ -646,3 +647,34 @@ class UtilsPath(object):
                 filesPattern += "*/"
         filesPattern += "*.tif"
         return filesPattern
+
+    @staticmethod
+    def getBlacklist(listMovies, allParamsJsonFile):
+        with open(allParamsJsonFile, 'r') as f:
+            dictAllParams = json.loads(f.read())
+        blackList = []
+        dictGridSquare = {}
+        listMovieNames = []
+        # First find all grid squares which contain
+        # movies that have not been processed
+        for movie in listMovies:
+            dictMovieName = UtilsPath.getMovieFileNameParameters(movie)
+            gridSquare = dictMovieName["gridSquare"]
+            if gridSquare not in dictGridSquare:
+                dictGridSquare[gridSquare] = []
+            movieName = os.path.splitext(os.path.basename(movie))[0]
+            if movieName in dictAllParams.keys():
+                dictMovie = dictAllParams[movieName]
+                if "motionCorrectionId" in dictMovie:
+                    if "CTFid" not in dictMovie:
+                        dictGridSquare[gridSquare].append(movieName)
+                else:
+                    dictGridSquare[gridSquare].append(movieName)
+            else:
+                dictGridSquare[gridSquare].append(movieName)
+        # Blacklist all grid squares with less than 50 movies
+        blacklist = []
+        for gridSquare in dictGridSquare.keys():
+            if len(dictGridSquare[gridSquare]) < 50:
+                blacklist.append("(.*){0}(.*)".format(gridSquare))
+        return blacklist

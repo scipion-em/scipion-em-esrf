@@ -191,18 +191,13 @@ configDict["location"] = location
 # Create blacklist file with all movies already imported and motion corrected
 configDict["blacklistFile"] = None
 if os.path.exists(configDict["allParamsJsonFile"]):
-    with open(configDict["allParamsJsonFile"], 'r') as f:
-        dictAllParams = json.loads(f.read())
-    blackList = []
-    for movieName in dictAllParams:
-        dictMovie = dictAllParams[movieName]
-        if all (key in dictMovie for key in ("motionCorrectionId", "CTFid")):
-            blackList.append(dictMovie["movieFullPath"])
+    blackList = UtilsPath.getBlacklist(listMovies, configDict["allParamsJsonFile"])
     blacklistFile = os.path.join(location, "blacklist.txt")
     with open(blacklistFile, "w") as f:
         for filePath in blackList:
             f.write(filePath + "\n")
     configDict["blacklistFile"] = blacklistFile
+    print("Black list file : " + configDict["blacklistFile"])
 
 # Get meta data like phasePlateUsed
 

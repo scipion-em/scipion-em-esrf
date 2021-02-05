@@ -215,6 +215,7 @@ def preprocessWorkflow(configDict):
                                      dosePerFrame=configDict["dosePerFrame"],
                                      magnification=configDict["nominalMagnification"],
                                      dataStreaming=configDict["dataStreaming"],
+                                     blacklistFile=configDict["blacklistFile"],
                                      timeout=timeout)
     _registerProt(protImport, label='Movies', toSummary=True)
 

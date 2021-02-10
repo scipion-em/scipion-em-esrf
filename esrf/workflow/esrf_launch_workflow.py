@@ -436,13 +436,19 @@ for prot in runs:
 doContinue = True
 while doContinue:
     doContinue = False
-    updatedRuns = [getUpdatedProtocol(p) for p in runs]
-    print("") 
-    print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')) 
-    for prot in updatedRuns:
-        print("{0} status: {1}".format(prot.getRunName(), prot.getStatusMessage()))
-        if prot.isActive():
-            doContinue = True
+    try:
+        updatedRuns = [getUpdatedProtocol(p) for p in runs]
+        print("")
+        print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        for prot in updatedRuns:
+            if prot is not None:
+                print("{0} status: {1}".format(prot.getRunName(), prot.getStatusMessage()))
+                if prot.isActive():
+                    doContinue = True
+    except Exception as e:
+        print("ERROR! Exception caught: {0}".format(e))
+        print("Trying to continue anyway...")
+        doContinue = True
     time.sleep(5)
         
     

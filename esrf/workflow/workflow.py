@@ -433,7 +433,7 @@ def preprocessWorkflow(configDict):
                                    objLabel='Relion - extract particles',
                                    boxSize=extracBoxSize,
                                    doInvert=True,
-                                   numberOfMpi=16)
+                                   numberOfMpi=1)
     setExtendedInput(protExtractNoFlip.inputCoordinates, finalPicker, outputCoordsStr)
     setExtendedInput(protExtractNoFlip.inputMicrographs,
                      protPreMics, 'outputMicrographs')

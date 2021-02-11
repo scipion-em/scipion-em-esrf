@@ -26,8 +26,10 @@
 # **************************************************************************
 
 import os
-import sys
+import json
 import glob
+import pprint
+import pathlib
 import unittest
 
 from  esrf.utils.esrf_utils_path import UtilsPath
@@ -339,6 +341,19 @@ class Test(unittest.TestCase):
         blackList = UtilsPath.getBlacklist(listMovies, allParamsJsonFile)
         import pprint
         pprint.pprint(blackList)
+
+
+    def test_getInputParticleDict(self):
+        testDataPath = pathlib.Path(__file__).parent / 'testdata'
+        allParamsFile = str(testDataPath / "allParams.json")
+        allParams = json.loads(open(allParamsFile).read())
+        # pprint.pprint(allParams)
+        inputParticlesStarFile = str(testDataPath / "input_particles.star")
+        dictInputParticles = UtilsPath.getInputParticleDict(
+            pathToInputParticlesStarFile=inputParticlesStarFile,
+            allParams=allParams
+        )
+        pprint.pprint(dictInputParticles)
 
 
 

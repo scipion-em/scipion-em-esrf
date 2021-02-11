@@ -46,6 +46,7 @@ from pyworkflow import VERSION_1_1
 from pyworkflow.protocol import getUpdatedProtocol
 from emfacilities.protocols import ProtMonitor, Monitor, PrintNotifier
 from pwem.protocols import ProtImportMovies, ProtAlignMovies, ProtCTFMicrographs
+from relion.protocols import ProtRelionClassify2D
 from xmipp3.protocols import XmippProtMovieMaxShift
 from esrf.utils.esrf_utils_ispyb import UtilsISPyB
 from esrf.utils.esrf_utils_path import UtilsPath
@@ -223,6 +224,7 @@ class MonitorISPyB_ESRF(Monitor):
             isActiveImportMovies = True
             isActiveAlignMovies = True
             isActiveCTFMicrographs = True
+            isActiveClassify2D = True
 
             for n in nodes:
                 prot = n.run
@@ -237,6 +239,9 @@ class MonitorISPyB_ESRF(Monitor):
                 elif isinstance(prot, ProtCTFMicrographs) and hasattr(prot, 'outputCTF'):
                     self.uploadCTFMicrographs(prot)
                     isActiveCTFMicrographs = prot.isActive()
+                elif isinstance(prot, ProtRelionClassify2D) and hasattr(prot, 'outputClasses'):
+                    self.uploadClassify2D(prot)
+                    isActiveClassify2D = prot.isActive()
 
             # Check if archive last grid square
             if self.currentGridSquareLastMovieTime is not None:
@@ -257,7 +262,7 @@ class MonitorISPyB_ESRF(Monitor):
                 f.close()
 
 
-            if isActiveImportMovies or isActiveAlignMovies or isActiveCTFMicrographs:
+            if isActiveImportMovies or isActiveAlignMovies or isActiveCTFMicrographs or isActiveClassify2D:
                 finished = False
             else:
                 self.info("MonitorISPyB: All upstream activities ended, stopping monitor")
@@ -767,6 +772,14 @@ class MonitorISPyB_ESRF(Monitor):
                 self.allParams[movieName]["resolutionLimit"] = resolutionLimit
 
                 self.info("CTF done, CTFid = {0}".format(CTFid))
+
+
+    def uploadClassify2D(self, prot):
+        self.info("ISPyB upload 2D classification results")
+        workingDir = os.path.join(self.currentDir, str(prot.workingDir))
+        extraDirectory = os.path.join(workingDir, "extra")
+        pathToInputParticlesStarFile = os.path.join(extraDirectory, "input_particles.sqlite")
+        print("Input data")
 
 
     def archiveGridSquare(self, gridSquareToBeArchived):

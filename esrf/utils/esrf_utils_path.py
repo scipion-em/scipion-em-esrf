@@ -33,6 +33,7 @@ import math
 import time
 import socket
 import shutil
+import pprint
 import datetime
 import traceback
 import xml.etree.ElementTree
@@ -678,3 +679,46 @@ class UtilsPath(object):
             if len(dictGridSquare[gridSquare]) < 50:
                 blacklist.append("(.*){0}(.*)".format(gridSquare))
         return blacklist
+
+    @staticmethod
+    def getInputParticleDict(pathToInputParticlesStarFile, allParams):
+        with open(pathToInputParticlesStarFile) as fd:
+            listLines = fd.readlines()
+        # Find the line which starts with " 1":
+        indexStart = 0
+        foundStart = False
+        while not foundStart:
+            line = listLines[indexStart]
+            if len(line.split()) > 0 and line.split()[0] == "1":
+                foundStart = True
+                break
+            else:
+                indexStart += 1
+        gridSquareMovieNameStart = listLines[indexStart].split()[3]
+        # print(gridSquareMovieName)
+        movieNameStart = gridSquareMovieNameStart[gridSquareMovieNameStart.find("_Data_")+6:]
+        movieNameStart = os.path.splitext(movieNameStart)[0]
+        movieDictStart = allParams[movieNameStart]
+        firstMotionCorrectionId = movieDictStart["motionCorrectionId"]
+        # Find the last entry
+        indexEnd = len(listLines) - 1
+        foundEnd = False
+        while not foundEnd:
+            line = listLines[indexEnd]
+            if len(line.split()) > 0:
+                foundEnd = True
+                break
+            else:
+                indexEnd -= 1
+        numberOfParticles = listLines[indexEnd].split()[0]
+        gridSquareMovieNameEnd = listLines[indexEnd].split()[3]
+        movieNameEnd = gridSquareMovieNameEnd[gridSquareMovieNameEnd.find("_Data_")+6:]
+        movieNameEnd = os.path.splitext(movieNameEnd)[0]
+        movieDictEnd = allParams[movieNameEnd]
+        lastMotionCorrectionId = movieDictEnd["motionCorrectionId"]
+        particleDict = {
+            "firstMotionCorrectionId": firstMotionCorrectionId,
+            "lastMotionCorrectionId": lastMotionCorrectionId,
+            "numberOfParticles": numberOfParticles
+        }
+        return particleDict

@@ -45,9 +45,10 @@ class Test(unittest.TestCase):
         sessions = UtilsISPyB.createSession(1, "opcm01", "cm01")
         print(sessions)
 
-    def test_addMovie(self):
+    def tes_addMovie(self):
         httpAuthenticated = UtilsISPyB.getHttpAuthenticated()
-        urlBase = UtilsISPyB.getUrlBase(1)
+        # urlBase = UtilsISPyB.getUrlBase(2)
+        urlBase = "http://linsvensson.esrf.fr:8090/ispyb/ispyb-ws/ispybWS"
         url = os.path.join(urlBase, "ToolsForEMWebService?wsdl")
         client = Client(url, transport=httpAuthenticated, cache=NoCache(), timeout=15)
         technique = "EM"
@@ -96,3 +97,50 @@ class Test(unittest.TestCase):
             gridSquareSnapshotFullPath=gridSquareSnapshotFullPath,
         )
         self.assertIsNotNone(movieObject)
+
+    def tes_addParticlePicker(self):
+        httpAuthenticated = UtilsISPyB.getHttpAuthenticated()
+        # urlBase = UtilsISPyB.getUrlBase(2)
+        urlBase = "http://linsvensson.esrf.fr:8090/ispyb/ispyb-ws/ispybWS"
+        url = os.path.join(urlBase, "ToolsForEMWebService?wsdl")
+        client = Client(url, transport=httpAuthenticated, cache=NoCache(), timeout=15)
+        technique = "EM"
+        proposal = "mx415"
+        firstMovieFullPath = "/data/visitor/mx2112/cm01/20210118/RAW_DATA/IH-LS3251_Grid2_SARM1_EPU/Images-Disc1/GridSquare_16477002/Data/FoilHole_16481034_Data_16482697_16482699_20201116_180655-25590.mrc"
+        lastMovieFullPath  = "/data/visitor/mx2112/cm01/20210118/RAW_DATA/IH-LS3251_Grid2_SARM1_EPU_2/Images-Disc1/GridSquare_16477002/Data/FoilHole_16480962_Data_16482697_16482699_20201116_175817-25554.mrc"
+        pickingProgram = "Cryolo"
+        particlePickingTemplate = "Template"
+        particleDiameter = "160"
+        numberOfParticles = "5034"
+        particlePickerObject = client.service.addParticlePicker(
+            proposal=proposal,
+            firstMovieFullPath=firstMovieFullPath,
+            lastMovieFullPath=lastMovieFullPath,
+            pickingProgram=pickingProgram,
+            particlePickingTemplate=particlePickingTemplate,
+            particleDiameter=particleDiameter,
+            numberOfParticles=numberOfParticles
+        )
+        self.assertIsNotNone(particlePickerObject)
+
+
+    def tes_addParticleClassification(self):
+        httpAuthenticated = UtilsISPyB.getHttpAuthenticated()
+        # urlBase = UtilsISPyB.getUrlBase(2)
+        urlBase = "http://linsvensson.esrf.fr:8090/ispyb/ispyb-ws/ispybWS"
+        url = os.path.join(urlBase, "ToolsForEMWebService?wsdl")
+        client = Client(url, transport=httpAuthenticated, cache=NoCache(), timeout=15)
+        particleClassificationObject = client.service.addParticleClassification(
+            particlePickerId="1",
+            type="2D",
+            batchNumber="1",
+            classNumber="2",
+            numberOfParticlesPerBatch="3",
+            numberOfClassesPerBatch="4",
+            particlesPerClass="5",
+            rotationAccuracy="6",
+            translationAccuracy="7",
+            estimatedResolution="8",
+            overallFourierCompleteness="9"
+        )
+        self.assertIsNotNone(particleClassificationObject)

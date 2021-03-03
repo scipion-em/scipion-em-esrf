@@ -65,12 +65,16 @@ from esrf.workflow.workflow import preprocessWorkflow
 def getUpdatedProtocol(protocol):
     """ Retrieve the updated protocol and close db connections
         """
-    prot2 = getProtocolFromDb(os.getcwd(),
-                              protocol.getDbPath(),
-                              protocol.getObjId())
-    # Close DB connections
-    prot2.getProject().closeMapper()
-    prot2.closeMappers()
+    prot2 = None
+    try:
+        prot2 = getProtocolFromDb(os.getcwd(),
+                                  protocol.getDbPath(),
+                                  protocol.getObjId())
+        # Close DB connections
+        prot2.getProject().closeMapper()
+        prot2.closeMappers()
+    except Exception as e:
+        print("ERROR! Exception caught: {0}".format(e))
     return prot2
 
 

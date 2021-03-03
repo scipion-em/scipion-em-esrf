@@ -663,26 +663,41 @@ class MonitorISPyB_ESRF(Monitor):
                     shutil.copy(micrographFullPath, self.allParams[movieName]["processDir"])
                     shutil.copy(correctedDoseMicrographFullPath, self.allParams[movieName]["processDir"])
                     shutil.copy(logFileFullPath, self.allParams[movieName]["processDir"])
-                motionCorrectionObject = self.client.service.addMotionCorrection(
-                    proposal=self.proposal,
-                    movieFullPath=movieFullPath,
-                    firstFrame=firstFrame,
-                    lastFrame=lastFrame,
-                    dosePerFrame=dosePerFrame,
-                    doseWeight=doseWeight,
-                    totalMotion=totalMotion,
-                    averageMotionPerFrame=averageMotionPerFrame,
-                    driftPlotFullPath=driftPlotPyarchPath,
-                    micrographFullPath=micrographPyarchPath,
-                    correctedDoseMicrographFullPath=correctedDoseMicrographPyarchPath,
-                    micrographSnapshotFullPath=micrographSnapshotPyarchPath,
-                    logFileFullPath=logFilePyarchPath
-                )
-
-                if motionCorrectionObject is not None:
-                    motionCorrectionId = motionCorrectionObject.motionCorrectionId
-                else:
-                    raise RuntimeError("ERROR: motionCorrectionObject is None!")
+                noTrialsLeft = 5
+                uploadSucceeded = False
+                while not uploadSucceeded:
+                    motionCorrectionObject = None
+                    try:
+                        motionCorrectionObject = self.client.service.addMotionCorrection(
+                            proposal=self.proposal,
+                            movieFullPath=movieFullPath,
+                            firstFrame=firstFrame,
+                            lastFrame=lastFrame,
+                            dosePerFrame=dosePerFrame,
+                            doseWeight=doseWeight,
+                            totalMotion=totalMotion,
+                            averageMotionPerFrame=averageMotionPerFrame,
+                            driftPlotFullPath=driftPlotPyarchPath,
+                            micrographFullPath=micrographPyarchPath,
+                            correctedDoseMicrographFullPath=correctedDoseMicrographPyarchPath,
+                            micrographSnapshotFullPath=micrographSnapshotPyarchPath,
+                            logFileFullPath=logFilePyarchPath
+                        )
+                    except Exception as e:
+                        self.info("Error when trying to upload motion correction!")
+                        self.info(e)
+                        motionCorrectionObject = None
+                    if motionCorrectionObject is not None:
+                        uploadSucceeded = True
+                        motionCorrectionId = motionCorrectionObject.motionCorrectionId
+                    else:
+                        if noTrialsLeft == 0:
+                            raise RuntimeError("ERROR: failure when trying to upload motion correction!")
+                        else:
+                            self.info("ERROR! motionCorrectionObject is None!")
+                            self.info("Sleeping 5 s, and then trying again. Number of trials left: {0}".format(noTrialsLeft))
+                            time.sleep(5)
+                            noTrialsLeft -= 1
                 time.sleep(0.1)
                 self.allParams[movieName]["motionCorrectionId"] = motionCorrectionId
                 self.allParams[movieName]["totalMotion"] = totalMotion

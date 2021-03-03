@@ -272,6 +272,22 @@ class Test(unittest.TestCase):
  'spectraImageSnapshotFullPath': '/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf/extra/GridSquare_7828225_Data_FoilHole_8853794_Data_7832898_7832899_20190711_0913-4443_aligned_mic_ctf.jpeg'}
         self.assertEqual(dictRef, dictResult)
 
+    def test_getCtfMetaData_2(self):
+        workingDir = "/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf"
+        mrcFilePath = "/scisoft/pxsoft/data/cryoem/testRunData/20190715/000064_ProtMotionCorr/extra/GridSquare_7828225_Data_FoilHole_8853794_Data_7832898_7832899_20190711_0913-4443_aligned_mic.mrc"
+        dictResult = UtilsPath.getCtfMetaData(workingDir, mrcFilePath)
+        dictRef = {'Angle': '35.60',
+                   'CCC': '-0.076290',
+                   'Defocus_U': '23173.92',
+                   'Defocus_V': '22988.54',
+                   'Phase_shift': None,
+                   'estimatedBfactor': '82.54',
+                   'logFilePath': '/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf/logs/run.log',
+                   'resolutionLimit': '3.381',
+                   'spectraImageFullPath': '/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf/extra/GridSquare_7828225_Data_FoilHole_8853794_Data_7832898_7832899_20190711_0913-4443_aligned_mic_ctf.mrc',
+                   'spectraImageSnapshotFullPath': '/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf/extra/GridSquare_7828225_Data_FoilHole_8853794_Data_7832898_7832899_20190711_0913-4443_aligned_mic_ctf.jpeg'}
+        self.assertEqual(dictRef, dictResult)
+
     def test_getPyarchFilePath(self):
         mrcFilePath = "/data/visitor/mx415/cm01/20171108/RAW_DATA/test2/CWAT_ESRF_RawData_K2/170620_TMV_1/Images-Disc1/GridSquare_20174003/Data/FoilHole_20182354_Data_20179605_20179606_20170620_1523-1198.mrc"
         pyarchFilePath = UtilsPath.getPyarchFilePath(mrcFilePath)

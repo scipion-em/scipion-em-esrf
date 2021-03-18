@@ -314,8 +314,8 @@ if not configDict["phasePlateData"] and configDict["doPhaseShiftEstimation"]:
 
 if configDict["phasePlateData"]:
     configDict["sphericalAberration"] = 0.0
-    configDict["minDefocus"] = 0.1
-    configDict["maxDefocus"] = 2.0
+    configDict["minDefocus"] = 5000
+    configDict["maxDefocus"] = 90000
     configDict["astigmatism"] = 1000.0
     configDict["convsize"] = 25
     configDict["doPhShEst"] = True
@@ -323,8 +323,8 @@ if configDict["phasePlateData"]:
     configDict["phaseShiftH"] = 180.0
     configDict["phaseShiftS"] = 5.0
     configDict["phaseShiftT"] = 1
-    configDict["lowRes"] = configDict["samplingRate"] / 15.0
-    configDict["highRes"] = configDict["samplingRate"] / 4.0
+    configDict["lowRes"] = 15.0 / configDict["samplingRate"]
+    configDict["highRes"] = 4.0 / configDict["samplingRate"]
 else:
     configDict["sphericalAberration"] = 2.7
     configDict["minDefocus"] = 5000

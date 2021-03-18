@@ -313,11 +313,11 @@ if not configDict["phasePlateData"] and configDict["doPhaseShiftEstimation"]:
     print("!"*100)
 
 if configDict["phasePlateData"]:
-    configDict["sphericalAberration"] = 0.0
-    configDict["minDefocus"] = 5000
-    configDict["maxDefocus"] = 90000
-    configDict["astigmatism"] = 1000.0
-    configDict["convsize"] = 25
+    configDict["sphericalAberration"] = 2.7
+    configDict["minDefocus"] = 2000
+    configDict["maxDefocus"] = 20000
+    configDict["astigmatism"] = 500.0
+    configDict["convsize"] = 85
     configDict["doPhShEst"] = True
     configDict["phaseShiftL"] = 0.0
     configDict["phaseShiftH"] = 180.0

@@ -156,7 +156,7 @@ def getCommandlineOptions():
         default=None
     )
     optional.add_argument(
-        "--noParticleElimination",
+        "--particleElimination",
         action="store_true",
         help="Don't eliminate particles after extract particles.",
         default=False
@@ -186,7 +186,7 @@ def getCommandlineOptions():
         "phasePlateData": results.phasePlateData,
         "onlyISPyB": results.onlyISPyB,
         "noISPyB": results.noISPyB,
-        "noParticleElimination": results.noParticleElimination,
+        "particleElimination": results.particleElimination,
         "samplingRate": float(results.samplingRate),
         "superResolution": results.superResolution,
         "partSize": float(results.partSize),

@@ -441,7 +441,7 @@ def preprocessWorkflow(configDict):
     _registerProt(protExtractNoFlip, 'Particles')
 
 
-    if not configDict["noParticleElimination"]:
+    if configDict["particleElimination"]:
         # ***********   CLEAN PARTICLES   ************************************
         # --------- ELIM EMPTY PARTS AND ---------------------------
         protEEPandFlip = project.newProtocol(XmippProtEliminateEmptyParticles,
@@ -508,10 +508,10 @@ def preprocessWorkflow(configDict):
                                         outputSize=outputSize,
                                         delay=30,
                                         allImages=False)
-        if configDict["noParticleElimination"]:
-            setExtendedInput(protTRIG2Flip.inputImages, protExtractFlip, 'outputParticles')
-        else:
+        if configDict["particleElimination"]:
             setExtendedInput(protTRIG2Flip.inputImages, protSCRandFlip, 'outputParticles')
+        else:
+            setExtendedInput(protTRIG2Flip.inputImages, protExtractFlip, 'outputParticles')
         _registerProt(protTRIG2Flip, '2Dclassify')
         triggers.append(protTRIG2Flip)
 
@@ -520,10 +520,10 @@ def preprocessWorkflow(configDict):
                                         outputSize=outputSize,
                                         delay=30,
                                         allImages=False)
-        if configDict["noParticleElimination"]:
-            setExtendedInput(protTRIG2NoFlip.inputImages, protExtractNoFlip, 'outputParticles')
-        else:
+        if configDict["particleElimination"]:
             setExtendedInput(protTRIG2NoFlip.inputImages, protSCRandNoFlip, 'outputParticles')
+        else:
+            setExtendedInput(protTRIG2NoFlip.inputImages, protExtractNoFlip, 'outputParticles')
         _registerProt(protTRIG2NoFlip, '2Dclassify')
         triggers.append(protTRIG2NoFlip)
 

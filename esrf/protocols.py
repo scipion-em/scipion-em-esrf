@@ -124,6 +124,18 @@ class ProtMonitorISPyB_ESRF(ProtMonitor):
             label="Align Frame N",
             help="End frame for motion correction (-1 = all frames)")
 
+        section2.addParam(
+            'gainFilePath', params.StringParam,
+            default="",
+            label="Gain file",
+            help="Gain file path for Motioncor 2")
+
+        section2.addParam(
+            'defectMapPath', params.StringParam,
+            default="",
+            label="Defect map file",
+            help="Defect map path for Motioncor 2")
+
         section3 = form.addSection(label='ISPyB')
 
         section3.addParam(
@@ -189,6 +201,8 @@ class MonitorISPyB_ESRF(Monitor):
         self.imagesCount = protocol.imagesCount.get()
         self.alignFrame0 = protocol.alignFrame0.get()
         self.alignFrameN = protocol.alignFrameN.get()
+        self.gainFilePath = protocol.gainFilePath.get()
+        self.defectMapPath = protocol.defectMapPath.get()
         self.positionX = None
         self.positionY = None
         self.collectionDate = None
@@ -210,6 +224,9 @@ class MonitorISPyB_ESRF(Monitor):
     def step(self):
         self.info("MonitorISPyB: start step ------------------------")
         self.info("Number of movies in all params: {0}".format(len(self.allParams)))
+
+        # Check if we should archive gain an defect maps
+        self.archiveGainAndDefectMap()
 
         if self.proposal == "None":
             print("WARNING! Proposal is 'None', no data uploaded to ISPyB")
@@ -849,4 +866,32 @@ class MonitorISPyB_ESRF(Monitor):
         for gridSquareToBeArchived in dictGridSquares:
             self.archiveGridSquare(gridSquareToBeArchived)
 
+    def archiveGainAndDefectMap(self):
+        if self.defectMapPath != "" and self.gainFilePath != "":
+            self.info("Archiving gain and defect map files")
+            if not "GainAndDefectMap" in self.allParams:
+                self.allParams["GainAndDefectMap"] = {
+                    "defectMapPath": self.defectMapPath,
+                    "gainFilPath": self.gainFilePath,
+                    "archived": False
+                }
+            if not self.allParams["GainAndDefectMap"]["archived"]:
+                listPathsToBeArchived = [self.defectMapPath, self.gainFilePath]
+                directory = os.path.dirname(self.defectMapPath)
+                dictIcatMetaData = {
+                    "EM_directory": directory,
+                    "EM_protein_acronym": self.proteinAcronym,
+                    "EM_voltage": self.voltage,
+                    "EM_magnification": self.magnification
+                }
+                dataSetName = "GainAndDefectMap"
+                listGalleryPath = []
+                errorMessage = UtilsIcat.uploadToIcat(
+                    listPathsToBeArchived, directory, self.proposal,
+                    self.sampleAcronym, dataSetName, dictIcatMetaData,
+                    listGalleryPath)
+                if errorMessage is None:
+                    self.allParams["GainAndDefectMap"]["archived"] = True
+                else:
+                    self.info("WARNING! Couldn't archive gain and defect map")
 

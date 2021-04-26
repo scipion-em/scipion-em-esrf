@@ -593,23 +593,26 @@ def preprocessWorkflow(configDict):
 
     # # --------- ISPyB MONITOR -----------------------
     if not configDict["noISPyB"]:
-        ispybMonitor = project.newProtocol(ProtMonitorISPyB_ESRF,
-                                           objLabel='ISPyB monitor',
-                                           samplingInterval=10,
-                                           proposal=configDict["proposal"],
-                                           proteinAcronym=configDict["proteinAcronym"],
-                                           sampleAcronym=configDict["sampleAcronym"],
-                                           db=configDict["db"],
-                                           allParamsJsonFile=configDict["allParamsJsonFile"],
-                                           samplingRate=configDict["samplingRate"],
-                                           doseInitial=configDict["doseInitial"],
-                                           dosePerFrame=configDict["dosePerFrame"],
-                                           serialEM=configDict["serialEM"],
-                                           voltage=configDict["voltage"],
-                                           imagesCount=configDict["imagesCount"],
-                                           magnification=configDict["nominalMagnification"],
-                                           alignFrame0=configDict["alignFrame0"],
-                                           alignFrameN=configDict["alignFrameN"]
-                                           )
-        ispybMonitor.inputProtocols.set([protImport, protMax, protCTF2])
+        ispybMonitor = project.newProtocol(
+            ProtMonitorISPyB_ESRF,
+            objLabel='ISPyB monitor',
+            samplingInterval=10,
+            proposal=configDict["proposal"],
+            proteinAcronym=configDict["proteinAcronym"],
+            sampleAcronym=configDict["sampleAcronym"],
+            db=configDict["db"],
+            allParamsJsonFile=configDict["allParamsJsonFile"],
+            samplingRate=configDict["samplingRate"],
+            doseInitial=configDict["doseInitial"],
+            dosePerFrame=configDict["dosePerFrame"],
+            serialEM=configDict["serialEM"],
+            voltage=configDict["voltage"],
+            imagesCount=configDict["imagesCount"],
+            magnification=configDict["nominalMagnification"],
+            alignFrame0=configDict["alignFrame0"],
+            alignFrameN=configDict["alignFrameN"],
+            defectMapPath=configDict["defectMapPath"],
+            gainFilePath=configDict["gainFilePath"]
+        )
+        ispybMonitor.inputProtocols.set([protImport, protMA, protCTF2])
         _registerProt(ispybMonitor, 'ispybMonitor')

@@ -93,6 +93,8 @@ if configDict["filesPattern"] is None:
 # Check how many movies are present on disk
 listMovies = glob.glob(os.path.join(configDict["dataDirectory"], configDict["filesPattern"]))
 noMovies = len(listMovies)
+defectFilePath = None
+dm4FilePath = None
 if noMovies > 0:
     # We have EPU data
     configDict["serialEM"] = False
@@ -137,6 +139,8 @@ if configDict["serialEM"]:
     defectMapPath = UtilsSerialEM.createDefectMapFile(
         defectFilePath, firstMovieFullPath, defectGainDir)
     gainFilePath = UtilsSerialEM.createGainFile(dm4FilePath, defectGainDir)
+    configDict["defectMapPath"] = defectMapPath
+    configDict["gainFilePath"] = gainFilePath
     configDict["extraParams2"] = "-Gain {0} -DefectMap {1}".format(
         gainFilePath, defectMapPath
     )
@@ -156,7 +160,8 @@ else:
             )
     else:
         configDict["extraParams2"] = ""
-
+        configDict["defectMapPath"] = ""
+        configDict["gainFilePath"] = ""
 
 
 # Set up location

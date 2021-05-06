@@ -47,7 +47,8 @@ from pyworkflow.protocol import getUpdatedProtocol
 from emfacilities.protocols import ProtMonitor, Monitor, PrintNotifier
 from pwem.protocols import ProtImportMovies, ProtAlignMovies, ProtCTFMicrographs
 from relion.protocols import ProtRelionClassify2D
-from xmipp3.protocols import XmippProtMovieMaxShift
+# from xmipp3.protocols import XmippProtMovieMaxShift
+from motioncorr.protocols import ProtMotionCorr
 from esrf.utils.esrf_utils_ispyb import UtilsISPyB
 from esrf.utils.esrf_utils_path import UtilsPath
 from esrf.utils.esrf_utils_icat import UtilsIcat
@@ -250,7 +251,8 @@ class MonitorISPyB_ESRF(Monitor):
                 if isinstance(prot, ProtImportMovies):
                     self.uploadImportMovies(prot)
                     isActiveImportMovies = prot.isActive()
-                elif isinstance(prot, XmippProtMovieMaxShift) and hasattr(prot, 'outputMicrographs'):
+                # elif isinstance(prot, XmippProtMovieMaxShift) and hasattr(prot, 'outputMicrographs'):
+                elif isinstance(prot, ProtMotionCorr) and hasattr(prot, 'outputMicrographs'):
                     self.uploadAlignMovies(prot)
                     isActiveAlignMovies = prot.isActive()
                 elif isinstance(prot, ProtCTFMicrographs) and hasattr(prot, 'outputCTF'):
@@ -265,7 +267,7 @@ class MonitorISPyB_ESRF(Monitor):
                 timeElapsed = int(time.time() - self.currentGridSquareLastMovieTime)
                 self.info("Time elapsed since last movie detected: {0} s".format(timeElapsed))
                 # Timeout for uploading last grid square to icat: 2h, 7200 s
-                if self.currentGridSquare is not None and timeElapsed > 7200:
+                if self.currentGridSquare is not None and timeElapsed > 3600:
                     self.archiveGridSquare(self.currentGridSquare)
                     self.currentGridSquare = None
                     # Check if old grid squares
@@ -376,32 +378,49 @@ class MonitorISPyB_ESRF(Monitor):
             doseInitial = prot.doseInitial.get()
             dosePerFrame = prot.dosePerFrame.get()
 
-            movieObject = self.client.service.addMovie(proposal=self.proposal,
-                                                       proteinAcronym=self.proteinAcronym,
-                                                       sampleAcronym=self.sampleAcronym,
-                                                       movieDirectory=self.movieDirectory,
-                                                       movieFullPath=movieFullPath,
-                                                       movieNumber=movieNumber,
-                                                       micrographFullPath=micrographPyarchPath,
-                                                       micrographSnapshotFullPath=micrographSnapshotPyarchPath,
-                                                       xmlMetaDataFullPath=xmlMetaDataPyarchPath,
-                                                       voltage=voltage,
-                                                       sphericalAberration=sphericalAberration,
-                                                       amplitudeContrast=amplitudeContrast,
-                                                       magnification=magnification,
-                                                       scannedPixelSize=samplingRate,
-                                                       imagesCount=imagesCount,
-                                                       dosePerImage=dosePerImage,
-                                                       positionX=positionX,
-                                                       positionY=positionY,
-                                                       beamlineName=self.beamlineName,
-                                                       gridSquareSnapshotFullPath=gridSquareSnapshotPyarchPath,
-                                                       )
-
-            if movieObject is not None:
-                movieId = movieObject.movieId
-            else:
-                raise RuntimeError("ISPyB Movie object is None!")
+            movieId = None
+            noTrialsLeft = 5
+            uploadSucceeded = False
+            while not uploadSucceeded:
+                movieObject = None
+                try:
+                    movieObject = self.client.service.addMovie(
+                        proposal=self.proposal,
+                        proteinAcronym=self.proteinAcronym,
+                        sampleAcronym=self.sampleAcronym,
+                        movieDirectory=self.movieDirectory,
+                        movieFullPath=movieFullPath,
+                        movieNumber=movieNumber,
+                        micrographFullPath=micrographPyarchPath,
+                        micrographSnapshotFullPath=micrographSnapshotPyarchPath,
+                        xmlMetaDataFullPath=xmlMetaDataPyarchPath,
+                        voltage=voltage,
+                        sphericalAberration=sphericalAberration,
+                        amplitudeContrast=amplitudeContrast,
+                        magnification=magnification,
+                        scannedPixelSize=samplingRate,
+                        imagesCount=imagesCount,
+                        dosePerImage=dosePerImage,
+                        positionX=positionX,
+                        positionY=positionY,
+                        beamlineName=self.beamlineName,
+                        gridSquareSnapshotFullPath=gridSquareSnapshotPyarchPath,
+                    )
+                except Exception as e:
+                    self.info("Error when trying to upload movie!")
+                    self.info(e)
+                    movieObject = None
+                if movieObject is not None:
+                    uploadSucceeded = True
+                    movieId = movieObject.movieId
+                else:
+                    if noTrialsLeft == 0:
+                        raise RuntimeError("ERROR: failure when trying to upload movie!")
+                    else:
+                        self.info("ERROR! movieObject is None!")
+                        self.info("Sleeping 5 s, and then trying again. Number of trials left: {0}".format(noTrialsLeft))
+                        time.sleep(5)
+                        noTrialsLeft -= 1
 
             self.allParams[movieName] = {
                 "movieNumber": movieNumber,

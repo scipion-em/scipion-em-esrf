@@ -247,10 +247,10 @@ def preprocessWorkflow(configDict):
     _registerProt(protMA, 'Movies')
     #
     # # ----------- MAX SHIFT -----------------------------
-    protMax = project.newProtocol(XmippProtMovieMaxShift,
-                                  objLabel='Xmipp - max shift')
-    setExtendedInput(protMax.inputMovies, protMA, 'outputMovies')
-    _registerProt(protMax, 'Movies', True)
+    # protMax = project.newProtocol(XmippProtMovieMaxShift,
+    #                               objLabel='Xmipp - max shift')
+    # setExtendedInput(protMax.inputMovies, protMA, 'outputMovies')
+    # _registerProt(protMax, 'Movies', True)
 
     protCTF2 = project.newProtocol(ProtGctf,
                                    objLabel='gCTF estimation',
@@ -272,7 +272,7 @@ def preprocessWorkflow(configDict):
 
                                    )
     setExtendedInput(protCTF2.inputMicrographs,
-                     protMax, 'outputMicrographsDoseWeighted')
+                     protMA, 'outputMicrographsDoseWeighted')
     _registerProt(protCTF2, 'CTF')
     #
     # # --------- CTF ESTIMATION 1 ---------------------------
@@ -291,7 +291,7 @@ def preprocessWorkflow(configDict):
                                    phaseShiftT=configDict["phaseShiftT"],
                                    )
     setExtendedInput(protCTF1.inputMicrographs,
-                     protMax, 'outputMicrographsDoseWeighted')
+                     protMA, 'outputMicrographsDoseWeighted')
     _registerProt(protCTF1, 'CTF')
     #
     # # --------- CTF CONSENSUS ---------------------------

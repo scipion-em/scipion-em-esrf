@@ -676,7 +676,7 @@ class UtilsPath(object):
         # Blacklist all grid squares with less than 50 movies
         blacklist = []
         for gridSquare in dictGridSquare.keys():
-            if len(dictGridSquare[gridSquare]) < 50:
+            if len(dictGridSquare[gridSquare]) < 25:
                 blacklist.append("(.*){0}(.*)".format(gridSquare))
         return blacklist
 

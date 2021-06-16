@@ -105,6 +105,38 @@ class UtilsPath(object):
         return dictResult
 
     @staticmethod
+    def getEpuTiffAlignMoviesPngLogFilePath(mrcFilePath):
+        dictResult = {}
+        # Locate png file in same directory
+        mrcDirectory = os.path.dirname(mrcFilePath)
+        dictMrcFile = \
+            UtilsPath.getEpuTiffMovieFileNameParametersFromMotioncorrPath(mrcFilePath)
+        mrcMovieNumber = dictMrcFile["movieNumber"]
+        listPng = glob.glob(os.path.join(mrcDirectory, "*.png"))
+        for pngFile in listPng:
+            dictFileNameParameters = \
+                UtilsPath.getEpuTiffMovieFileNameParametersFromMotioncorrPath(pngFile)
+            movieNumber = dictFileNameParameters["movieNumber"]
+            if dictFileNameParameters["extra"] == "global_shifts" and \
+                    mrcMovieNumber == movieNumber:
+                dictResult["globalShiftPng"] = pngFile
+            elif dictFileNameParameters["extra"] == "thumbnail" and \
+                    mrcMovieNumber == movieNumber:
+                dictResult["thumbnailPng"] = pngFile
+        listMrc = glob.glob(os.path.join(mrcDirectory, "*.mrc"))
+        for mrcFile in listMrc:
+            dictFileNameParameters = \
+                UtilsPath.getEpuTiffMovieFileNameParametersFromMotioncorrPath(mrcFile)
+            movieNumber = dictFileNameParameters["movieNumber"]
+            if "DW" in dictFileNameParameters["extra"] and \
+                    mrcMovieNumber == movieNumber:
+                dictResult["doseWeightMrc"] = mrcFile
+        # Find log file
+        dictResult["logFileFullPath"] = \
+            os.path.join(os.path.dirname(mrcDirectory), "logs", "run.log")
+        return dictResult
+
+    @staticmethod
     def getSerialEMAlignMoviesPngLogFilePath(mrcFilePath):
         dictResult = {}
         # Locate png file in same directory
@@ -348,6 +380,42 @@ class UtilsPath(object):
         return dictResult
 
     @staticmethod
+    def getEpuTiffMovieFileNameParameters(mrcFilePath):
+        """
+        FoilHole_10859740_Data_10853322_10853324_20210611_233928_fractions.tiff
+        """
+        try:
+            print(mrcFilePath)
+            dictResult = {}
+            dictResult["directory"] = os.path.dirname(mrcFilePath)
+            p = re.compile(
+                "^(.*)/(GridSquare_[0-9]*)/" + \
+                "Data/(.*)_([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)" + \
+                "_fractions\.(.*)"
+            )
+            m = p.match(mrcFilePath)
+            if m is not None:
+                dictResult["gridSquare"] = m.group(2)
+                dictResult["prefix"] = m.group(3)
+                dictResult["id1"] = m.group(4)
+                dictResult["id2"] = m.group(5)
+                dictResult["id3"] = m.group(6)
+                dictResult["date"] = m.group(7)
+                dictResult["hour"] = m.group(8)
+                dictResult["suffix"] = m.group(9)
+        except Exception as e:
+            raise e
+            dictResult = None
+        # Check numbers
+        if not dictResult["hour"].isdigit():
+            dictResult = None
+        else:
+            dictResult["movieName"] = \
+                "{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}_fractions".format(**dictResult)
+            dictResult["movieNumber"] = dictResult["date"][-2:]+dictResult["hour"]
+        return dictResult
+
+    @staticmethod
     def getSerialEMMovieFileNameParameters(topDir, tifFilePath):
         """
         /data/visitor/mx2112/cm01/20191029/RAW_DATA/mx2214/grid5/data/140/mx2214_140_00001.tif
@@ -401,6 +469,33 @@ class UtilsPath(object):
             "{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}-{movieNumber}".format(**dictResult)
         return dictResult
     
+    @staticmethod
+    def getEpuTiffMovieFileNameParametersFromMotioncorrPath(mrcFilePath):
+        """
+        GridSquare_10847341_Data_FoilHole_10851620_Data_10853313_10853315_20210611_161457_fractions_aligned_mic.mrc
+        """
+        dictResult = {}
+        p = re.compile(
+            "^(.*)/GridSquare_([0-9]*)_" + \
+            "Data_(.*)_([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)" + \
+            "_fractions_(.*)\.(.*)"
+        )
+        m = p.match(mrcFilePath)
+        if m is not None:
+            dictResult["gridSquare"] = m.group(2)
+            dictResult["prefix"] = m.group(3)
+            dictResult["id1"] = m.group(4)
+            dictResult["id2"] = m.group(5)
+            dictResult["id3"] = m.group(6)
+            dictResult["date"] = m.group(7)
+            dictResult["hour"] = m.group(8)
+            dictResult["extra"] = m.group(9)
+            dictResult["suffix"] = m.group(10)
+            dictResult["movieName"] = \
+                "{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}_fractions".format(**dictResult)
+            dictResult["movieNumber"] = dictResult["date"][-2:] + dictResult["hour"]
+        return dictResult
+
     @staticmethod
     def getSerialEMMovieFileNameParametersFromMotioncorrPath(mrcFilePath):
         """

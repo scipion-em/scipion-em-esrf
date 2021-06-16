@@ -37,6 +37,7 @@ import datetime
 import tempfile
 
 import pyworkflow
+import motioncorr.constants
 
 from pyworkflow.project.manager import Manager
 from pyworkflow.project import Project
@@ -86,33 +87,56 @@ pprint.pprint(configDict)
 # First find out if we use serial em or not:
 #
 
+defectFilePath = None
+dm4FilePath = None
+configDict["gainFlip"] = motioncorr.constants.NO_FLIP
+configDict["gainRot"] = motioncorr.constants.NO_ROTATION
+
 if configDict["filesPattern"] is None:
     # No filesPattern, let's assume that we are dealing with EPU data
     configDict["filesPattern"] = "Images-Disc1/GridSquare_*/Data/FoilHole_*-*.mrc"
-
-# Check how many movies are present on disk
-listMovies = glob.glob(os.path.join(configDict["dataDirectory"], configDict["filesPattern"]))
-noMovies = len(listMovies)
-defectFilePath = None
-dm4FilePath = None
-if noMovies > 0:
-    # We have EPU data
-    configDict["serialEM"] = False
-    print("********** EPU data **********")
-else:
-    # So, no mrc movies found, let's try to find some serialEM files:
-    # Look for first tif, defect file and dm4 file
-    tifDir, firstTifFileName, defectFilePath, dm4FilePath = \
-        UtilsPath.findSerialEMFilePaths(configDict["dataDirectory"])
-    if tifDir is not None:
-        # We have serial EM data
-        configDict["filesPattern"] = UtilsPath.serialEMFilesPattern(configDict["dataDirectory"], tifDir)
+    # Check how many movies are present on disk
+    listMovies = glob.glob(os.path.join(configDict["dataDirectory"], configDict["filesPattern"]))
+    noMovies = len(listMovies)
+    if noMovies > 0:
+        # We have EPU data!
+        print("********** EPU data **********")
+        configDict["dataType"] = 0 # "EPU"
+    else:
+        # Let's now assume that we are dealing with EPU tiff data
+        configDict["filesPattern"] = "Images-Disc1/GridSquare_*/Data/FoilHole_*_fractions.tiff"
+        # Check how many movies are present on disk
         listMovies = glob.glob(os.path.join(configDict["dataDirectory"], configDict["filesPattern"]))
         noMovies = len(listMovies)
         if noMovies > 0:
-            # We have EPU data
-            configDict["serialEM"] = True
-            print("********** SerialEM data **********")
+            # We have EPU tiff data!
+            print("********** EPU tiff data **********")
+            configDict["dataType"] = 1 # "EPU_TIFF"
+            configDict["gainFlip"] = motioncorr.constants.FLIP_LEFTRIGHT
+            configDict["gainRot"] = motioncorr.constants.ROTATE_180
+            if configDict["voltage"] is None:
+                raise RuntimeError("Voltage must be provided on the command line for EPU TIFF data!")
+            if configDict["nominalMagnification"] is None:
+                raise RuntimeError("Magnification must be provided on the command line for EPU TIFF data!")
+            if configDict["imagesCount"] is None:
+                raise RuntimeError("Image count (number of rames per movie) must be provided on the command line for EPU TIFF data!")
+        else:
+            # So, no mrc or tiff movies found, let's try to find some serialEM files:
+            # Look for first tif, defect file and dm4 file
+            tifDir, firstTifFileName, defectFilePath, dm4FilePath = \
+                UtilsPath.findSerialEMFilePaths(configDict["dataDirectory"])
+            if tifDir is not None:
+                # We have serial EM data
+                configDict["filesPattern"] = UtilsPath.serialEMFilesPattern(configDict["dataDirectory"], tifDir)
+                listMovies = glob.glob(os.path.join(configDict["dataDirectory"], configDict["filesPattern"]))
+                noMovies = len(listMovies)
+                if noMovies > 0:
+                    # We have EPU data
+                    configDict["dataType"] = 2 # "SERIALEM"
+                    print("********** SerialEM data **********")
+else:
+    listMovies = glob.glob(os.path.join(configDict["dataDirectory"], configDict["filesPattern"]))
+    noMovies = len(listMovies)
 
 if noMovies == 0:
     print("ERROR! No movies available in directory {0} with the filesPattern {1}.".format(configDict["dataDirectory"], configDict["filesPattern"]))
@@ -122,7 +146,7 @@ print("Number of movies available on disk: {0}".format(noMovies))
 firstMovieFullPath = listMovies[0]
 print("First movie full path file: {0}".format(firstMovieFullPath))
 
-if configDict["serialEM"]:
+if configDict["dataType"] == 2: # "SERIALEM"
     if defectFilePath is None:
         print("ERROR - No defect file path found in directory {0}!".format(tifDir))
         sys.exit(1)
@@ -145,23 +169,26 @@ if configDict["serialEM"]:
         gainFilePath, defectMapPath
     )
 else:
-    if "defectMapPath" in configDict or "gainFilePath" in configDict:
-        defectMapPath = configDict["defectMapPath"]
-        gainFilePath = configDict["gainFilePath"]
-        if defectMapPath is not None and not os.path.exists(defectMapPath):
-            print("ERROR! Cannot find defect map file {0}".format(defectMapPath))
-            sys.exit(1)
-        elif gainFilePath is not None and not os.path.exists(gainFilePath):
-            print("ERROR! Cannot find gain file {0}".format(gainFilePath))
-            sys.exit(1)
+    configDict["extraParams2"] = ""
+
+    if configDict["gainFilePath"] is None:
+        if configDict["dataType"] == 1: # "EPU_TIFF"
+            raise RuntimeError("Missing gainFilePath for EPU TIFF data!")
         else:
-            configDict["extraParams2"] = "-Gain {0} -DefectMap {1}".format(
-                gainFilePath, defectMapPath
-            )
-    else:
-        configDict["extraParams2"] = ""
+            configDict["gainFilePath"] = ""
+    elif not os.path.exists(configDict["gainFilePath"]):
+        print("ERROR! Cannot find gain file {0}".format(configDict["gainFilePath"]))
+        sys.exit(1)
+
+    if configDict["defectMapPath"] is None:
         configDict["defectMapPath"] = ""
-        configDict["gainFilePath"] = ""
+    elif os.path.exists(configDict["defectMapPath"]):
+        configDict["extraParams2"] += " -DefectMap {0}".format(configDict["defectMapPath"])
+    else:
+        print("ERROR! Cannot find defect map file {0}".format(configDict["defectMapPath"]))
+        sys.exit(1)
+
+
 
 
 # Set up location
@@ -267,9 +294,8 @@ if UtilsSlurm.checkIfRunningProcesses(userName):
         print("Ok, start of cryoemProcess3 aborted.")
         sys.exit(1)
 
-
 if configDict["nominalMagnification"] is None:
-    if configDict["serialEM"]:
+    if configDict["dataType"] == 2: # "SERIALEM"
         jpeg, mdoc, gridSquareSnapshot = UtilsPath.getSerialEMMovieJpegMdoc(configDict["dataDirectory"], firstMovieFullPath)
         if mdoc is None:
             print("*"*80)
@@ -287,6 +313,11 @@ if configDict["nominalMagnification"] is None:
         if configDict["imagesCount"] is None:
             raise RuntimeError("Number of images (imagesCount) is None!")
 
+    elif configDict["dataType"] == 1: # "EPU_TIFF"
+        jpeg = None
+        mrc = None
+        xml = None
+        gridSquareThumbnail = None
     else:
         jpeg, mrc, xml, gridSquareThumbNail = UtilsPath.getMovieJpegMrcXml(firstMovieFullPath)
 
@@ -312,10 +343,15 @@ else:
     xml = None
     gridSquareSnapshot = None
 
-if not configDict["phasePlateData"] and configDict["doPhaseShiftEstimation"]:
-    print("!"*100)
-    print("WARNING! Phase plate data detected but doPhShEst set to false")
-    print("!"*100)
+# if not configDict["phasePlateData"] and configDict["doPhaseShiftEstimation"]:
+#     print("!"*100)
+#     print("WARNING! Phase plate data detected but doPhShEst set to false")
+#     print("!"*100)
+
+if configDict["superResolution"]:
+    configDict["binFactor"] = 2.0
+else:
+    configDict["binFactor"] = 1.0
 
 if configDict["phasePlateData"]:
     configDict["sphericalAberration"] = 2.7
@@ -328,8 +364,8 @@ if configDict["phasePlateData"]:
     configDict["phaseShiftH"] = 180.0
     configDict["phaseShiftS"] = 5.0
     configDict["phaseShiftT"] = 1
-    configDict["lowRes"] = 15.0 / configDict["samplingRate"]
-    configDict["highRes"] = 4.0 / configDict["samplingRate"]
+    configDict["lowRes"] = 15.0 / configDict["samplingRate"] / configDict["binFactor"]
+    configDict["highRes"] = 4.0 / configDict["samplingRate"] / configDict["binFactor"]
 else:
     configDict["sphericalAberration"] = 2.7
     configDict["minDefocus"] = 5000
@@ -344,10 +380,10 @@ else:
     configDict["lowRes"] = 30.0 /  configDict["samplingRate"]
     configDict["highRes"] = 4.0 / configDict["samplingRate"]
 
-if configDict["superResolution"]:
-    configDict["binFactor"] = 2.0
-else:
-    configDict["binFactor"] = 1.0
+if configDict["lowRes"] > 50:
+    configDict["lowRes"] = 50
+
+
 
 configDict["motioncor2Gpu"] = "0 1"
 configDict["gctfGpu"] = "0"
@@ -369,6 +405,8 @@ print("{0:30s}{1:8.2f}".format("voltage",configDict["voltage"]))
 print("{0:30s}{1:8.2f}".format("doseInitial",configDict["doseInitial"]))
 print("{0:30s}{1:8.2f}".format("dosePerFrame",configDict["dosePerFrame"]))
 print("{0:30s}{1:8.1f}".format("sphericalAberration",configDict["sphericalAberration"]))
+print("{0:30s}{1:8.1f}".format("gainFlip",configDict["gainFlip"]))
+print("{0:30s}{1:8.1f}".format("gainRot",configDict["gainRot"]))
 print("{0:30s}{1:8.2f}".format("minDefocus",configDict["minDefocus"]))
 print("{0:30s}{1:8.2f}".format("maxDefocus",configDict["maxDefocus"]))
 print("{0:30s}{1:8.1f}".format("astigmatism",configDict["astigmatism"]))
@@ -396,7 +434,7 @@ print("Scipion user data location: {0}".format(location))
 print("All param json file: {0}".format(configDict["allParamsJsonFile"]))
 print("")
 
-if configDict["serialEM"]:
+if configDict["dataType"] == 2: # "SERIALEM"
     print("SerialEM specific parameters:")
     print("Metadata file: {0}".format(mdoc))
     print("DefectMap file: {0}".format(defectMapPath))

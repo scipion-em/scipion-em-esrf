@@ -222,6 +222,7 @@ def preprocessWorkflow(configDict):
                                      magnification=configDict["nominalMagnification"],
                                      dataStreaming=configDict["dataStreaming"],
                                      blacklistFile=configDict["blacklistFile"],
+                                     gainFile=configDict["gainFilePath"],
                                      timeout=timeout)
     _registerProt(protImport, label='Movies', toSummary=True)
 
@@ -239,6 +240,8 @@ def preprocessWorkflow(configDict):
                                  computeAllFramesAvg=False,
                                  patchX=5, patchY=5,
                                  useEst=True,
+                                 gainFlip=configDict["gainFlip"],
+                                 gainRot=configDict["gainRot"],
                                  alignFrame0=configDict["alignFrame0"],
                                  alignFrameN=configDict["alignFrameN"],
                                  binFactor=configDict["binFactor"],
@@ -274,6 +277,7 @@ def preprocessWorkflow(configDict):
     setExtendedInput(protCTF2.inputMicrographs,
                      protMA, 'outputMicrographsDoseWeighted')
     _registerProt(protCTF2, 'CTF')
+
     #
     # # --------- CTF ESTIMATION 1 ---------------------------
     protCTF1 = project.newProtocol(CistemProtCTFFind,
@@ -347,7 +351,7 @@ def preprocessWorkflow(configDict):
     # setExtendedInput(protPrePick.inputMicrographs,
     #                  protCTFs, 'outputMicrographs')
     # _registerProt(protPrePick, 'Picking')
-    bxSize = getEvenPartSize(configDict["partSize"]/samp2D)
+    bxSize = getEvenPartSize(configDict["partSize"]/samp2D/configDict["binFactor"])
 
     protPP2 = project.newProtocol(SphireProtCRYOLOPicking,
                                   objLabel='Sphire - CrYolo auto-picking',
@@ -591,7 +595,7 @@ def preprocessWorkflow(configDict):
     # protMonitor.inputProtocols.set(summaryList)
     # _registerProt(protMonitor, 'monitor')
 
-    # # --------- ISPyB MONITOR -----------------------
+    # --------- ISPyB MONITOR -----------------------
     if not configDict["noISPyB"]:
         ispybMonitor = project.newProtocol(
             ProtMonitorISPyB_ESRF,
@@ -605,7 +609,7 @@ def preprocessWorkflow(configDict):
             samplingRate=configDict["samplingRate"],
             doseInitial=configDict["doseInitial"],
             dosePerFrame=configDict["dosePerFrame"],
-            serialEM=configDict["serialEM"],
+            dataType=configDict["dataType"],
             voltage=configDict["voltage"],
             imagesCount=configDict["imagesCount"],
             magnification=configDict["nominalMagnification"],

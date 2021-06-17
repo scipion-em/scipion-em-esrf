@@ -63,6 +63,28 @@ class UtilsPath(object):
         return jpeg, mrc, xml, gridSquareSnapshot
 
     @staticmethod
+    def getEpuTiffMovieJpegMrcXml(movieFilePath):
+        gridSquareSnapshot = None
+        dictFileName = UtilsPath.getEpuTiffMovieFileNameParameters(movieFilePath)
+        filePrefix = \
+            "{directory}/{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}".format(**dictFileName)
+        jpeg = filePrefix + ".jpg"
+        if not os.path.exists(jpeg):
+            jpeg = None
+        mrc = filePrefix + ".mrc"
+        if not os.path.exists(mrc):
+            mrc = None
+        xml = filePrefix + ".xml"
+        if not os.path.exists(xml):
+            xml = None
+        gridSquareDir = os.path.dirname(os.path.dirname(movieFilePath))
+        listSnapshot = glob.glob(os.path.join(gridSquareDir, "*.jpg"))
+        if len(listSnapshot) > 0:
+            gridSquareSnapshot = listSnapshot[-1]
+
+        return jpeg, mrc, xml, gridSquareSnapshot
+
+    @staticmethod
     def getSerialEMMovieJpegMdoc(topDir, movieFilePath):
         gridSquareSnapshot = None
         dictFileName = UtilsPath.getSerialEMMovieFileNameParameters(topDir, movieFilePath)
@@ -794,7 +816,7 @@ class UtilsPath(object):
         movieNameStart = gridSquareMovieNameStart[gridSquareMovieNameStart.find("_Data_")+6:]
         movieNameStart = os.path.splitext(movieNameStart)[0]
         movieDictStart = allParams[movieNameStart]
-        firstMotionCorrectionId = movieDictStart["motionCorrectionId"]
+        firstMovieFullPath = movieDictStart["movieFullPath"]
         # Find the last entry
         indexEnd = len(listLines) - 1
         foundEnd = False

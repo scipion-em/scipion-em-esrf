@@ -231,7 +231,7 @@ class MonitorISPyB_ESRF(Monitor):
         self.archiveGainAndDefectMap()
 
         if self.proposal == "None":
-            print("WARNING! Proposal is 'None', no data uploaded to ISPyB")
+            self.info("WARNING! Proposal is 'None', no data uploaded to ISPyB")
             finished = True
         else:
             prots = [getUpdatedProtocol(p) for p in self.protocol.getInputProtocols()]
@@ -496,27 +496,30 @@ class MonitorISPyB_ESRF(Monitor):
                     processDir = None
 
             self.movieDirectory = os.path.dirname(movieFullPath)
-
-            # micrographSnapshotFullPath, micrographFullPath, xmlMetaDataFullPath, gridSquareSnapshotFullPath = \
-            #     UtilsPath.getMovieJpegMrcXml(movieFullPath)
-            #
-            # startTime = time.time()
-            # doContinue = True
-            # while doContinue:
-            #     micrographSnapshotFullPath, micrographFullPath, xmlMetaDataFullPath, gridSquareSnapshotFullPath = \
-            #         UtilsPath.getMovieJpegMrcXml(movieFullPath)
-            #     if micrographSnapshotFullPath is None or micrographFullPath is None or xmlMetaDataFullPath is None or gridSquareSnapshotFullPath is None:
-            #         self.info("Import movies: waiting for meta-data files to appear on disk...")
-            #         timeNow = time.time()
-            #         deltaTime = timeNow - startTime
-            #         if deltaTime > 5:
-            #             self.info("Import movies: Timeout waiting for meta-data files to appear on disk!!!")
-            #             doContinue = False
-            #         else:
-            #             time.sleep(2)
-            #     else:
-            #         doContinue = False
-            micrographFullPath = None
+            self.info("movieFullPath: {0}".format(movieFullPath))
+            micrographSnapshotFullPath, micrographFullPath, xmlMetaDataFullPath, gridSquareSnapshotFullPath = \
+                UtilsPath.getEpuTiffMovieJpegMrcXml(movieFullPath)
+            self.info(micrographSnapshotFullPath)
+            self.info(micrographFullPath)
+            self.info(xmlMetaDataFullPath)
+            self.info(gridSquareSnapshotFullPath)
+            startTime = time.time()
+            doContinue = True
+            while doContinue:
+                micrographSnapshotFullPath, micrographFullPath, xmlMetaDataFullPath, gridSquareSnapshotFullPath = \
+                    UtilsPath.getEpuTiffMovieJpegMrcXml(movieFullPath)
+                if micrographSnapshotFullPath is None or micrographFullPath is None or xmlMetaDataFullPath is None or gridSquareSnapshotFullPath is None:
+                    self.info("Import movies: waiting for meta-data files to appear on disk...")
+                    timeNow = time.time()
+                    deltaTime = timeNow - startTime
+                    if deltaTime > 5:
+                        self.info("Import movies: Timeout waiting for meta-data files to appear on disk!!!")
+                        doContinue = False
+                    else:
+                        time.sleep(2)
+                else:
+                    doContinue = False
+            # micrographFullPath = None
             # self.info("Import movies: micrographSnapshotFullPath: {0}".format(micrographSnapshotFullPath))
 
             micrographSnapshotPyarchPath = None

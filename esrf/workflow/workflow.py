@@ -205,6 +205,7 @@ def preprocessWorkflow(configDict):
     colorsDef = ["#e57373", "#4fc3f7", "#81c784", "#ff8a65", "#9575cd",
                  "#a1887f", "#ffd54f", "#dce775", "#4db6ac"]
     summaryList = []
+    ispybUploads = []
 
     timeout = 43200
 
@@ -225,13 +226,14 @@ def preprocessWorkflow(configDict):
                                      gainFile=configDict["gainFilePath"],
                                      timeout=timeout)
     _registerProt(protImport, label='Movies', toSummary=True)
+    ispybUploads.append(protImport)
 
-    # # ----------- MOTIONCOR ----------------------------
-    mcMpi = 1
+    # ----------- MOTIONCOR ----------------------------
     protMA = project.newProtocol(ProtMotionCorr,
                                  objLabel='MotionCor2 - movie align.',
                                  gpuList=configDict["motioncor2Gpu"],
-                                 numberOfThreads=mcMpi,
+                                 numberOfThreads=4,
+                                 numberOfMpi=1,
                                  doApplyDoseFilter=True,
                                  doSaveUnweightedMic=True,
                                  doSaveAveMic=True,
@@ -254,6 +256,7 @@ def preprocessWorkflow(configDict):
     #                               objLabel='Xmipp - max shift')
     # setExtendedInput(protMax.inputMovies, protMA, 'outputMovies')
     # _registerProt(protMax, 'Movies', True)
+    # ispybUploads.append(protMax)
 
     protCTF2 = project.newProtocol(ProtGctf,
                                    objLabel='gCTF estimation',
@@ -277,6 +280,7 @@ def preprocessWorkflow(configDict):
     setExtendedInput(protCTF2.inputMicrographs,
                      protMA, 'outputMicrographsDoseWeighted')
     _registerProt(protCTF2, 'CTF')
+    ispybUploads.append(protCTF2)
 
     #
     # # --------- CTF ESTIMATION 1 ---------------------------

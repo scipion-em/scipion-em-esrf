@@ -114,12 +114,6 @@ if configDict["filesPattern"] is None:
             configDict["dataType"] = 1 # "EPU_TIFF"
             configDict["gainFlip"] = motioncorr.constants.FLIP_LEFTRIGHT
             configDict["gainRot"] = motioncorr.constants.ROTATE_180
-            if configDict["voltage"] is None:
-                raise RuntimeError("Voltage must be provided on the command line for EPU TIFF data!")
-            if configDict["nominalMagnification"] is None:
-                raise RuntimeError("Magnification must be provided on the command line for EPU TIFF data!")
-            if configDict["imagesCount"] is None:
-                raise RuntimeError("Image count (number of rames per movie) must be provided on the command line for EPU TIFF data!")
         else:
             # So, no mrc or tiff movies found, let's try to find some serialEM files:
             # Look for first tif, defect file and dm4 file
@@ -295,31 +289,12 @@ if UtilsSlurm.checkIfRunningProcesses(userName):
         sys.exit(1)
 
 if configDict["nominalMagnification"] is None:
-    if configDict["dataType"] == 2: # "SERIALEM"
-        jpeg, mdoc, gridSquareSnapshot = UtilsPath.getSerialEMMovieJpegMdoc(configDict["dataDirectory"], firstMovieFullPath)
-        if mdoc is None:
-            print("*"*80)
-            print("*"*80)
-            print("*"*80)
-            print("Error! Cannot find metadata files in the directory which contains the following movie:")
-            print(firstMovieFullPath)
-            print("*"*80)
-            print("*"*80)
-            print("*"*80)
-            sys.exit(1)
-        
-        dictResults = UtilsPath.getMdocMetaData(mdoc)
-        configDict["nominalMagnification"] = int(dictResults["Magnification"])
-        if configDict["imagesCount"] is None:
-            raise RuntimeError("Number of images (imagesCount) is None!")
+    if configDict["dataType"] in [0, 1]: # EPU or EPU_TIFF
 
-    elif configDict["dataType"] == 1: # "EPU_TIFF"
-        jpeg = None
-        mrc = None
-        xml = None
-        gridSquareThumbnail = None
-    else:
-        jpeg, mrc, xml, gridSquareThumbNail = UtilsPath.getMovieJpegMrcXml(firstMovieFullPath)
+        if configDict["dataType"] == 0: # "EPU"
+            jpeg, mrc, xml, gridSquareThumbNail = UtilsPath.getMovieJpegMrcXml(firstMovieFullPath)
+        else:   # "EPU TIFF"
+            jpeg, mrc, xml, gridSquareThumbNail = UtilsPath.getEpuTiffMovieJpegMrcXml(firstMovieFullPath)
 
         if xml is None:
             print("*"*80)
@@ -337,6 +312,25 @@ if configDict["nominalMagnification"] is None:
         configDict["nominalMagnification"] = int(dictResults["nominalMagnification"])
         configDict["voltage"] = int(dictResults["accelerationVoltage"])
         configDict["imagesCount"] = int(dictResults["numberOffractions"])
+
+    elif configDict["dataType"] == 2: # "SERIALEM"
+        jpeg, mdoc, gridSquareSnapshot = UtilsPath.getSerialEMMovieJpegMdoc(configDict["dataDirectory"], firstMovieFullPath)
+        if mdoc is None:
+            print("*"*80)
+            print("*"*80)
+            print("*"*80)
+            print("Error! Cannot find metadata files in the directory which contains the following movie:")
+            print(firstMovieFullPath)
+            print("*"*80)
+            print("*"*80)
+            print("*"*80)
+            sys.exit(1)
+        
+        dictResults = UtilsPath.getMdocMetaData(mdoc)
+        configDict["nominalMagnification"] = int(dictResults["Magnification"])
+        if configDict["imagesCount"] is None:
+            raise RuntimeError("Number of images (imagesCount) is None!")
+
 else:
     jpeg = None
     mdoc = None
@@ -401,7 +395,8 @@ print("{0:30s}{1:8s}".format("dataDirectory",configDict["dataDirectory"]))
 print("{0:30s}{1:>8s}".format("filesPattern",configDict["filesPattern"]))
 print("{0:30s}{1:>8s}".format("proteinAcronym",configDict["proteinAcronym"]))
 print("{0:30s}{1:>8s}".format("sampleAcronym",configDict["sampleAcronym"]))
-print("{0:30s}{1:8.2f}".format("voltage",configDict["voltage"]))
+print("{0:30s}{1:8.0f}".format("voltage",configDict["voltage"]))
+print("{0:30s}{1:8d}".format("imagesCount",configDict["imagesCount"]))
 print("{0:30s}{1:8.2f}".format("doseInitial",configDict["doseInitial"]))
 print("{0:30s}{1:8.2f}".format("dosePerFrame",configDict["dosePerFrame"]))
 print("{0:30s}{1:8.1f}".format("sphericalAberration",configDict["sphericalAberration"]))

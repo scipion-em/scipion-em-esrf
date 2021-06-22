@@ -232,7 +232,7 @@ def preprocessWorkflow(configDict):
     protMA = project.newProtocol(ProtMotionCorr,
                                  objLabel='MotionCor2 - movie align.',
                                  gpuList=configDict["motioncor2Gpu"],
-                                 numberOfThreads=4,
+                                 numberOfThreads=configDict["motioncor2Cpu"],
                                  numberOfMpi=1,
                                  doApplyDoseFilter=True,
                                  doSaveUnweightedMic=True,

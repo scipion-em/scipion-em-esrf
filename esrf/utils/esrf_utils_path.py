@@ -776,7 +776,7 @@ class UtilsPath(object):
         # First find all grid squares which contain
         # movies that have not been processed
         for movie in listMovies:
-            dictMovieName = UtilsPath.getMovieFileNameParameters(movie)
+            dictMovieName = UtilsPath.getEpuTiffMovieFileNameParameters(movie)
             gridSquare = dictMovieName["gridSquare"]
             if gridSquare not in dictGridSquare:
                 dictGridSquare[gridSquare] = []

@@ -50,6 +50,9 @@ from esrf.utils.esrf_utils_serialem import UtilsSerialEM
 from esrf.workflow.command_line_parser import getCommandlineOptions
 from esrf.workflow.workflow import preprocessWorkflow
 
+# Fix for GPFS problem
+shutil._USE_CP_SENDFILE = False
+
 # if not 'SCIPION_ESRF_CONFIG' in os.environ:
 #     # Set up config for DB and ISPyB
 #     modulePath = os.path.dirname(__file__)
@@ -279,14 +282,17 @@ else:
     configDict["db"] = db
 
 # Check slurm jobs
-userName = getpass.getuser()
-if UtilsSlurm.checkIfRunningProcesses(userName):
-    answer = input("There are running SLURM jobs - are you sure that you want to kill these jobs? (y/n): ")
-    if answer.lower().startswith('y'):
-        UtilsSlurm.killAllProcesses(userName)
-    else:
-        print("Ok, start of cryoemProcess3 aborted.")
-        sys.exit(1)
+try:
+    userName = getpass.getuser()
+    if UtilsSlurm.checkIfRunningProcesses(userName):
+        answer = input("There are running SLURM jobs - are you sure that you want to kill these jobs? (y/n): ")
+        if answer.lower().startswith('y'):
+            UtilsSlurm.killAllProcesses(userName)
+        else:
+            print("Ok, start of cryoemProcess3 aborted.")
+            sys.exit(1)
+except FileNotFoundError as e:
+    print("WARNING! Cannot stop SLURM processes: {0}".format(e))
 
 if configDict["nominalMagnification"] is None:
     if configDict["dataType"] in [0, 1]: # EPU or EPU_TIFF
@@ -380,6 +386,7 @@ if configDict["lowRes"] > 50:
 
 
 configDict["motioncor2Gpu"] = "0 1"
+configDict["motioncor2Cpu"] = 3
 configDict["gctfGpu"] = "0"
 configDict["gl2dGpu"] = "0"
 configDict["cryoloGpu"] = "1"
@@ -420,6 +427,7 @@ print("{0:30s}{1:8.2f}".format("partSize",configDict["partSize"]))
 print("{0:30s}{1:8.1f}".format("binFactor",configDict["binFactor"]))
 print("{0:30s}{1:>8}".format("dataStreaming",configDict["dataStreaming"]))
 print("{0:30s}{1:>8s}".format("motioncor2Gpu",configDict["motioncor2Gpu"]))
+print("{0:30s}{1:>8d}".format("motioncor2Cpu",configDict["motioncor2Cpu"]))
 print("{0:30s}{1:>8s}".format("gctfGpu",configDict["gctfGpu"]))
 print("{0:30s}{1:>8s}".format("gl2dGpu",configDict["gl2dGpu"]))
 print("{0:30s}{1:8d}".format("numCpus",configDict["numCpus"]))
@@ -439,8 +447,17 @@ else:
     print("Metadata file: {0}".format(xml))
 
 
-# if jsonFile is not None:
-#     protDict = project.loadProtocols(jsonFile)
+# Update the allParamsJsonFile with the configDict
+if os.path.exists(configDict["allParamsJsonFile"]):
+    with open(configDict["allParamsJsonFile"]) as fd:
+        allParams = json.loads(fd.read())
+else:
+    allParams = {}
+key = "configDict_" + time.strftime(
+    "%Y%m%d-%H%M%S", time.localtime(time.time()))
+allParams[key] = configDict
+with open(configDict["allParamsJsonFile"], "w") as fd:
+    fd.write(json.dumps(allParams, indent=4))
 
 # the project may be a soft link which may be unavailable to the cluster so get the real path
 manager = Manager()

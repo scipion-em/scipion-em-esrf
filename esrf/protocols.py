@@ -1052,7 +1052,10 @@ class MonitorISPyB_ESRF(Monitor):
             dictIcatMetaData["EM_position_x"] = meanPositionX
             dictIcatMetaData["EM_position_y"] = meanPositionY
             directory = dictIcatMetaData["EM_directory"]
-            listGalleryPath = self.allParams[gridSquareToBeArchived]["listGalleryPath"]
+            if "listGalleryPath" in self.allParams[gridSquareToBeArchived]:
+                listGalleryPath = self.allParams[gridSquareToBeArchived]["listGalleryPath"]
+            else:
+                listGalleryPath = []
             dataSetName = "{0}_{1}".format(gridSquareToBeArchived, round(time.time()))
             self.allParams[dataSetName] = dictIcatMetaData
             self.info("listPathsToBeArchived: {0}".format(pprint.pformat(listPathsToBeArchived)))

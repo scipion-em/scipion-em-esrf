@@ -166,8 +166,10 @@ class Test(unittest.TestCase):
             'suffix': 'tiff'
         }
         self.assertEqual(refDict3, dictResult3)
-
-
+        # Test - EPU Tiff
+        tiffFullPath = "/data/visitor/mx2263/cm01/20210628/RAW_DATA/mx2263_vDLPA_grid1_EPU/Images-Disc1/GridSquare_28833986/Data/FoilHole_29901259_Data_28850949_28850951_20210630_051336_fractions.tiff"
+        dictResult4 = UtilsPath.getEpuTiffMovieJpegMrcXml(tiffFullPath)
+        pprint.pprint(dictResult4)
 
     def test_getSerialEMMovieFileNameParameters(self):
         # Test1

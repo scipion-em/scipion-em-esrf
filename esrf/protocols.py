@@ -92,7 +92,7 @@ class ProtMonitorISPyB_ESRF(ProtMonitor):
         section2.addParam(
             'dataType', params.EnumParam,
             choices=["EPU", "EPU_TIFF", "SERIALEM"],
-            default = 0,
+            default = 1,
             label="Data type",
             help="Select which type of data that has been collected.")
 

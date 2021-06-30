@@ -71,9 +71,9 @@ class UtilsPath(object):
         jpeg = filePrefix + ".jpg"
         if not os.path.exists(jpeg):
             jpeg = None
-        mrc = filePrefix + ".mrc"
-        if not os.path.exists(mrc):
-            mrc = None
+        tiff = filePrefix + ".tiff"
+        if not os.path.exists(tiff):
+            tiff = None
         xml = filePrefix + ".xml"
         if not os.path.exists(xml):
             xml = None
@@ -82,7 +82,7 @@ class UtilsPath(object):
         if len(listSnapshot) > 0:
             gridSquareSnapshot = listSnapshot[-1]
 
-        return jpeg, mrc, xml, gridSquareSnapshot
+        return jpeg, tiff, xml, gridSquareSnapshot
 
     @staticmethod
     def getSerialEMMovieJpegMdoc(topDir, movieFilePath):

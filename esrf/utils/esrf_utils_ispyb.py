@@ -156,7 +156,54 @@ class UtilsISPyB(object):
             if proposalCode is not None:
                 proposal = proposalFromDirectory.lower()
         return proposal
-        
+
+    @staticmethod
+    def uploadClassify2D(client, proposal, particleSize, dictParticle,
+                         dictModel, pyarchParticleFile):
+        particlePickerObject = client.service.addParticlePicker(
+            proposal=proposal,
+            firstMovieFullPath=dictParticle["firstMovieFullPath"],
+            pickingProgram="Cryolo CPU",
+            particlePickingTemplate="",
+            particleDiameter=str(particleSize),
+            numberOfParticles=dictParticle["numberOfParticles"],
+            fullPathToParticleFile=pyarchParticleFile
+        )
+        if particlePickerObject is not None:
+            particlePickerId = particlePickerObject.particlePickerId
+        else:
+            raise RuntimeError("ISPyB: particlePickerObject is None!")
+
+        # Parse the "relion_it025_model.star" file
+        particleClassificationGroupObject = client.service.addParticleClassificationGroup(
+            particlePickerId=particlePickerId,
+            type="2D",
+            batchNumber="0",
+            numberOfParticlesPerBatch="0",
+            numberOfClassesPerBatch="0",
+            symmetry="",
+            classificationProgram="Relion 2D classification"
+        )
+
+        if particleClassificationGroupObject is not None:
+            particleClassificationGroupId = particleClassificationGroupObject.particleClassificationGroupId
+        else:
+            raise RuntimeError("ISPyB: particleClassificationGroupId is None!")
+
+        for classModel in dictModel["classes"]:
+            particleClassificationObject = client.service.addParticleClassification(
+                particleClassificationGroupId=particleClassificationGroupId,
+                classNumber=classModel["index"],
+                classImageFullPath=classModel["classImageFullPath"],
+                classDistribution=str(classModel["classDistribution"]),
+                rotationAccuracy=str(classModel["accuracyRotations"]),
+                translationAccuracy=str(classModel["accuracyTranslationsAngst"]),
+                estimatedResolution=str(classModel["estimatedResolution"]),
+                overallFourierCompleteness=str(classModel["overallFourierCompleteness"])
+            )
+
+
+
     
     
     

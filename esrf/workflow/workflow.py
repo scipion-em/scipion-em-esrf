@@ -223,6 +223,7 @@ def preprocessWorkflow(configDict):
                                      magnification=configDict["nominalMagnification"],
                                      dataStreaming=configDict["dataStreaming"],
                                      blacklistFile=configDict["blacklistFile"],
+                                     useRegexps=False,
                                      gainFile=configDict["gainFilePath"],
                                      fileTimeout=300,
                                      timeout=timeout)
@@ -251,6 +252,7 @@ def preprocessWorkflow(configDict):
                                  extraParams2=configDict["extraParams2"])
     setExtendedInput(protMA.inputMovies, protImport, 'outputMovies')
     _registerProt(protMA, 'Movies')
+    ispybUploads.append(protMA)
     #
     # # ----------- MAX SHIFT -----------------------------
     # protMax = project.newProtocol(XmippProtMovieMaxShift,
@@ -547,6 +549,7 @@ def preprocessWorkflow(configDict):
         setExtendedInput(protCL.inputParticles, protTRIG2Flip, 'outputParticles')
         _registerProt(protCL, '2Dclassify', True)
         classifiers.append(protCL)
+        ispybUploads.append(protCL)
         # # Classes -> Averages
         protCl2Av1 = project.newProtocol(XmippProtEliminateEmptyClasses,
                                          objLabel='Classes to averages (xmipp)',
@@ -569,6 +572,7 @@ def preprocessWorkflow(configDict):
         setExtendedInput(protCL2.inputParticles, protTRIG2NoFlip, 'outputParticles')
         _registerProt(protCL2, '2Dclassify', True)
         classifiers.append(protCL2)
+        ispybUploads.append(protCL2)
         # # Classes -> Averages
         protCl2Av2 = project.newProtocol(XmippProtEliminateEmptyClasses,
                                          objLabel='Classes to averages (relion)',
@@ -621,7 +625,8 @@ def preprocessWorkflow(configDict):
             alignFrame0=configDict["alignFrame0"],
             alignFrameN=configDict["alignFrameN"],
             defectMapPath=configDict["defectMapPath"],
-            gainFilePath=configDict["gainFilePath"]
+            gainFilePath=configDict["gainFilePath"],
+            particleSize=configDict["partSize"]
         )
-        ispybMonitor.inputProtocols.set([protImport, protMA, protCTF2])
+        ispybMonitor.inputProtocols.set(ispybUploads)
         _registerProt(ispybMonitor, 'ispybMonitor')

@@ -407,6 +407,19 @@ class Test(unittest.TestCase):
         pprint.pprint(blackList)
 
 
+
+    def test_getBlackFileList_2(self):
+        dataDirectory = "/data/visitor/mx2261/cm01/20210702/RAW_DATA/mx2261_IgIF_grid4_EPU"
+        filesPattern = "Images-Disc1/GridSquare_*/Data/FoilHole_*_fractions.tiff"
+        listMovies = glob.glob(os.path.join(dataDirectory, filesPattern))
+        allParamsJsonFile = "/data/visitor/mx2261/cm01/20210702/PROCESSED_DATA/mx2261_IgIF_grid4_EPU/allParams.json"
+        blackList = UtilsPath.getBlacklistAllMovies(listMovies, allParamsJsonFile)
+        print(len(blackList))
+        # import pprint
+        # pprint.pprint(blackList)
+
+
+
     def test_getInputParticleDict(self):
         testDataPath = pathlib.Path(__file__).parent / 'testdata'
         allParamsFile = str(testDataPath / "allParams.json")
@@ -419,7 +432,11 @@ class Test(unittest.TestCase):
         )
         pprint.pprint(dictInputParticles)
 
-
+    def test_parseRelionModelStarFile(self):
+        testDataPath = pathlib.Path(__file__).parent / 'testdata'
+        starFile = str(testDataPath / "relion_it025_model.star")
+        dictStarFile = UtilsPath.parseRelionModelStarFile(starFile)
+        pprint.pprint(dictStarFile)
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

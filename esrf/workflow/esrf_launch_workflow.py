@@ -232,7 +232,7 @@ configDict["location"] = location
 # Create blacklist file with all movies already imported and motion corrected
 configDict["blacklistFile"] = None
 if os.path.exists(configDict["allParamsJsonFile"]):
-    blackList = UtilsPath.getBlacklist(listMovies, configDict["allParamsJsonFile"])
+    blackList = UtilsPath.getBlacklistAllMovies(listMovies, configDict["allParamsJsonFile"])
     blacklistFile = os.path.join(location, "blacklist.txt")
     with open(blacklistFile, "w") as f:
         for filePath in blackList:

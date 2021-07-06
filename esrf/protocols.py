@@ -46,18 +46,20 @@ from pyworkflow import VERSION_1_1
 from pyworkflow.protocol import getUpdatedProtocol
 from emfacilities.protocols import ProtMonitor, Monitor, PrintNotifier
 from pwem.protocols import ProtImportMovies, ProtAlignMovies, ProtCTFMicrographs
+from pwem.protocols import ProtClassify2D
 from relion.protocols import ProtRelionClassify2D
 # from xmipp3.protocols import XmippProtMovieMaxShift
 from motioncorr.protocols import ProtMotionCorr
 from esrf.utils.esrf_utils_ispyb import UtilsISPyB
 from esrf.utils.esrf_utils_path import UtilsPath
 from esrf.utils.esrf_utils_icat import UtilsIcat
+from pwem.emlib.image import ImageHandler
 
 # Fix for GPFS problem
 shutil._USE_CP_SENDFILE = False
 
 
-class ProtMonitorISPyB_ESRF(ProtMonitor):
+class ProtMonitorISPyB_ESRF_TEST(ProtMonitor):
     """ 
     Monitor to communicated with ISPyB system at ESRF.
     """
@@ -141,6 +143,12 @@ class ProtMonitorISPyB_ESRF(ProtMonitor):
             label="Defect map file",
             help="Defect map path for Motioncor 2")
 
+        section2.addParam(
+            'particleSize', params.FloatParam,
+            default=-1,
+            label="Particle size [A]",
+            help="Particle size used for particle picking")
+
         section3 = form.addSection(label='ISPyB')
 
         section3.addParam(
@@ -208,6 +216,7 @@ class MonitorISPyB_ESRF(Monitor):
         self.alignFrameN = protocol.alignFrameN.get()
         self.gainFilePath = protocol.gainFilePath.get()
         self.defectMapPath = protocol.defectMapPath.get()
+        self.particleSize = protocol.particleSize.get()
         self.positionX = None
         self.positionY = None
         self.collectionDate = None
@@ -250,7 +259,8 @@ class MonitorISPyB_ESRF(Monitor):
 
             for n in nodes:
                 prot = n.run
-                #self.info("Protocol name: {0}".format(prot.getRunName()))
+                self.info("*"*80)
+                self.info("Protocol name: {0}".format(prot.getRunName()))
 
                 if isinstance(prot, ProtImportMovies):
                     self.uploadImportMovies(prot)
@@ -262,7 +272,7 @@ class MonitorISPyB_ESRF(Monitor):
                 elif isinstance(prot, ProtCTFMicrographs) and hasattr(prot, 'outputCTF'):
                     self.uploadCTFMicrographs(prot)
                     isActiveCTFMicrographs = prot.isActive()
-                elif isinstance(prot, ProtRelionClassify2D) and hasattr(prot, 'outputClasses'):
+                elif isinstance(prot, ProtClassify2D) and hasattr(prot, 'outputClasses') and not prot.getObjId() in self.allParams:
                     self.uploadClassify2D(prot)
                     isActiveClassify2D = prot.isActive()
 
@@ -1019,12 +1029,69 @@ class MonitorISPyB_ESRF(Monitor):
 
 
     def uploadClassify2D(self, prot):
+        ih = ImageHandler()
+        self.info("@" * 80)
         self.info("ISPyB upload 2D classification results")
+        objId = prot.getObjId()
+        self.info("Classify2D objId = {0}".format(objId))
+        self.allParams[objId] = {"done": True}
+        outputClasses = prot.outputClasses
+        no2DClasses = outputClasses.getSize()
+        self.info("Number of 2D classes: {0}".format(no2DClasses))
+        index = 1
         workingDir = os.path.join(self.currentDir, str(prot.workingDir))
         extraDirectory = os.path.join(workingDir, "extra")
-        pathToInputParticlesStarFile = os.path.join(extraDirectory, "input_particles.sqlite")
-        print("Input data")
-
+        relionListClass = None
+        dictModel = {
+            "numberOfClasses": no2DClasses,
+            "classes": []
+        }
+        if isinstance(prot, ProtRelionClassify2D):
+            pathToModelStarFile = os.path.join(workingDir, "extra", "relion_it025_model.star")
+            relionDictModel = UtilsPath.parseRelionModelStarFile(pathToModelStarFile)
+            relionListClass = relionDictModel["classes"]
+        for class2d in outputClasses:
+            self.info(dir(class2d))
+            particlesPerClass = class2d.getSize()
+            self.info("Number of particles per class: {0}".format(particlesPerClass))
+            repr = class2d.getRepresentative()
+            location = repr.getLocation()
+            self.info("Location: {0}".format(location))
+            index = location[0]
+            self.info("Index: {0}".format(index))
+            class2dImage = os.path.join(extraDirectory, "class2d_{0}.jpg".format(index))
+            ih.convert(location, class2dImage)
+            pyarchClass2dPath = UtilsPath.copyToPyarchPath(class2dImage)
+            if relionListClass is not None:
+                for dictClass in relionListClass:
+                    if index == dictClass["index"]:
+                        dictClass["classImageFullPath"] = pyarchClass2dPath
+                        dictModel["classes"].append(dictClass)
+                        break
+            else:
+                dictClass = {
+                    "index": index,
+                    "referenceImage": location[1],
+                    "classImageFullPath": pyarchClass2dPath,
+                    "accuracyRotations": None,
+                    "accuracyTranslationsAngst": None,
+                    "estimatedResolution": None,
+                    "overallFourierCompleteness": None
+                }
+                dictModel["classes"].append(dictClass)
+        self.info(pprint.pformat(dictModel))
+        if isinstance(prot, ProtRelionClassify2D):
+            pathToInputParticlesStarFile = os.path.join(workingDir, "input_particles.star")
+            self.info("pathToInputParticlesStarFile: " + pathToInputParticlesStarFile)
+            dictParticle = UtilsPath.getInputParticleDict(
+                pathToInputParticlesStarFile=pathToInputParticlesStarFile,
+                allParams=self.allParams
+            )
+            pyarchParticleFile = UtilsPath.copyToPyarchPath(pathToInputParticlesStarFile)
+            pprint.pprint(dictParticle)
+            UtilsISPyB.uploadClassify2D(self.client, self.proposal,
+                                        self.particleSize, dictParticle, dictModel, pyarchParticleFile)
+        self.info("@" * 80)
 
     def archiveGridSquare(self, gridSquareToBeArchived):
         # Archive remaining movies

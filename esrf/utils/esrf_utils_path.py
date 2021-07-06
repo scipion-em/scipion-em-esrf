@@ -798,6 +798,24 @@ class UtilsPath(object):
         return blacklist
 
     @staticmethod
+    def getBlacklistAllMovies(listMovies, allParamsJsonFile):
+        with open(allParamsJsonFile, 'r') as f:
+            dictAllParams = json.loads(f.read())
+        blackList = []
+        dictGridSquare = {}
+        listMovieNames = []
+        #
+        blacklist = []
+        for movie in listMovies:
+            movieName = os.path.splitext(os.path.basename(movie))[0]
+            if movieName in dictAllParams.keys():
+                dictMovie = dictAllParams[movieName]
+                if "motionCorrectionId" in dictMovie:
+                    if "CTFid" in dictMovie:
+                        blacklist.append(movie)
+        return blacklist
+
+    @staticmethod
     def getInputParticleDict(pathToInputParticlesStarFile, allParams):
         with open(pathToInputParticlesStarFile) as fd:
             listLines = fd.readlines()
@@ -832,10 +850,54 @@ class UtilsPath(object):
         movieNameEnd = gridSquareMovieNameEnd[gridSquareMovieNameEnd.find("_Data_")+6:]
         movieNameEnd = os.path.splitext(movieNameEnd)[0]
         movieDictEnd = allParams[movieNameEnd]
-        lastMotionCorrectionId = movieDictEnd["motionCorrectionId"]
+        lastMovieFullPath = movieDictEnd["movieFullPath"]
         particleDict = {
-            "firstMotionCorrectionId": firstMotionCorrectionId,
-            "lastMotionCorrectionId": lastMotionCorrectionId,
+            "firstMovieFullPath": firstMovieFullPath,
+            "lastMovieFullPath": lastMovieFullPath,
             "numberOfParticles": numberOfParticles
         }
         return particleDict
+
+    @classmethod
+    def parseRelionModelStarFile(cls, filePath):
+        with open(filePath) as fd:
+            lines = fd.readlines()
+        lineIndex = 0
+        found = False
+        # Number of classes:
+        while not found:
+            line = lines[lineIndex]
+            if line.startswith("_rlnNrClasses"):
+                numberOfClasses = int(line.split()[1])
+                found = True
+            else:
+                lineIndex += 1
+        # Information per class
+        found = False
+        while not found:
+            line = lines[lineIndex]
+            if line.startswith("_rlnClassPriorOffsetY"):
+                found = True
+            lineIndex += 1
+        listClass = []
+        for index in range(numberOfClasses):
+            line = lines[lineIndex]
+            listLine = line.split()
+            dictClass = {
+                "index": index+1,
+                "referenceImage": listLine[0],
+                "classDistribution": float(listLine[1]),
+                "accuracyRotations": float(listLine[2]),
+                "accuracyTranslationsAngst": float(listLine[3]),
+                "estimatedResolution": float(listLine[4]),
+                "overallFourierCompleteness": float(listLine[5]),
+                "classPriorOffsetX": float(listLine[6]),
+                "classPriorOffsetY": float(listLine[7])
+            }
+            listClass.append(dictClass)
+            lineIndex += 1
+        dictStarFile = {
+            "numberOfClasses": numberOfClasses,
+            "classes": listClass
+        }
+        return dictStarFile

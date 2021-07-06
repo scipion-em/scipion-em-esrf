@@ -53,6 +53,9 @@ from esrf.utils.esrf_utils_ispyb import UtilsISPyB
 from esrf.utils.esrf_utils_path import UtilsPath
 from esrf.utils.esrf_utils_icat import UtilsIcat
 
+# Fix for GPFS problem
+shutil._USE_CP_SENDFILE = False
+
 
 class ProtMonitorISPyB_ESRF(ProtMonitor):
     """ 

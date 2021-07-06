@@ -224,6 +224,7 @@ def preprocessWorkflow(configDict):
                                      dataStreaming=configDict["dataStreaming"],
                                      blacklistFile=configDict["blacklistFile"],
                                      gainFile=configDict["gainFilePath"],
+                                     fileTimeout=300,
                                      timeout=timeout)
     _registerProt(protImport, label='Movies', toSummary=True)
     ispybUploads.append(protImport)

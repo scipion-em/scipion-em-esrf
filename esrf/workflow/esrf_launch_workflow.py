@@ -81,6 +81,14 @@ def getUpdatedProtocol(protocol):
         print("ERROR! Exception caught: {0}".format(e))
     return prot2
 
+# https://www.programcreek.com/python/?CodeExample=get+num+gpus
+def get_num_gpus():
+    """Returns the number of GPUs available"""
+    from pycuda import driver
+    driver.init()
+    num_gpus = driver.Device.count()
+    return num_gpus
+
 
 configDict = getCommandlineOptions()
 pprint.pprint(configDict)
@@ -384,9 +392,16 @@ if configDict["lowRes"] > 50:
     configDict["lowRes"] = 50
 
 
-
-configDict["motioncor2Gpu"] = "0 1"
-configDict["motioncor2Cpu"] = 3
+num_gpus = get_num_gpus()
+if num_gpus == 0:
+    raise RuntimeError("No GPUs found on this computer!")
+elif num_gpus == 1:
+    configDict["motioncor2Gpu"] = "0"
+elif num_gpus in [2, 3]:
+    configDict["motioncor2Gpu"] = "0 1"
+else:
+    configDict["motioncor2Gpu"] = "0 1 2 3"
+configDict["motioncor2Cpu"] = num_gpus + 1
 configDict["gctfGpu"] = "0"
 configDict["gl2dGpu"] = "0"
 configDict["cryoloGpu"] = "1"

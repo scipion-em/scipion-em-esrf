@@ -277,9 +277,13 @@ else:
         print("WARNING! No data will be uploaded to ISPyB.")
         db = 3
     else:
-        if proposal == "mx415" or proposal == "mx2112":
+        if proposal == "mx415":
             # Use valid data base
             print("ISPyB valid data base used")
+            db = 1
+        elif proposal == "mx2112":
+            # Use valid data base
+            print("ISPyB production data base used")
             db = 1
         else:
             # Use productiond data base
@@ -397,11 +401,13 @@ if num_gpus == 0:
     raise RuntimeError("No GPUs found on this computer!")
 elif num_gpus == 1:
     configDict["motioncor2Gpu"] = "0"
+    configDict["motioncor2Cpu"] = 2
 elif num_gpus in [2, 3]:
     configDict["motioncor2Gpu"] = "0 1"
+    configDict["motioncor2Cpu"] = 3
 else:
     configDict["motioncor2Gpu"] = "0 1 2 3"
-configDict["motioncor2Cpu"] = num_gpus + 1
+    configDict["motioncor2Cpu"] = 5
 configDict["gctfGpu"] = "0"
 configDict["gl2dGpu"] = "0"
 configDict["cryoloGpu"] = "1"

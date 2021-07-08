@@ -59,7 +59,7 @@ from pwem.emlib.image import ImageHandler
 shutil._USE_CP_SENDFILE = False
 
 
-class ProtMonitorISPyB_ESRF_TEST(ProtMonitor):
+class ProtMonitorISPyB_ESRF(ProtMonitor):
     """ 
     Monitor to communicated with ISPyB system at ESRF.
     """

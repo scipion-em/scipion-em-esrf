@@ -338,7 +338,7 @@ def preprocessWorkflow(configDict):
     doDownSamp2D = 0 < configDict["sampling2D"] > configDict["samplingRate"]
     samp2D = configDict["sampling2D"] if doDownSamp2D else configDict["samplingRate"]
     if doDownSamp2D:
-        downSampPreMics = configDict["sampling2D"] / configDict["samplingRate"]
+        downSampPreMics = configDict["sampling2D"] / ( configDict["samplingRate"] * configDict["binFactor"])
         protPreMics = project.newProtocol(XmippProtPreprocessMicrographs,
                                           objLabel='downSampling to 2D size',
                                           doDownsample=True,
@@ -358,7 +358,7 @@ def preprocessWorkflow(configDict):
     # setExtendedInput(protPrePick.inputMicrographs,
     #                  protCTFs, 'outputMicrographs')
     # _registerProt(protPrePick, 'Picking')
-    bxSize = getEvenPartSize(configDict["partSize"]/samp2D/configDict["binFactor"])
+    bxSize = getEvenPartSize(configDict["partSize"]/samp2D)
 
     protPP2 = project.newProtocol(SphireProtCRYOLOPicking,
                                   objLabel='Sphire - CrYolo auto-picking',

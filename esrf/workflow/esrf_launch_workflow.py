@@ -195,14 +195,28 @@ else:
 
 
 
-
 # Set up location
-if "RAW_DATA" in configDict["dataDirectory"]:
-    location = configDict["dataDirectory"].replace("RAW_DATA", "PROCESSED_DATA")
-#elif "cm01/inhouse" in dataDirectory:
-#    location = "/users/opcm01/PROCESSED_DATA"
+# Tests for using /raid
+if os.path.exists("/raid"):
+    location = "/raid/cm01"
+    if "RAW_DATA" in configDict["dataDirectory"]:
+        listDir = configDict["dataDirectory"].split("/")
+        location = os.path.join(location, listDir[5], listDir[3])
+    else:
+        dateString = time.strftime("%Y%m%d", time.localtime(time.time()))
+        user = os.environ["USER"]
+        location = os.path.join(location, dateString, user)
 else:
-    location = tempfile.mkdtemp(prefix="ScipionUserData_")
+    # Set up location
+    if "RAW_DATA" in configDict["dataDirectory"]:
+        location = configDict["dataDirectory"].replace("RAW_DATA", "PROCESSED_DATA")
+    #elif "cm01/inhouse" in dataDirectory:
+    #    location = "/users/opcm01/PROCESSED_DATA"
+    else:
+        location = tempfile.mkdtemp(prefix="ScipionUserData_")
+
+print("Scipion project location: {0}".format(location))
+
 
 dateTime = time.strftime("%Y%m%d-%H%M%S", time.localtime(time.time()))
 
@@ -227,7 +241,11 @@ except OSError as e:
         
 # All param json file
 configDict["allParamsJsonFile"] = os.path.join(location, "allParams.json")
+print("Location of allParams file: {0}".format(configDict["allParamsJsonFile"]))
+
 configDict["location"] = location
+if os.path.exists(configDict["allParamsJsonFile"]):
+    print("Using existing allParams file")
 
 # Create blacklist file with all movies already imported and motion corrected
 configDict["blacklistFile"] = None

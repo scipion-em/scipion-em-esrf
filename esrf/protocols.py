@@ -1149,18 +1149,22 @@ class MonitorISPyB_ESRF(Monitor):
             self.archiveGridSquare(gridSquareToBeArchived)
 
     def archiveGainAndDefectMap(self):
+        directory = None
+        listPathsToBeArchived = []
         if self.defectMapPath != "" or self.gainFilePath != "":
             self.info("Archiving gain and defect map files")
             if not "GainAndDefectMap" in self.allParams:
                 self.allParams["GainAndDefectMap"] = {}
                 if self.defectMapPath != "":
                     self.allParams["GainAndDefectMap"]["defectMapPath"] = self.defectMapPath
+                    directory = os.path.dirname(self.defectMapPath)
+                    listPathsToBeArchived.append(self.defectMapPath)
                 if self.gainFilePath != "":
-                    self.allParams["GainAndDefectMap"]["gainFilPath"] = self.gainFilePath
+                    self.allParams["GainAndDefectMap"]["gainFilePath"] = self.gainFilePath
+                    directory = os.path.dirname(self.gainFilePath)
+                    listPathsToBeArchived.append(self.gainFilePath)
                 self.allParams["GainAndDefectMap"]["archived"] = False
             if not self.allParams["GainAndDefectMap"]["archived"]:
-                listPathsToBeArchived = [self.defectMapPath, self.gainFilePath]
-                directory = os.path.dirname(self.defectMapPath)
                 dictIcatMetaData = {
                     "EM_directory": directory,
                     "EM_protein_acronym": self.proteinAcronym,

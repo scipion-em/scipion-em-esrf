@@ -197,8 +197,18 @@ else:
 
 # Set up location
 # Tests for using /raid
-if os.path.exists("/raid"):
-    location = "/raid/cm01"
+# if os.path.exists("/raid"):
+#     location = "/raid/cm01"
+#     if "RAW_DATA" in configDict["dataDirectory"]:
+#         listDir = configDict["dataDirectory"].split("/")
+#         location = os.path.join(location, listDir[5], listDir[3])
+#     else:
+#         dateString = time.strftime("%Y%m%d", time.localtime(time.time()))
+#         user = os.environ["USER"]
+#         location = os.path.join(location, dateString, user)
+# elif os.path.exists("/scisoft"):
+if os.path.exists("/scisoft"):
+    location = "/scisoft/cm01"
     if "RAW_DATA" in configDict["dataDirectory"]:
         listDir = configDict["dataDirectory"].split("/")
         location = os.path.join(location, listDir[5], listDir[3])
@@ -216,7 +226,6 @@ else:
         location = tempfile.mkdtemp(prefix="ScipionUserData_")
 
 print("Scipion project location: {0}".format(location))
-
 
 dateTime = time.strftime("%Y%m%d-%H%M%S", time.localtime(time.time()))
 

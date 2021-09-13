@@ -225,7 +225,7 @@ def preprocessWorkflow(configDict):
                                      blacklistFile=configDict["blacklistFile"],
                                      useRegexps=False,
                                      gainFile=configDict["gainFilePath"],
-                                     fileTimeout=300,
+                                     fileTimeout=30,
                                      timeout=timeout)
     _registerProt(protImport, label='Movies', toSummary=True)
     ispybUploads.append(protImport)
@@ -412,19 +412,19 @@ def preprocessWorkflow(configDict):
 
     extracBoxSize = getEvenPartSize(bxSize * 1.25)
 
-    protExtractFlip = project.newProtocol(XmippProtExtractParticles,
-                                         objLabel='Xmipp - extract particles - flip',
-                                         boxSize=extracBoxSize,
-                                         downsampleType=1,  # Other to avoid a bug
-                                         doRemoveDust=True,
-                                         doNormalize=True,
-                                         doInvert=True,
-                                         doFlip=True)
-    setExtendedInput(protExtractFlip.inputCoordinates, finalPicker, outputCoordsStr)
-    setExtendedInput(protExtractFlip.inputMicrographs,
-                     protPreMics, 'outputMicrographs')
-    setExtendedInput(protExtractFlip.ctfRelations, protCTFs, 'outputCTF')
-    _registerProt(protExtractFlip, 'Particles')
+    # protExtractFlip = project.newProtocol(XmippProtExtractParticles,
+    #                                      objLabel='Xmipp - extract particles - flip',
+    #                                      boxSize=extracBoxSize,
+    #                                      downsampleType=1,  # Other to avoid a bug
+    #                                      doRemoveDust=True,
+    #                                      doNormalize=True,
+    #                                      doInvert=True,
+    #                                      doFlip=True)
+    # setExtendedInput(protExtractFlip.inputCoordinates, finalPicker, outputCoordsStr)
+    # setExtendedInput(protExtractFlip.inputMicrographs,
+    #                  protPreMics, 'outputMicrographs')
+    # setExtendedInput(protExtractFlip.ctfRelations, protCTFs, 'outputCTF')
+    # _registerProt(protExtractFlip, 'Particles')
 
     # protExtractNoFlip = project.newProtocol(XmippProtExtractParticles,
     #                                         objLabel='Xmipp - extract particles - no flip',
@@ -455,11 +455,11 @@ def preprocessWorkflow(configDict):
     if configDict["particleElimination"]:
         # ***********   CLEAN PARTICLES   ************************************
         # --------- ELIM EMPTY PARTS AND ---------------------------
-        protEEPandFlip = project.newProtocol(XmippProtEliminateEmptyParticles,
-                                         objLabel='Xmipp - Elim. empty part. - flip',
-                                         threshold=0.6)
-        setExtendedInput(protEEPandFlip.inputParticles, protExtractFlip, 'outputParticles')
-        _registerProt(protEEPandFlip, 'Particles')
+        # protEEPandFlip = project.newProtocol(XmippProtEliminateEmptyParticles,
+        #                                  objLabel='Xmipp - Elim. empty part. - flip',
+        #                                  threshold=0.6)
+        # setExtendedInput(protEEPandFlip.inputParticles, protExtractFlip, 'outputParticles')
+        # _registerProt(protEEPandFlip, 'Particles')
 
         protEEPandNoFlip = project.newProtocol(XmippProtEliminateEmptyParticles,
                                          objLabel='Xmipp - Elim. empty part. - no flip',
@@ -468,13 +468,13 @@ def preprocessWorkflow(configDict):
         _registerProt(protEEPandNoFlip, 'Particles')
 
         # --------- TRIGGER PARTS AND ---------------------------
-        protTRIGandFlip = project.newProtocol(XmippProtTriggerData,
-                                          objLabel='Xmipp - trigger data to stats - flip',
-                                          outputSize=1000, delay=30,
-                                          allImages=True,
-                                          splitImages=False)
-        setExtendedInput(protTRIGandFlip.inputImages, protEEPandFlip, 'outputParticles')
-        _registerProt(protTRIGandFlip, 'Particles')
+        # protTRIGandFlip = project.newProtocol(XmippProtTriggerData,
+        #                                   objLabel='Xmipp - trigger data to stats - flip',
+        #                                   outputSize=1000, delay=30,
+        #                                   allImages=True,
+        #                                   splitImages=False)
+        # setExtendedInput(protTRIGandFlip.inputImages, protEEPandFlip, 'outputParticles')
+        # _registerProt(protTRIGandFlip, 'Particles')
 
         protTRIGandNoFlip = project.newProtocol(XmippProtTriggerData,
                                           objLabel='Xmipp - trigger data to stats - no flip',
@@ -485,13 +485,13 @@ def preprocessWorkflow(configDict):
         _registerProt(protTRIGandNoFlip, 'Particles')
 
         # --------- SCREEN PARTS AND ---------------------------
-        protSCRandFlip = project.newProtocol(XmippProtScreenParticles,
-                                         objLabel='Xmipp - Screen particles - flip')
-        protSCRandFlip.autoParRejection.set(XmippProtScreenParticles.REJ_MAXZSCORE)
-        protSCRandFlip.autoParRejectionSSNR.set(XmippProtScreenParticles.REJ_PERCENTAGE_SSNR)
-        protSCRandFlip.autoParRejectionVar.set(XmippProtScreenParticles.REJ_VARIANCE)
-        setExtendedInput(protSCRandFlip.inputParticles, protTRIGandFlip, 'outputParticles')
-        _registerProt(protSCRandFlip, 'Particles', True)
+        # protSCRandFlip = project.newProtocol(XmippProtScreenParticles,
+        #                                  objLabel='Xmipp - Screen particles - flip')
+        # protSCRandFlip.autoParRejection.set(XmippProtScreenParticles.REJ_MAXZSCORE)
+        # protSCRandFlip.autoParRejectionSSNR.set(XmippProtScreenParticles.REJ_PERCENTAGE_SSNR)
+        # protSCRandFlip.autoParRejectionVar.set(XmippProtScreenParticles.REJ_VARIANCE)
+        # setExtendedInput(protSCRandFlip.inputParticles, protTRIGandFlip, 'outputParticles')
+        # _registerProt(protSCRandFlip, 'Particles', True)
 
         protSCRandNoFlip = project.newProtocol(XmippProtScreenParticles,
                                          objLabel='Xmipp - Screen particles - no flip')
@@ -504,27 +504,27 @@ def preprocessWorkflow(configDict):
 
     triggers = []
     def getNoClasses(no_particles):
-        if no_particles <= 10000:
+        if no_particles < 50000:
             no_classes = 10
         else:
-            no_classes = int(no_particles / 1000)
+            no_classes = 25
         return no_classes
 
-    for outputSize in [5000, 20000, 50000, 100000, 200000]:
+    for outputSize in [20000, 50000, 100000, 200000]:
         allAvgs = []
         classifiers = []
         # --------- TRIGGER PARTS ---------------------------
-        protTRIG2Flip = project.newProtocol(XmippProtTriggerData,
-                                        objLabel='Xmipp - trigger {0} - flip'.format(outputSize),
-                                        outputSize=outputSize,
-                                        delay=30,
-                                        allImages=False)
-        if configDict["particleElimination"]:
-            setExtendedInput(protTRIG2Flip.inputImages, protSCRandFlip, 'outputParticles')
-        else:
-            setExtendedInput(protTRIG2Flip.inputImages, protExtractFlip, 'outputParticles')
-        _registerProt(protTRIG2Flip, '2Dclassify')
-        triggers.append(protTRIG2Flip)
+        # protTRIG2Flip = project.newProtocol(XmippProtTriggerData,
+        #                                 objLabel='Xmipp - trigger {0} - flip'.format(outputSize),
+        #                                 outputSize=outputSize,
+        #                                 delay=30,
+        #                                 allImages=False)
+        # if configDict["particleElimination"]:
+        #     setExtendedInput(protTRIG2Flip.inputImages, protSCRandFlip, 'outputParticles')
+        # else:
+        #     setExtendedInput(protTRIG2Flip.inputImages, protExtractFlip, 'outputParticles')
+        # _registerProt(protTRIG2Flip, '2Dclassify')
+        # triggers.append(protTRIG2Flip)
 
         protTRIG2NoFlip = project.newProtocol(XmippProtTriggerData,
                                         objLabel='Xmipp - trigger {0} - no flip'.format(outputSize),
@@ -538,26 +538,26 @@ def preprocessWorkflow(configDict):
         _registerProt(protTRIG2NoFlip, '2Dclassify')
         triggers.append(protTRIG2NoFlip)
 
-        protCL = project.newProtocol(XmippProtCL2D,
-                                     objLabel='Xmipp - CL2D',
-                                     doCore=False,
-                                     numberOfClasses=getNoClasses(outputSize),
-                                     numberOfMpi=16)
+        # protCL = project.newProtocol(XmippProtCL2D,
+        #                              objLabel='Xmipp - CL2D',
+        #                              doCore=False,
+        #                              numberOfClasses=getNoClasses(outputSize),
+        #                              numberOfMpi=16)
 
-        protCL._useQueue.set(True)
-        protCL._queueParams.set(json.dumps(QUEUE_PARAMS_WITHOUT_GPU))
-        setExtendedInput(protCL.inputParticles, protTRIG2Flip, 'outputParticles')
-        _registerProt(protCL, '2Dclassify', True)
-        classifiers.append(protCL)
-        ispybUploads.append(protCL)
-        # # Classes -> Averages
-        protCl2Av1 = project.newProtocol(XmippProtEliminateEmptyClasses,
-                                         objLabel='Classes to averages (xmipp)',
-                                         threshold=-1,
-                                         usePopulation=False)
-        setExtendedInput(protCl2Av1.inputClasses, protCL, 'outputClasses')
-        _registerProt(protCl2Av1, '2Dclassify')
-        allAvgs.append(protCl2Av1)
+        # protCL._useQueue.set(True)
+        # protCL._queueParams.set(json.dumps(QUEUE_PARAMS_WITHOUT_GPU))
+        # setExtendedInput(protCL.inputParticles, protTRIG2Flip, 'outputParticles')
+        # _registerProt(protCL, '2Dclassify', True)
+        # classifiers.append(protCL)
+        # ispybUploads.append(protCL)
+        # # # Classes -> Averages
+        # protCl2Av1 = project.newProtocol(XmippProtEliminateEmptyClasses,
+        #                                  objLabel='Classes to averages (xmipp)',
+        #                                  threshold=-1,
+        #                                  usePopulation=False)
+        # setExtendedInput(protCl2Av1.inputClasses, protCL, 'outputClasses')
+        # _registerProt(protCl2Av1, '2Dclassify')
+        # allAvgs.append(protCl2Av1)
 
         protCL2 = project.newProtocol(ProtRelionClassify2D,
                                       objLabel='Relion - 2D classifying',

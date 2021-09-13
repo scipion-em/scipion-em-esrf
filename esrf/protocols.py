@@ -265,16 +265,20 @@ class MonitorISPyB_ESRF(Monitor):
                 if isinstance(prot, ProtImportMovies):
                     self.uploadImportMovies(prot)
                     isActiveImportMovies = prot.isActive()
+                    self.updateJsonFile()
                 # elif isinstance(prot, XmippProtMovieMaxShift) and hasattr(prot, 'outputMicrographs'):
                 elif isinstance(prot, ProtMotionCorr) and hasattr(prot, 'outputMicrographs'):
                     self.uploadAlignMovies(prot)
                     isActiveAlignMovies = prot.isActive()
+                    self.updateJsonFile()
                 elif isinstance(prot, ProtCTFMicrographs) and hasattr(prot, 'outputCTF'):
                     self.uploadCTFMicrographs(prot)
                     isActiveCTFMicrographs = prot.isActive()
+                    self.updateJsonFile()
                 elif isinstance(prot, ProtClassify2D) and hasattr(prot, 'outputClasses') and not prot.getObjId() in self.allParams:
                     self.uploadClassify2D(prot)
                     isActiveClassify2D = prot.isActive()
+                self.updateJsonFile()
 
             # Check if archive last grid square
             if self.currentGridSquareLastMovieTime is not None:
@@ -286,14 +290,7 @@ class MonitorISPyB_ESRF(Monitor):
                     self.currentGridSquare = None
                     # Check if old grid squares
                     self.archiveOldGridSquares()
-
-
-            # Update json file
-            if self.allParamsJsonFile is not None:
-                f = open(self.allParamsJsonFile, "w")
-                f.write(json.dumps(self.allParams, indent=4))
-                f.close()
-
+                    self.updateJsonFile()
 
             if isActiveImportMovies or isActiveAlignMovies or isActiveCTFMicrographs or isActiveClassify2D:
                 finished = False
@@ -304,6 +301,12 @@ class MonitorISPyB_ESRF(Monitor):
         self.info("MonitorISPyB: end step --------------------------")
 
         return finished
+
+    def updateJsonFile(self):
+        if self.allParamsJsonFile is not None:
+            f = open(self.allParamsJsonFile, "w")
+            f.write(json.dumps(self.allParams, indent=4))
+            f.close()
 
     def iter_updated_set(self, objSet):
         objSet.load()

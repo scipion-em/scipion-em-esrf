@@ -842,11 +842,11 @@ class MonitorISPyB_ESRF(Monitor):
                     raise RuntimeError("Unknown data type: {0}".format(self.dataType))
 
     def uploadAlignMovies(self, prot):
-        self.info("ESRF ISPyB upload motion corr results")
+        self.protocol.info("ESRF ISPyB upload motion corr results")
         for micrograph in self.iter_updated_set(prot.outputMicrographs):
             micrographFullPath = os.path.join(self.currentDir, micrograph.getFileName())
-            self.info("*"*80)
-            self.info("Motion corr micrographFullPath: {0}".format(micrographFullPath))
+            # self.info("*"*80)
+            # self.info("Motion corr micrographFullPath: {0}".format(micrographFullPath))
             if self.dataType == 0: # "EPU"
                 dictFileNameParameters = UtilsPath.getMovieFileNameParametersFromMotioncorrPath(micrographFullPath)
             elif self.dataType == 1:  # "EPU_TIFF"
@@ -941,7 +941,7 @@ class MonitorISPyB_ESRF(Monitor):
                 self.allParams[movieName]["totalMotion"] = totalMotion
                 self.allParams[movieName]["averageMotionPerFrame"] = averageMotionPerFrame
 
-                self.info("Align movies done, motionCorrectionId = {0}".format(motionCorrectionId))
+                self.protocol.info("Upload of align movie results done, motionCorrectionId = {0}".format(motionCorrectionId))
 
     def uploadCTFMicrographs(self, prot):
         self.info("ESRF ISPyB upload CTF results")

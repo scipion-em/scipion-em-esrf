@@ -985,8 +985,10 @@ class MonitorISPyB_ESRF(Monitor):
                 resolutionLimit = dictResults["resolutionLimit"]
                 estimatedBfactor = dictResults["estimatedBfactor"]
                 if self.allParams[movieName]["processDir"] is not None:
-                    shutil.copy(spectraImageFullPath, self.allParams[movieName]["processDir"])
-                    shutil.copy(dictResults["logFilePath"], self.allParams[movieName]["processDir"])
+                    if spectraImageFullPath is not None:
+                        shutil.copy(spectraImageFullPath, self.allParams[movieName]["processDir"])
+                    if dictResults["logFilePath"] is not None:
+                        shutil.copy(dictResults["logFilePath"], self.allParams[movieName]["processDir"])
 
                 logFilePath = UtilsPath.copyToPyarchPath(dictResults["logFilePath"])
                 # self.info("proposal : {0}".format(self.proposal))

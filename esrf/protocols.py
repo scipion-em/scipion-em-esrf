@@ -522,8 +522,6 @@ class MonitorISPyB_ESRF(Monitor):
             startTime = time.time()
             doContinue = True
             while doContinue:
-                micrographSnapshotFullPath, micrographFullPath, xmlMetaDataFullPath, gridSquareSnapshotFullPath = \
-                    UtilsPath.getEpuTiffMovieJpegMrcXml(movieFullPath)
                 if micrographSnapshotFullPath is None or micrographFullPath is None or xmlMetaDataFullPath is None or gridSquareSnapshotFullPath is None:
                     self.info("Import movies: waiting for meta-data files to appear on disk...")
                     timeNow = time.time()
@@ -533,6 +531,16 @@ class MonitorISPyB_ESRF(Monitor):
                         doContinue = False
                     else:
                         time.sleep(2)
+                        micrographSnapshotFullPath_new, micrographFullPath_new, xmlMetaDataFullPath_new, gridSquareSnapshotFullPath_new = \
+                            UtilsPath.getEpuTiffMovieJpegMrcXml(movieFullPath)
+                        if micrographSnapshotFullPath is None and micrographSnapshotFullPath_new is not None:
+                            micrographSnapshotFullPath = micrographSnapshotFullPath_new
+                        if micrographFullPath is None and micrographFullPath_new is not None:
+                            micrographFullPath = micrographFullPath_new
+                        if xmlMetaDataFullPath is None and xmlMetaDataFullPath_new is not None:
+                            xmlMetaDataFullPath = xmlMetaDataFullPath_new
+                        if gridSquareSnapshotFullPath is None and gridSquareSnapshotFullPath_new is not None:
+                            gridSquareSnapshotFullPath = gridSquareSnapshotFullPath_new
                 else:
                     doContinue = False
             # micrographFullPath = None

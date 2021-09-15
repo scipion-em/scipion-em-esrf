@@ -265,20 +265,16 @@ class MonitorISPyB_ESRF(Monitor):
                 if isinstance(prot, ProtImportMovies):
                     self.uploadImportMovies(prot)
                     isActiveImportMovies = prot.isActive()
-                    self.updateJsonFile()
                 # elif isinstance(prot, XmippProtMovieMaxShift) and hasattr(prot, 'outputMicrographs'):
                 elif isinstance(prot, ProtMotionCorr) and hasattr(prot, 'outputMicrographs'):
                     self.uploadAlignMovies(prot)
                     isActiveAlignMovies = prot.isActive()
-                    self.updateJsonFile()
                 elif isinstance(prot, ProtCTFMicrographs) and hasattr(prot, 'outputCTF'):
                     self.uploadCTFMicrographs(prot)
                     isActiveCTFMicrographs = prot.isActive()
-                    self.updateJsonFile()
                 elif isinstance(prot, ProtClassify2D) and hasattr(prot, 'outputClasses') and not prot.getObjId() in self.allParams:
                     self.uploadClassify2D(prot)
                     isActiveClassify2D = prot.isActive()
-                self.updateJsonFile()
 
             # Check if archive last grid square
             if self.currentGridSquareLastMovieTime is not None:
@@ -290,7 +286,6 @@ class MonitorISPyB_ESRF(Monitor):
                     self.currentGridSquare = None
                     # Check if old grid squares
                     self.archiveOldGridSquares()
-                    self.updateJsonFile()
 
             if isActiveImportMovies or isActiveAlignMovies or isActiveCTFMicrographs or isActiveClassify2D:
                 finished = False
@@ -469,6 +464,7 @@ class MonitorISPyB_ESRF(Monitor):
                     "EM_amplitude_contrast": amplitudeContrast,
                     "EM_sampling_rate": samplingRate,
                 }
+            self.updateJsonFile()
             if not gridSquare in self.allParams:
                 self.allParams[gridSquare] = {}
             if not "listGalleryPath" in self.allParams[gridSquare]:
@@ -650,6 +646,7 @@ class MonitorISPyB_ESRF(Monitor):
                     "EM_amplitude_contrast": amplitudeContrast,
                     "EM_sampling_rate": samplingRate,
                 }
+            self.updateJsonFile()
             if not gridSquare in self.allParams:
                 self.allParams[gridSquare] = {}
             # if not "listGalleryPath" in self.allParams[gridSquare]:
@@ -811,6 +808,7 @@ class MonitorISPyB_ESRF(Monitor):
                     "EM_amplitude_contrast": amplitudeContrast,
                     "EM_sampling_rate": samplingRate,
                 }
+            self.updateJsonFile()
             #     if not gridSquare in self.allParams:
             #         self.allParams[gridSquare] = {}
             #     if not "listGalleryPath" in self.allParams[gridSquare]:
@@ -936,6 +934,7 @@ class MonitorISPyB_ESRF(Monitor):
                     if motionCorrectionObject is not None:
                         uploadSucceeded = True
                         motionCorrectionId = motionCorrectionObject.motionCorrectionId
+                        self.updateJsonFile()
                     else:
                         if noTrialsLeft == 0:
                             raise RuntimeError("ERROR: failure when trying to upload motion correction!")
@@ -1025,6 +1024,7 @@ class MonitorISPyB_ESRF(Monitor):
 
                 if ctfObject is not None:
                     CTFid = ctfObject.CTFid
+                    self.updateJsonFile()
                 else:
                     raise RuntimeError("ISPyB: ctfObject is None!")
 
@@ -1045,65 +1045,69 @@ class MonitorISPyB_ESRF(Monitor):
         ih = ImageHandler()
         self.info("@" * 80)
         self.info("ISPyB upload 2D classification results")
-        objId = prot.getObjId()
-        self.info("Classify2D objId = {0}".format(objId))
-        self.allParams[objId] = {"done": True}
-        outputClasses = prot.outputClasses
-        no2DClasses = outputClasses.getSize()
-        self.info("Number of 2D classes: {0}".format(no2DClasses))
-        index = 1
-        workingDir = os.path.join(self.currentDir, str(prot.workingDir))
-        extraDirectory = os.path.join(workingDir, "extra")
-        relionListClass = None
-        dictModel = {
-            "numberOfClasses": no2DClasses,
-            "classes": []
-        }
-        if isinstance(prot, ProtRelionClassify2D):
-            pathToModelStarFile = os.path.join(workingDir, "extra", "relion_it025_model.star")
-            relionDictModel = UtilsPath.parseRelionModelStarFile(pathToModelStarFile)
-            relionListClass = relionDictModel["classes"]
-        for class2d in outputClasses:
-            self.info(dir(class2d))
-            particlesPerClass = class2d.getSize()
-            self.info("Number of particles per class: {0}".format(particlesPerClass))
-            repr = class2d.getRepresentative()
-            location = repr.getLocation()
-            self.info("Location: {0}".format(location))
-            index = location[0]
-            self.info("Index: {0}".format(index))
-            class2dImage = os.path.join(extraDirectory, "class2d_{0}.jpg".format(index))
-            ih.convert(location, class2dImage)
-            pyarchClass2dPath = UtilsPath.copyToPyarchPath(class2dImage)
-            if relionListClass is not None:
-                for dictClass in relionListClass:
-                    if index == dictClass["index"]:
-                        dictClass["classImageFullPath"] = pyarchClass2dPath
-                        dictModel["classes"].append(dictClass)
-                        break
-            else:
-                dictClass = {
-                    "index": index,
-                    "referenceImage": location[1],
-                    "classImageFullPath": pyarchClass2dPath,
-                    "accuracyRotations": None,
-                    "accuracyTranslationsAngst": None,
-                    "estimatedResolution": None,
-                    "overallFourierCompleteness": None
-                }
-                dictModel["classes"].append(dictClass)
-        self.info(pprint.pformat(dictModel))
-        if isinstance(prot, ProtRelionClassify2D):
-            pathToInputParticlesStarFile = os.path.join(workingDir, "input_particles.star")
-            self.info("pathToInputParticlesStarFile: " + pathToInputParticlesStarFile)
-            dictParticle = UtilsPath.getInputParticleDict(
-                pathToInputParticlesStarFile=pathToInputParticlesStarFile,
-                allParams=self.allParams
-            )
-            pyarchParticleFile = UtilsPath.copyToPyarchPath(pathToInputParticlesStarFile)
-            pprint.pprint(dictParticle)
-            UtilsISPyB.uploadClassify2D(self.client, self.proposal,
-                                        self.particleSize, dictParticle, dictModel, pyarchParticleFile)
+        objId = str(prot.getObjId())
+        if objId in self.allParams and self.allParams[objId]["done"]:
+            self.info("Classify2D objId = {0} already uploaded to ISPyB".format(objId))
+        else:
+            self.info("Classify2D objId = {0}".format(objId))
+            self.allParams[objId] = {"done": True}
+            self.updateJsonFile()
+            outputClasses = prot.outputClasses
+            no2DClasses = outputClasses.getSize()
+            self.info("Number of 2D classes: {0}".format(no2DClasses))
+            index = 1
+            workingDir = os.path.join(self.currentDir, str(prot.workingDir))
+            extraDirectory = os.path.join(workingDir, "extra")
+            relionListClass = None
+            dictModel = {
+                "numberOfClasses": no2DClasses,
+                "classes": []
+            }
+            if isinstance(prot, ProtRelionClassify2D):
+                pathToModelStarFile = os.path.join(workingDir, "extra", "relion_it025_model.star")
+                relionDictModel = UtilsPath.parseRelionModelStarFile(pathToModelStarFile)
+                relionListClass = relionDictModel["classes"]
+            for class2d in outputClasses:
+                self.info(dir(class2d))
+                particlesPerClass = class2d.getSize()
+                self.info("Number of particles per class: {0}".format(particlesPerClass))
+                repr = class2d.getRepresentative()
+                location = repr.getLocation()
+                self.info("Location: {0}".format(location))
+                index = location[0]
+                self.info("Index: {0}".format(index))
+                class2dImage = os.path.join(extraDirectory, "class2d_{0}.jpg".format(index))
+                ih.convert(location, class2dImage)
+                pyarchClass2dPath = UtilsPath.copyToPyarchPath(class2dImage)
+                if relionListClass is not None:
+                    for dictClass in relionListClass:
+                        if index == dictClass["index"]:
+                            dictClass["classImageFullPath"] = pyarchClass2dPath
+                            dictModel["classes"].append(dictClass)
+                            break
+                else:
+                    dictClass = {
+                        "index": index,
+                        "referenceImage": location[1],
+                        "classImageFullPath": pyarchClass2dPath,
+                        "accuracyRotations": None,
+                        "accuracyTranslationsAngst": None,
+                        "estimatedResolution": None,
+                        "overallFourierCompleteness": None
+                    }
+                    dictModel["classes"].append(dictClass)
+            self.info(pprint.pformat(dictModel))
+            if isinstance(prot, ProtRelionClassify2D):
+                pathToInputParticlesStarFile = os.path.join(workingDir, "input_particles.star")
+                self.info("pathToInputParticlesStarFile: " + pathToInputParticlesStarFile)
+                dictParticle = UtilsPath.getInputParticleDict(
+                    pathToInputParticlesStarFile=pathToInputParticlesStarFile,
+                    allParams=self.allParams
+                )
+                pyarchParticleFile = UtilsPath.copyToPyarchPath(pathToInputParticlesStarFile)
+                pprint.pprint(dictParticle)
+                UtilsISPyB.uploadClassify2D(self.client, self.proposal,
+                                            self.particleSize, dictParticle, dictModel, pyarchParticleFile)
         self.info("@" * 80)
 
     def archiveGridSquare(self, gridSquareToBeArchived):
@@ -1150,6 +1154,7 @@ class MonitorISPyB_ESRF(Monitor):
             errorMessage = UtilsIcat.uploadToIcat(listPathsToBeArchived, directory, self.proposal,
                                                   self.sampleAcronym, dataSetName, dictIcatMetaData,
                                                   listGalleryPath)
+            self.updateJsonFile()
             if errorMessage is not None:
                 self.info("ERROR during icat upload!")
                 self.info(errorMessage)
@@ -1165,25 +1170,30 @@ class MonitorISPyB_ESRF(Monitor):
         directory = None
         listPathsToBeArchived = []
         if self.defectMapPath != "" or self.gainFilePath != "":
-            self.info("Archiving gain and defect map files")
             if not "GainAndDefectMap" in self.allParams:
                 self.allParams["GainAndDefectMap"] = {}
+                self.allParams["GainAndDefectMap"]["archived"] = False
+            if not self.allParams["GainAndDefectMap"]["archived"]:
+                self.info("Archiving gain and defect map files")
+                self.info("Defect map file: {0}".format(self.defectMapPath))
+                self.info("Gain file: {0}".format(self.gainFilePath))
                 if self.defectMapPath != "":
                     self.allParams["GainAndDefectMap"]["defectMapPath"] = self.defectMapPath
                     directory = os.path.dirname(self.defectMapPath)
+                    self.info("Directory: {0}".format(directory))
                     listPathsToBeArchived.append(self.defectMapPath)
                 if self.gainFilePath != "":
                     self.allParams["GainAndDefectMap"]["gainFilePath"] = self.gainFilePath
                     directory = os.path.dirname(self.gainFilePath)
+                    self.info("Directory: {0}".format(directory))
                     listPathsToBeArchived.append(self.gainFilePath)
-                self.allParams["GainAndDefectMap"]["archived"] = False
-            if not self.allParams["GainAndDefectMap"]["archived"]:
                 dictIcatMetaData = {
                     "EM_directory": directory,
                     "EM_protein_acronym": self.proteinAcronym,
                     "EM_voltage": self.voltage,
                     "EM_magnification": self.magnification
                 }
+                self.info(pprint.pformat(dictIcatMetaData))
                 dataSetName = "GainAndDefectMap"
                 listGalleryPath = []
                 errorMessage = UtilsIcat.uploadToIcat(
@@ -1192,6 +1202,7 @@ class MonitorISPyB_ESRF(Monitor):
                     listGalleryPath)
                 if errorMessage is None:
                     self.allParams["GainAndDefectMap"]["archived"] = True
+                    self.updateJsonFile()
                 else:
                     self.info("WARNING! Couldn't archive gain and defect map")
 

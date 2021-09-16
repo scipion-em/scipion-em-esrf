@@ -934,7 +934,6 @@ class MonitorISPyB_ESRF(Monitor):
                     if motionCorrectionObject is not None:
                         uploadSucceeded = True
                         motionCorrectionId = motionCorrectionObject.motionCorrectionId
-                        self.updateJsonFile()
                     else:
                         if noTrialsLeft == 0:
                             raise RuntimeError("ERROR: failure when trying to upload motion correction!")
@@ -947,6 +946,7 @@ class MonitorISPyB_ESRF(Monitor):
                 self.allParams[movieName]["motionCorrectionId"] = motionCorrectionId
                 self.allParams[movieName]["totalMotion"] = totalMotion
                 self.allParams[movieName]["averageMotionPerFrame"] = averageMotionPerFrame
+                self.updateJsonFile()
 
                 self.protocol.info("Upload of align movie results done, motionCorrectionId = {0}".format(motionCorrectionId))
 
@@ -1010,25 +1010,36 @@ class MonitorISPyB_ESRF(Monitor):
                 # self.info("estimatedBfactor : {0}".format(estimatedBfactor))
                 # self.info("logFilePath : {0}".format(logFilePath))
 
-                ctfObject = self.client.service.addCTF(proposal=self.proposal,
-                                    movieFullPath=movieFullPath,
-                                    spectraImageSnapshotFullPath=spectraImageSnapshotPyarchPath,
-                                    spectraImageFullPath=spectraImagePyarchPath,
-                                    defocusU=defocusU,
-                                    defocusV=defocusV,
-                                    angle=angle,
-                                    crossCorrelationCoefficient=crossCorrelationCoefficient,
-                                    resolutionLimit=resolutionLimit,
-                                    estimatedBfactor=estimatedBfactor,
-                                    logFilePath=logFilePath)
-
-                if ctfObject is not None:
-                    CTFid = ctfObject.CTFid
-                    self.updateJsonFile()
-                else:
-                    raise RuntimeError("ISPyB: ctfObject is None!")
-
-                time.sleep(0.1)
+                noTrialsLeft = 5
+                uploadSucceeded = False
+                while not uploadSucceeded:
+                    try:
+                        ctfObject = self.client.service.addCTF(proposal=self.proposal,
+                                            movieFullPath=movieFullPath,
+                                            spectraImageSnapshotFullPath=spectraImageSnapshotPyarchPath,
+                                            spectraImageFullPath=spectraImagePyarchPath,
+                                            defocusU=defocusU,
+                                            defocusV=defocusV,
+                                            angle=angle,
+                                            crossCorrelationCoefficient=crossCorrelationCoefficient,
+                                            resolutionLimit=resolutionLimit,
+                                            estimatedBfactor=estimatedBfactor,
+                                            logFilePath=logFilePath)
+                    except Exception as e:
+                        self.protocol.info("Error when trying to upload CTF to ISPyB!")
+                        self.protocol.info(e)
+                        ctfObject = None
+                    if ctfObject is not None:
+                        uploadSucceeded = True
+                        CTFid = ctfObject.CTFid
+                    else:
+                        if noTrialsLeft == 0:
+                            raise RuntimeError("ERROR: failure when trying to upload CTF to ISPyB!")
+                        else:
+                            self.info("ERROR! ctfObject is None!")
+                            self.info("Sleeping 5 s, and then trying again. Number of trials left: {0}".format(noTrialsLeft))
+                            time.sleep(5)
+                            noTrialsLeft -= 1
 
                 self.allParams[movieName]["CTFid"] = CTFid
                 self.allParams[movieName]["phaseShift"] = phaseShift
@@ -1037,9 +1048,9 @@ class MonitorISPyB_ESRF(Monitor):
                 self.allParams[movieName]["angle"] = angle
                 self.allParams[movieName]["crossCorrelationCoefficient"] = crossCorrelationCoefficient
                 self.allParams[movieName]["resolutionLimit"] = resolutionLimit
+                self.updateJsonFile()
 
                 self.info("CTF done, CTFid = {0}".format(CTFid))
-
 
     def uploadClassify2D(self, prot):
         ih = ImageHandler()

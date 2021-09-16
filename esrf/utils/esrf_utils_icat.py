@@ -93,17 +93,14 @@ class UtilsIcat(object):
         return errorMessage
 
     @staticmethod
-    def findGridSquaresNotUploaded(allParams, gridSquareNotToArchive=None):
-        dictGridSquares = {}
-        for key in allParams:
-            entry = allParams[key]
+    def findGridSquaresNotUploaded(allParams, gridSquareNotToArchive=None, timeout=300):
+        listGridSquares = []
+        for key, entry in allParams.items():
             if "archived" in entry and not entry["archived"] and "gridSquare" in entry:
                 gridSquare = entry["gridSquare"]
-                if gridSquare != gridSquareNotToArchive:
-                    if not gridSquare in dictGridSquares:
-                        dictGridSquares[gridSquare] = []
-                    dictGridSquares[gridSquare].append(key)
-        return dictGridSquares
+                if time.time() > allParams[gridSquare]["lastMovieTime"] + timeout and not gridSquare in listGridSquares:
+                    listGridSquares.append(gridSquare)
+        return listGridSquares
 
 
     @staticmethod

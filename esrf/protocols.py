@@ -33,6 +33,8 @@
 
 import os
 import sys
+sys.path.insert(0, "/opt/pxsoft/scipion/v3_dev/ubuntu20.04/scipion-em-esrf")
+
 import json
 import time
 import pprint
@@ -59,7 +61,7 @@ from pwem.emlib.image import ImageHandler
 shutil._USE_CP_SENDFILE = False
 
 
-class ProtMonitorISPyB_ESRF(ProtMonitor):
+class ProtMonitorISPyB_ESRF_TEST(ProtMonitor):
     """ 
     Monitor to communicated with ISPyB system at ESRF.
     """
@@ -276,16 +278,10 @@ class MonitorISPyB_ESRF(Monitor):
                     self.uploadClassify2D(prot)
                     isActiveClassify2D = prot.isActive()
 
-            # Check if archive last grid square
-            if self.currentGridSquareLastMovieTime is not None:
-                timeElapsed = int(time.time() - self.currentGridSquareLastMovieTime)
-                self.info("Time elapsed since last movie detected: {0} s".format(timeElapsed))
-                # Timeout for uploading last grid square to icat: 2h, 7200 s
-                if self.currentGridSquare is not None and timeElapsed > 3600:
-                    self.archiveGridSquare(self.currentGridSquare)
-                    self.currentGridSquare = None
-                    # Check if old grid squares
-                    self.archiveOldGridSquares()
+            # Check if we should archive any grid squares
+            listArchivedGridSquares = self.archiveOldGridSquares()
+            if len(listArchivedGridSquares) > 0:
+                self.protocol.info("Grid squares archived: {0}".format(listArchivedGridSquares))
 
             if isActiveImportMovies or isActiveAlignMovies or isActiveCTFMicrographs or isActiveClassify2D:
                 finished = False
@@ -464,22 +460,14 @@ class MonitorISPyB_ESRF(Monitor):
                     "EM_amplitude_contrast": amplitudeContrast,
                     "EM_sampling_rate": samplingRate,
                 }
-            self.updateJsonFile()
             if not gridSquare in self.allParams:
                 self.allParams[gridSquare] = {}
             if not "listGalleryPath" in self.allParams[gridSquare]:
                 self.allParams[gridSquare]["listGalleryPath"] = [gridSquareSnapshotFullPath]
             self.info("Import movies done, movieId = {0}".format(self.allParams[movieName]["movieId"]))
             self.currentGridSquareLastMovieTime = time.time()
-            if self.currentGridSquare is None:
-                self.currentGridSquare = gridSquare
-                self.info("New grid square detected: {0}".format(self.currentGridSquare))
-            elif self.currentGridSquare != gridSquare:
-                # New grid square, archive previous grid square
-                self.archiveGridSquare(self.currentGridSquare)
-                self.currentGridSquare = None
-                # Check if old grid squares
-                self.archiveOldGridSquares(gridSquare)
+            self.allParams[gridSquare]["lastMovieTime"] = self.currentGridSquareLastMovieTime
+            self.updateJsonFile()
 
     def uploadMoviesEPUTiff(self, prot, movieFullPath):
         dictFileNameParameters = UtilsPath.getEpuTiffMovieFileNameParameters(movieFullPath)
@@ -646,22 +634,14 @@ class MonitorISPyB_ESRF(Monitor):
                     "EM_amplitude_contrast": amplitudeContrast,
                     "EM_sampling_rate": samplingRate,
                 }
-            self.updateJsonFile()
             if not gridSquare in self.allParams:
                 self.allParams[gridSquare] = {}
             # if not "listGalleryPath" in self.allParams[gridSquare]:
             #     self.allParams[gridSquare]["listGalleryPath"] = [gridSquareSnapshotFullPath]
             self.info("Import movies done, movieId = {0}".format(self.allParams[movieName]["movieId"]))
             self.currentGridSquareLastMovieTime = time.time()
-            if self.currentGridSquare is None:
-                self.currentGridSquare = gridSquare
-                self.info("New grid square detected: {0}".format(self.currentGridSquare))
-            elif self.currentGridSquare != gridSquare:
-                # New grid square, archive previous grid square
-                self.archiveGridSquare(self.currentGridSquare)
-                self.currentGridSquare = None
-                # Check if old grid squares
-                self.archiveOldGridSquares(gridSquare)
+            self.allParams[gridSquare]["lastMovieTime"] = self.currentGridSquareLastMovieTime
+            self.updateJsonFile()
 
     def uploadMoviesSerialEM(self, prot, movieFullPath):
         dictFileNameParameters = UtilsPath.getSerialEMMovieFileNameParameters(str(prot.filesPath), movieFullPath)
@@ -1165,17 +1145,16 @@ class MonitorISPyB_ESRF(Monitor):
             errorMessage = UtilsIcat.uploadToIcat(listPathsToBeArchived, directory, self.proposal,
                                                   self.sampleAcronym, dataSetName, dictIcatMetaData,
                                                   listGalleryPath)
-            self.updateJsonFile()
             if errorMessage is not None:
                 self.info("ERROR during icat upload!")
                 self.info(errorMessage)
 
     def archiveOldGridSquares(self, gridSquareNotToArchive=None):
-        self.info("Archiving old grid squares (in any)")
         # Check if there are remaining grid squares to be uploaded:
-        dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(self.allParams, gridSquareNotToArchive)
-        for gridSquareToBeArchived in dictGridSquares:
+        listGridSquares = UtilsIcat.findGridSquaresNotUploaded(self.allParams, gridSquareNotToArchive)
+        for gridSquareToBeArchived in listGridSquares:
             self.archiveGridSquare(gridSquareToBeArchived)
+        return listGridSquares
 
     def archiveGainAndDefectMap(self):
         directory = None

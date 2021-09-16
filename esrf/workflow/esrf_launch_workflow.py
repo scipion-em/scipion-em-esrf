@@ -207,23 +207,24 @@ else:
 #         user = os.environ["USER"]
 #         location = os.path.join(location, dateString, user)
 # elif os.path.exists("/scisoft"):
-if os.path.exists("/scisoft"):
-    location = "/scisoft/cm01"
-    if "RAW_DATA" in configDict["dataDirectory"]:
-        listDir = configDict["dataDirectory"].split("/")
-        location = os.path.join(location, listDir[5], listDir[3])
-    else:
-        dateString = time.strftime("%Y%m%d", time.localtime(time.time()))
-        user = os.environ["USER"]
-        location = os.path.join(location, dateString, user)
+# if os.path.exists("/scisoft"):
+#     location = "/scisoft/cm01"
+#     if "RAW_DATA" in configDict["dataDirectory"]:
+#         listDir = configDict["dataDirectory"].split("/")
+#         location = os.path.join(location, listDir[5], listDir[3])
+#     else:
+#         dateString = time.strftime("%Y%m%d", time.localtime(time.time()))
+#         user = os.environ["USER"]
+#         location = os.path.join(location, dateString, user)
+# else:
+
+# Set up location
+if "RAW_DATA" in configDict["dataDirectory"]:
+    location = configDict["dataDirectory"].replace("RAW_DATA", "PROCESSED_DATA")
+#elif "cm01/inhouse" in dataDirectory:
+#    location = "/users/opcm01/PROCESSED_DATA"
 else:
-    # Set up location
-    if "RAW_DATA" in configDict["dataDirectory"]:
-        location = configDict["dataDirectory"].replace("RAW_DATA", "PROCESSED_DATA")
-    #elif "cm01/inhouse" in dataDirectory:
-    #    location = "/users/opcm01/PROCESSED_DATA"
-    else:
-        location = tempfile.mkdtemp(prefix="ScipionUserData_")
+    location = tempfile.mkdtemp(prefix="ScipionUserData_")
 
 print("Scipion project location: {0}".format(location))
 

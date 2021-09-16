@@ -551,7 +551,13 @@ class UtilsPath(object):
         /data/visitor/mx415/id14eh1/20100209 -> /data/pyarch/2010/id14eh1/mx415/20100209
         """
         pyarchFilePath = None
-        list_directory = workingDir.split(os.sep)
+        # Check problem of /gpfs/easy
+        directory = workingDir
+        if directory.startswith("/gpfs/easy"):
+            directory = directory.replace("/gpfs/easy", "")
+        elif directory.startswith("/gz"):
+            directory = directory.replace("/gz", "")
+        list_directory = directory.split(os.sep)
         list_beamline = ["cm01"]
         # Check that we have at least four levels of directories:
         if (len(list_directory) > 5):
@@ -613,11 +619,11 @@ class UtilsPath(object):
                 pyarchFilePath = os.path.join(pyarchFilePath, year)
                 pyarchFilePath = os.path.join(pyarchFilePath, beamline)
                 pyarchFilePath = os.path.join(pyarchFilePath, proposal)
-                for directory in listOfRemainingDirectories:
-                    pyarchFilePath = os.path.join(pyarchFilePath, directory)
+                for remainingDirectory in listOfRemainingDirectories:
+                    pyarchFilePath = os.path.join(pyarchFilePath, remainingDirectory)
     
         if (pyarchFilePath is None):
-            print("ERROR! Directory path not converted for pyarch: %s" % workingDir)
+            print("ERROR! Directory path not converted for pyarch: %s" % directory)
         return pyarchFilePath
 
     @staticmethod

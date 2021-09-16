@@ -93,7 +93,7 @@ class UtilsIcat(object):
         return errorMessage
 
     @staticmethod
-    def findGridSquaresNotUploaded(allParams, gridSquareNotToArchive=None, timeout=300):
+    def findGridSquaresNotUploaded(allParams, gridSquareNotToArchive=None, timeout=3600):
         listGridSquares = []
         for key, entry in allParams.items():
             if "archived" in entry and not entry["archived"] and "gridSquare" in entry:

@@ -504,10 +504,7 @@ def preprocessWorkflow(configDict):
 
     triggers = []
     def getNoClasses(no_particles):
-        if no_particles < 50000:
-            no_classes = 10
-        else:
-            no_classes = 25
+        no_classes = 50
         return no_classes
 
     for outputSize in [20000, 50000, 100000, 200000]:

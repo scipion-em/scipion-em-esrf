@@ -106,50 +106,62 @@ configDict["gainRot"] = motioncorr.constants.NO_ROTATION
 if configDict["filesPattern"] is None:
     # No filesPattern, let's assume that we are dealing with EPU data
     configDict["filesPattern"] = "Images-Disc1/GridSquare_*/Data/FoilHole_*-*.mrc"
+
+# Check how many movies are present on disk
+listMovies = glob.glob(os.path.join(configDict["dataDirectory"], configDict["filesPattern"]))
+noMovies = len(listMovies)
+if noMovies > 0:
+    # We have EPU data!
+    print("********** EPU data **********")
+    configDict["dataType"] = 0 # "EPU"
+else:
+    # Let's now assume that we are dealing with EPU tiff data
+    configDict["filesPattern"] = "Images-Disc1/GridSquare_*/Data/FoilHole_*_fractions.tiff"
     # Check how many movies are present on disk
     listMovies = glob.glob(os.path.join(configDict["dataDirectory"], configDict["filesPattern"]))
     noMovies = len(listMovies)
     if noMovies > 0:
-        # We have EPU data!
-        print("********** EPU data **********")
-        configDict["dataType"] = 0 # "EPU"
+        # We have EPU tiff data!
+        print("********** EPU tiff data **********")
+        configDict["dataType"] = 1 # "EPU_TIFF"
+        configDict["gainFlip"] = motioncorr.constants.FLIP_LEFTRIGHT
+        configDict["gainRot"] = motioncorr.constants.ROTATE_180
     else:
-        # Let's now assume that we are dealing with EPU tiff data
-        configDict["filesPattern"] = "Images-Disc1/GridSquare_*/Data/FoilHole_*_fractions.tiff"
-        # Check how many movies are present on disk
-        listMovies = glob.glob(os.path.join(configDict["dataDirectory"], configDict["filesPattern"]))
-        noMovies = len(listMovies)
-        if noMovies > 0:
-            # We have EPU tiff data!
-            print("********** EPU tiff data **********")
-            configDict["dataType"] = 1 # "EPU_TIFF"
-            configDict["gainFlip"] = motioncorr.constants.FLIP_LEFTRIGHT
-            configDict["gainRot"] = motioncorr.constants.ROTATE_180
-        else:
-            # So, no mrc or tiff movies found, let's try to find some serialEM files:
-            # Look for first tif, defect file and dm4 file
-            tifDir, firstTifFileName, defectFilePath, dm4FilePath = \
-                UtilsPath.findSerialEMFilePaths(configDict["dataDirectory"])
-            if tifDir is not None:
-                # We have serial EM data
-                configDict["filesPattern"] = UtilsPath.serialEMFilesPattern(configDict["dataDirectory"], tifDir)
-                listMovies = glob.glob(os.path.join(configDict["dataDirectory"], configDict["filesPattern"]))
-                noMovies = len(listMovies)
-                if noMovies > 0:
-                    # We have EPU data
-                    configDict["dataType"] = 2 # "SERIALEM"
-                    print("********** SerialEM data **********")
-else:
-    listMovies = glob.glob(os.path.join(configDict["dataDirectory"], configDict["filesPattern"]))
-    noMovies = len(listMovies)
+        # So, no mrc or tiff movies found, let's try to find some serialEM files:
+        # Look for first tif, defect file and dm4 file
+        tifDir, firstTifFileName, defectFilePath, dm4FilePath = \
+            UtilsPath.findSerialEMFilePaths(configDict["dataDirectory"])
+        if tifDir is not None:
+            # We have serial EM data
+            configDict["filesPattern"] = UtilsPath.serialEMFilesPattern(configDict["dataDirectory"], tifDir)
+            listMovies = glob.glob(os.path.join(configDict["dataDirectory"], configDict["filesPattern"]))
+            noMovies = len(listMovies)
+            if noMovies > 0:
+                # We have EPU data
+                configDict["dataType"] = 2 # "SERIALEM"
+                print("********** SerialEM data **********")
 
-if noMovies == 0:
+if configDict["secondGrid"]:
+    if noMovies > 0:
+        raise RuntimeError("--secondGrid used and images already exists on disk!")
+    # Check that we have voltage, imagesCount and magnification:
+    for key in ["voltage", "magnification", "imagesCount"]:
+        if key not in configDict or configDict[key] is None:
+            raise RuntimeError("--secondGrid used, missing command line argument '--{0}'!".format(key))
+    # Assume EPU TIFF data
+    configDict["dataType"] = 1 # "EPU_TIFF"
+    configDict["gainFlip"] = motioncorr.constants.FLIP_LEFTRIGHT
+    configDict["gainRot"] = motioncorr.constants.ROTATE_180
+    configDict["filesPattern"] = "Images-Disc1/GridSquare_*/Data/FoilHole_*_fractions.tiff"
+elif noMovies == 0:
     print("ERROR! No movies available in directory {0} with the filesPattern {1}.".format(configDict["dataDirectory"], configDict["filesPattern"]))
     sys.exit(1)
+else:
+    print("Number of movies available on disk: {0}".format(noMovies))
+    firstMovieFullPath = listMovies[0]
+    print("First movie full path file: {0}".format(firstMovieFullPath))
 
-print("Number of movies available on disk: {0}".format(noMovies))
-firstMovieFullPath = listMovies[0]
-print("First movie full path file: {0}".format(firstMovieFullPath))
+
 
 if configDict["dataType"] == 2: # "SERIALEM"
     if defectFilePath is None:
@@ -227,6 +239,8 @@ else:
     location = tempfile.mkdtemp(prefix="ScipionUserData_")
 
 print("Scipion project location: {0}".format(location))
+if not os.path.exists(os.path.dirname(location)):
+    os.makedirs(os.path.dirname(location), mode=0o755)
 
 dateTime = time.strftime("%Y%m%d-%H%M%S", time.localtime(time.time()))
 
@@ -282,7 +296,7 @@ else:
     # db=0: production
     # db=1: valid
     # db=2: linsvensson
-    proposal = UtilsISPyB.getProposal(firstMovieFullPath)
+    proposal = UtilsISPyB.getProposal(configDict["dataDirectory"])
     if proposal is None:
         print("WARNING! No valid proposal could be found for movie {0}.".format(firstMovieFullPath))
         print("")
@@ -334,7 +348,7 @@ try:
 except FileNotFoundError as e:
     print("WARNING! Cannot stop SLURM processes: {0}".format(e))
 
-if configDict["nominalMagnification"] is None:
+if configDict["magnification"] is None:
     if configDict["dataType"] in [0, 1]: # EPU or EPU_TIFF
 
         if configDict["dataType"] == 0: # "EPU"
@@ -355,7 +369,7 @@ if configDict["nominalMagnification"] is None:
 
         dictResults = UtilsPath.getXmlMetaData(xml)
         configDict["doPhaseShiftEstimation"] = dictResults["phasePlateUsed"]
-        configDict["nominalMagnification"] = int(dictResults["nominalMagnification"])
+        configDict["magnification"] = int(dictResults["magnification"])
         configDict["voltage"] = int(dictResults["accelerationVoltage"])
         configDict["imagesCount"] = int(dictResults["numberOffractions"])
 
@@ -373,7 +387,7 @@ if configDict["nominalMagnification"] is None:
             sys.exit(1)
         
         dictResults = UtilsPath.getMdocMetaData(mdoc)
-        configDict["nominalMagnification"] = int(dictResults["Magnification"])
+        configDict["magnification"] = int(dictResults["Magnification"])
         if configDict["imagesCount"] is None:
             raise RuntimeError("Number of images (imagesCount) is None!")
 
@@ -434,7 +448,10 @@ elif num_gpus in [2, 3]:
     configDict["motioncor2Gpu"] = "0 1"
     configDict["motioncor2Cpu"] = 3
 else:
-    configDict["motioncor2Gpu"] = "0 1 2 3"
+    if configDict["secondGrid"]:
+        configDict["motioncor2Gpu"] = "4 5 6 7"
+    else:
+        configDict["motioncor2Gpu"] = "0 1 2 3"
     configDict["motioncor2Cpu"] = 5
 configDict["gctfGpu"] = "0"
 configDict["gl2dGpu"] = "0"
@@ -469,7 +486,7 @@ print("{0:30s}{1:8.1f}".format("phaseShiftS",configDict["phaseShiftS"]))
 print("{0:30s}{1:8.1f}".format("phaseShiftT",configDict["phaseShiftT"]))
 print("{0:30s}{1:8.3f}".format("lowRes",configDict["lowRes"]))
 print("{0:30s}{1:8.3f}".format("highRes",configDict["highRes"]))
-print("{0:30s}{1:8.0f}".format("nominalMagnification",configDict["nominalMagnification"]))
+print("{0:30s}{1:8.0f}".format("magnification",configDict["magnification"]))
 print("{0:30s}{1:8.2f}".format("samplingRate",configDict["samplingRate"]))
 print("{0:30s}{1:8.2f}".format("sampling2D",configDict["sampling2D"]))
 print("{0:30s}{1:8.2f}".format("partSize",configDict["partSize"]))

@@ -127,7 +127,7 @@ class UtilsPath(object):
                 dictResult["doseWeightMrc"] = mrcFile            
         # Find log file
         dictResult["logFileFullPath"] = \
-            os.path.join(os.path.dirname(mrcDirectory), "logs", "run.log")
+            os.path.join(os.path.dirname(mrcDirectory), "logs", "run.stdout")
         return dictResult
 
     @staticmethod
@@ -159,7 +159,7 @@ class UtilsPath(object):
                 dictResult["doseWeightMrc"] = mrcFile
         # Find log file
         dictResult["logFileFullPath"] = \
-            os.path.join(os.path.dirname(mrcDirectory), "logs", "run.log")
+            os.path.join(os.path.dirname(mrcDirectory), "logs", "run.stdout")
         return dictResult
 
     @staticmethod
@@ -191,7 +191,7 @@ class UtilsPath(object):
                 dictResult["doseWeightMrc"] = mrcFile
         # Find log file
         dictResult["logFileFullPath"] = \
-            os.path.join(os.path.dirname(mrcDirectory), "logs", "run.log")
+            os.path.join(os.path.dirname(mrcDirectory), "logs", "run.stdout")
         return dictResult
 
     @staticmethod
@@ -243,7 +243,7 @@ class UtilsPath(object):
         dictResults = {
             "numberOffractions": \
                 UtilsPath.get_recursively(dictXML, "NumberOffractions")[0],
-            "nominalMagnification": \
+            "magnification": \
                 UtilsPath.get_recursively(dictXML, "NominalMagnification")[0],
             "positionX": UtilsPath.get_recursively(dictXML, "X")[0],
             "positionY": UtilsPath.get_recursively(dictXML, "Y")[0],
@@ -346,7 +346,7 @@ class UtilsPath(object):
                         listValues = lines[index].split()
                         dictResults["estimatedBfactor"] = listValues[-1]
         # Find log file
-        logFilePath = os.path.join(workingDir, "logs", "run.log")
+        logFilePath = os.path.join(workingDir, "logs", "run.stdout")
         if os.path.exists(logFilePath):
             dictResults["logFilePath"] = logFilePath
         return dictResults
@@ -411,7 +411,7 @@ class UtilsPath(object):
         FoilHole_10859740_Data_10853322_10853324_20210611_233928_fractions.tiff
         """
         try:
-            print(mrcFilePath)
+            # print(mrcFilePath)
             dictResult = {}
             dictResult["directory"] = os.path.dirname(mrcFilePath)
             p = re.compile(
@@ -557,6 +557,8 @@ class UtilsPath(object):
             directory = directory.replace("/gpfs/easy", "")
         elif directory.startswith("/gz"):
             directory = directory.replace("/gz", "")
+        elif directory.startswith("/hz"):
+            directory = directory.replace("/hz", "")
         list_directory = directory.split(os.sep)
         list_beamline = ["cm01"]
         # Check that we have at least four levels of directories:

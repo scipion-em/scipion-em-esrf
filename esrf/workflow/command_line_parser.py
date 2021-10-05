@@ -144,6 +144,12 @@ def getCommandlineOptions():
         default=False
     )
     optional.add_argument(
+        "--noISPyB",
+        action="store_true",
+        help="Don't upload to ISPyB or iCAT, default 'False'.",
+        default=False
+    )
+    optional.add_argument(
         "--defectMapPath",
         action="store",
         help="Defect map file path",
@@ -162,9 +168,9 @@ def getCommandlineOptions():
         default=False
     )
     optional.add_argument(
-        "--noISPyB",
+        "--secondGrid",
         action="store_true",
-        help="Don't upload to ISPyB or iCAT, default 'False'.",
+        help="If set: timeout increased to 72 h, GPUs 4-7 used",
         default=False
     )
     results = parser.parse_args()
@@ -176,7 +182,7 @@ def getCommandlineOptions():
         "proteinAcronym": results.protein,
         "sampleAcronym": results.sample,
         "doseInitial": float(results.doseInitial),
-        "nominalMagnification": int(results.magnification) if results.magnification is not None else None,
+        "magnification": int(results.magnification) if results.magnification is not None else None,
         "imagesCount": int(results.imagesCount) if results.imagesCount is not None else None,
         "voltage": int(results.voltage) if results.voltage is not None else None,
         "dosePerFrame": float(results.dosePerFrame),
@@ -190,9 +196,9 @@ def getCommandlineOptions():
         "samplingRate": float(results.samplingRate),
         "superResolution": results.superResolution,
         "partSize": float(results.partSize),
-        # "parts2class": int(results.parts2class),
         "defectMapPath": results.defectMapPath,
-        "gainFilePath": results.gainFilePath
+        "gainFilePath": results.gainFilePath,
+        "secondGrid": results.secondGrid
     }
 
     return optDict

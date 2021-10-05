@@ -32,6 +32,7 @@ import time
 import traceback
 
 from esrf.utils.ESRFMetadataManagerClient import MetadataManagerClient
+from esrf.utils.esrf_utils_path import UtilsPath
 
 class UtilsIcat(object):
     
@@ -96,10 +97,17 @@ class UtilsIcat(object):
     def findGridSquaresNotUploaded(allParams, gridSquareNotToArchive=None, timeout=3600):
         listGridSquares = []
         for key, entry in allParams.items():
-            if "archived" in entry and not entry["archived"] and "gridSquare" in entry:
-                gridSquare = entry["gridSquare"]
-                if time.time() > allParams[gridSquare]["lastMovieTime"] + timeout and not gridSquare in listGridSquares:
-                    listGridSquares.append(gridSquare)
+            if "archived" in entry and not entry["archived"]:
+                if "gridSquare" in entry:
+                    gridSquare = entry["gridSquare"]
+                    if time.time() > allParams[gridSquare]["lastMovieTime"] + timeout and not gridSquare in listGridSquares:
+                        listGridSquares.append(gridSquare)
+                elif "movieFullPath" in entry:
+                    movieFullPath = entry["movieFullPath"]
+                    dictFileNameParameters = UtilsPath.getEpuTiffMovieFileNameParameters(movieFullPath)
+                    gridSquare = dictFileNameParameters["gridSquare"]
+                    if not gridSquare in listGridSquares:
+                        listGridSquares.append(gridSquare)
         return listGridSquares
 
 

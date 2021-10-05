@@ -244,7 +244,7 @@ class Test(unittest.TestCase):
             'accelerationVoltage': '300000',
             'acquisitionDateTime': '2017-11-15T16:20:52.2530023+01:00',
             'dose': '2.3276455783574426E+21',
-            'nominalMagnification': '130000',
+            'magnification': '130000',
             'numberOffractions': '30',
             'phasePlateUsed': 'true',
             'positionX': '0.00026971729600000011',

@@ -126,7 +126,7 @@ class Test(unittest.TestCase):
             dictIcatMetaData["endTime"] = endTime
             directory = dictIcatMetaData["EM_directory"]
             listGalleryPath = allParams[gridSquareToBeArchived]["listGalleryPath"]
-            dataSetName = "{0}_{1}".format(gridSquareToBeArchived, round(time.time()))
+            dataSetName = gridSquareToBeArchived
             allParams[dataSetName] = dictIcatMetaData
             # print("listPathsToBeArchived: {0}".format(pprint.pformat(listPathsToBeArchived)))
             print("directory: {0}".format(directory))

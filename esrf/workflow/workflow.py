@@ -207,7 +207,10 @@ def preprocessWorkflow(configDict):
     summaryList = []
     ispybUploads = []
 
-    timeout = 43200
+    if configDict["secondGrid"]:
+        timeout = 295200 # 72 hours
+    else:
+        timeout = 43200 # 12 hours
 
     protImport = project.newProtocol(ProtImportMovies,
                                      objLabel='Import movies',
@@ -220,7 +223,7 @@ def preprocessWorkflow(configDict):
                                      samplingRate=configDict["samplingRate"],
                                      doseInitial=configDict["doseInitial"],
                                      dosePerFrame=configDict["dosePerFrame"],
-                                     magnification=configDict["nominalMagnification"],
+                                     magnification=configDict["magnification"],
                                      dataStreaming=configDict["dataStreaming"],
                                      blacklistFile=configDict["blacklistFile"],
                                      useRegexps=False,
@@ -618,7 +621,7 @@ def preprocessWorkflow(configDict):
             dataType=configDict["dataType"],
             voltage=configDict["voltage"],
             imagesCount=configDict["imagesCount"],
-            magnification=configDict["nominalMagnification"],
+            magnification=configDict["magnification"],
             alignFrame0=configDict["alignFrame0"],
             alignFrameN=configDict["alignFrameN"],
             defectMapPath=configDict["defectMapPath"],

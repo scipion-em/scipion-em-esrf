@@ -1015,8 +1015,9 @@ class MonitorISPyB_ESRF(Monitor):
                 # self.info("logFilePath : {0}".format(logFilePath))
 
                 noTrialsLeft = 5
-                uploadSucceeded = False
-                while not uploadSucceeded:
+                continueToUpload = True
+                CTFid = None
+                while continueToUpload:
                     try:
                         ctfObject = self.client.service.addCTF(proposal=self.proposal,
                                             movieFullPath=movieFullPath,
@@ -1034,11 +1035,12 @@ class MonitorISPyB_ESRF(Monitor):
                         self.protocol.info(e)
                         ctfObject = None
                     if ctfObject is not None:
-                        uploadSucceeded = True
+                        continueToUpload = False
                         CTFid = ctfObject.CTFid
                     else:
                         if noTrialsLeft == 0:
-                            raise RuntimeError("ERROR: failure when trying to upload CTF to ISPyB!")
+                            self.info("ERROR: failure when trying to upload CTF to ISPyB!")
+                            continueToUpload = False
                         else:
                             self.info("ERROR! ctfObject is None!")
                             self.info("Sleeping 5 s, and then trying again. Number of trials left: {0}".format(noTrialsLeft))

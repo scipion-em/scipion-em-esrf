@@ -418,8 +418,8 @@ if configDict["phasePlateData"]:
     configDict["phaseShiftH"] = 180.0
     configDict["phaseShiftS"] = 5.0
     configDict["phaseShiftT"] = 1
-    configDict["lowRes"] = 15.0 / configDict["samplingRate"] / configDict["binFactor"]
-    configDict["highRes"] = 4.0 / configDict["samplingRate"] / configDict["binFactor"]
+    configDict["lowRes"] = 15.0
+    configDict["highRes"] = 4.0
 else:
     configDict["sphericalAberration"] = 2.7
     configDict["minDefocus"] = 5000
@@ -431,8 +431,8 @@ else:
     configDict["phaseShiftH"] = 180.0
     configDict["phaseShiftS"] = 10.0
     configDict["phaseShiftT"] = 0
-    configDict["lowRes"] = 30.0 /  configDict["samplingRate"]
-    configDict["highRes"] = 4.0 / configDict["samplingRate"]
+    configDict["lowRes"] = 30.0
+    configDict["highRes"] = 4.0
 
 if configDict["lowRes"] > 50:
     configDict["lowRes"] = 50

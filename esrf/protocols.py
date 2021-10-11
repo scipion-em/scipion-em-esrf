@@ -261,6 +261,14 @@ class MonitorISPyB_ESRF(Monitor):
             isActiveCTFMicrographs = True
             isActiveClassify2D = True
 
+            # Check if we should archive any grid squares
+            archivedGridSquare = self.archiveOldGridSquare()
+            if archivedGridSquare is not None:
+                self.info("Grid square archived: {0}".format(archivedGridSquare))
+                self.updateJsonFile()
+            else:
+                self.info("No grid square to archive.")
+
             for n in nodes:
                 prot = n.run
                 self.info("*"*80)
@@ -279,12 +287,6 @@ class MonitorISPyB_ESRF(Monitor):
                 elif isinstance(prot, ProtClassify2D) and hasattr(prot, 'outputClasses') and not prot.getObjId() in self.allParams:
                     self.uploadClassify2D(prot)
                     isActiveClassify2D = prot.isActive()
-
-            # Check if we should archive any grid squares
-            archivedGridSquare = self.archiveOldGridSquare()
-            if archivedGridSquare is not None:
-                self.protocol.info("Grid square archived: {0}".format(archivedGridSquare))
-                self.updateJsonFile()
 
             if isActiveImportMovies or isActiveAlignMovies or isActiveCTFMicrographs or isActiveClassify2D:
                 finished = False

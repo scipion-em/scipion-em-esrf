@@ -113,12 +113,6 @@ def getCommandlineOptions():
         help="End frame for motion correction, default last frame.",
         default=0
     )
-    # optional.add_argument(
-    #     "--parts2class",
-    #     action="store",
-    #     help="Number of particles for classification",
-    #     default=5000
-    # )
     optional.add_argument(
         "--partSize",
         action="store",
@@ -135,6 +129,12 @@ def getCommandlineOptions():
         "--phasePlateData",
         action="store_true",
         help="Phase plate used, default 'False'.",
+        default=False
+    )
+    optional.add_argument(
+        "--no2dClass",
+        action="store_true",
+        help="Only movie import, MotioCor2 and Gctf, no 2D classification",
         default=False
     )
     optional.add_argument(
@@ -190,6 +190,7 @@ def getCommandlineOptions():
         "alignFrame0": int(results.startMotioncorFrame),
         "alignFrameN": int(results.endMotioncorFrame),
         "phasePlateData": results.phasePlateData,
+        "no2dClass": results.no2dClass,
         "onlyISPyB": results.onlyISPyB,
         "noISPyB": results.noISPyB,
         "particleElimination": results.particleElimination,

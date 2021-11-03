@@ -426,8 +426,8 @@ def preprocessWorkflow(configDict):
             no_classes = 50
             return no_classes
 
-        # for outputSize in [5000, 20000, 50000, 100000, 200000]:
-        for outputSize in [1000, 4000]:
+        for outputSize in [5000, 20000, 50000, 100000, 200000]:
+        # for outputSize in [1000, 4000]:
             allAvgs = []
             classifiers = []
             # --------- TRIGGER PARTS ---------------------------

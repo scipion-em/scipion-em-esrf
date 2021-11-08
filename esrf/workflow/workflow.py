@@ -227,58 +227,58 @@ def preprocessWorkflow(configDict):
     _registerProt(protImport, label='Movies', toSummary=True)
     ispybUploads.append(protImport)
 
-    # ----------- MOTIONCOR ----------------------------
-    protMA = project.newProtocol(ProtMotionCorr,
-                                 objLabel='MotionCor2 - movie align.',
-                                 gpuList=configDict["motioncor2Gpu"],
-                                 numberOfThreads=configDict["motioncor2Cpu"],
-                                 numberOfMpi=1,
-                                 doApplyDoseFilter=True,
-                                 doSaveUnweightedMic=True,
-                                 doSaveAveMic=True,
-                                 doSaveMovie=False,
-                                 doComputeMicThumbnail=True,
-                                 computeAllFramesAvg=False,
-                                 patchX=5, patchY=5,
-                                 useEst=True,
-                                 gainFlip=configDict["gainFlip"],
-                                 gainRot=configDict["gainRot"],
-                                 alignFrame0=configDict["alignFrame0"],
-                                 alignFrameN=configDict["alignFrameN"],
-                                 binFactor=configDict["binFactor"],
-                                 extraParams2=configDict["extraParams2"])
-    setExtendedInput(protMA.inputMovies, protImport, 'outputMovies')
-    _registerProt(protMA, 'Movies')
-    ispybUploads.append(protMA)
+    # Stop here if --onlyISPyB
+    if not configDict["onlyISPyB"]:
+        # ----------- MOTIONCOR ----------------------------
+        protMA = project.newProtocol(ProtMotionCorr,
+                                     objLabel='MotionCor2 - movie align.',
+                                     gpuList=configDict["motioncor2Gpu"],
+                                     numberOfThreads=configDict["motioncor2Cpu"],
+                                     numberOfMpi=1,
+                                     doApplyDoseFilter=True,
+                                     doSaveUnweightedMic=True,
+                                     doSaveAveMic=True,
+                                     doSaveMovie=False,
+                                     doComputeMicThumbnail=True,
+                                     computeAllFramesAvg=False,
+                                     patchX=5, patchY=5,
+                                     useEst=True,
+                                     gainFlip=configDict["gainFlip"],
+                                     gainRot=configDict["gainRot"],
+                                     alignFrame0=configDict["alignFrame0"],
+                                     alignFrameN=configDict["alignFrameN"],
+                                     binFactor=configDict["binFactor"],
+                                     extraParams2=configDict["extraParams2"])
+        setExtendedInput(protMA.inputMovies, protImport, 'outputMovies')
+        _registerProt(protMA, 'Movies')
+        ispybUploads.append(protMA)
 
-    protCTF2 = project.newProtocol(ProtGctf,
-                                   objLabel='gCTF estimation',
-                                   gpuList=configDict["gctfGpu"],
-                                   lowRes=configDict["lowRes"],
-                                   plotResRing=True,
-                                   doEPA=False,
-                                   doHighRes=True,
-                                   convsize=configDict["convsize"],
-                                   highRes=configDict["highRes"],
-                                   minDefocus=configDict["minDefocus"],
-                                   maxDefocus=configDict["maxDefocus"],
-                                   astigmatism=configDict["astigmatism"],
-                                   doPhShEst=configDict["doPhShEst"],
-                                   phaseShiftL=configDict["phaseShiftL"],
-                                   phaseShiftH=configDict["phaseShiftH"],
-                                   phaseShiftS=configDict["phaseShiftS"],
-                                   phaseShiftT=configDict["phaseShiftT"],
+        protCTF2 = project.newProtocol(ProtGctf,
+                                       objLabel='gCTF estimation',
+                                       gpuList=configDict["gctfGpu"],
+                                       lowRes=configDict["lowRes"],
+                                       plotResRing=True,
+                                       doEPA=False,
+                                       doHighRes=True,
+                                       convsize=configDict["convsize"],
+                                       highRes=configDict["highRes"],
+                                       minDefocus=configDict["minDefocus"],
+                                       maxDefocus=configDict["maxDefocus"],
+                                       astigmatism=configDict["astigmatism"],
+                                       doPhShEst=configDict["doPhShEst"],
+                                       phaseShiftL=configDict["phaseShiftL"],
+                                       phaseShiftH=configDict["phaseShiftH"],
+                                       phaseShiftS=configDict["phaseShiftS"],
+                                       phaseShiftT=configDict["phaseShiftT"],
 
-                                   )
-    setExtendedInput(protCTF2.inputMicrographs,
-                     protMA, 'outputMicrographsDoseWeighted')
-    _registerProt(protCTF2, 'CTF')
-    ispybUploads.append(protCTF2)
+                                       )
+        setExtendedInput(protCTF2.inputMicrographs,
+                         protMA, 'outputMicrographsDoseWeighted')
+        _registerProt(protCTF2, 'CTF')
+        ispybUploads.append(protCTF2)
 
-
-    # Only do the rest if not --no2dClass:
-
-    if not configDict["no2dClass"]:
+    # Only do the rest if not --onlyISPyB and not --no2dClass
+    if not configDict["onlyISPyB"] and not configDict["no2dClass"]:
         #
         # # --------- CTF ESTIMATION 1 ---------------------------
         protCTF1 = project.newProtocol(CistemProtCTFFind,

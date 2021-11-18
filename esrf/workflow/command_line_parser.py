@@ -30,148 +30,126 @@ import argparse
 
 def getCommandlineOptions():
     parser = argparse.ArgumentParser(
-        description="Application for starting Scipion workflow for CM01")
+        description="Application for starting Scipion workflow for CM01"
+    )
     parser._action_groups.pop()
-    required = parser.add_argument_group('required arguments')
-    optional = parser.add_argument_group('optional arguments')
+    required = parser.add_argument_group("required arguments")
+    optional = parser.add_argument_group("optional arguments")
     required.add_argument(
-        "--directory",
-        action="store",
-        help="top EM directory",
-        required=True
+        "--directory", action="store", help="top EM directory", required=True
     )
     required.add_argument(
         "--protein",
         action="store",
         help="Protein acronym, must be the one used in the A-form.",
-        required=True
+        required=True,
     )
     required.add_argument(
         "--sample",
         action="store",
         help="Sample name, for example 'grid1'.",
-        required=True
+        required=True,
     )
     required.add_argument(
-        "--dosePerFrame",
-        action="store",
-        help="Dose per frame.",
-        required=True
+        "--dosePerFrame", action="store", help="Dose per frame.", required=True
     )
     optional.add_argument(
         "--samplingRate",
         action="store",
         help="Sampling rate.",
         default=None,
-        required=True
+        required=True,
     )
     optional.add_argument(
         "--filesPattern",
         action="store",
-        help="file pattern for finding EM movies, default pattern " +
-             "'Images-Disc1/GridSquare_*/Data/FoilHole_*-*.mrc'",
-        default=None
+        help="file pattern for finding EM movies, default pattern "
+        + "'Images-Disc1/GridSquare_*/Data/FoilHole_*-*.mrc'",
+        default=None,
     )
     optional.add_argument(
         "--scipionProjectName",
         action="store",
-        help="Scipion project name, is only used internally in Scipion."
+        help="Scipion project name, is only used internally in Scipion.",
     )
     optional.add_argument(
-        "--doseInitial",
-        action="store",
-        help="Initial dose, default zero.",
-        default=0.0
+        "--doseInitial", action="store", help="Initial dose, default zero.", default=0.0
     )
     optional.add_argument(
-        "--magnification",
-        action="store",
-        help="Nominal magnification.",
-        default=None
+        "--magnification", action="store", help="Nominal magnification.", default=None
     )
     optional.add_argument(
         "--imagesCount",
         action="store",
         help="Number of images per movie.",
-        default=None
+        default=None,
     )
-    optional.add_argument(
-        "--voltage",
-        action="store",
-        help="Voltage [V]",
-        default=None
-    )
+    optional.add_argument("--voltage", action="store", help="Voltage [V]", default=None)
     optional.add_argument(
         "--startMotioncorFrame",
         action="store",
         help="Start frame for motion correction, default 1.",
-        default=1
+        default=1,
     )
     optional.add_argument(
         "--endMotioncorFrame",
         action="store",
         help="End frame for motion correction, default last frame.",
-        default=0
+        default=0,
     )
     optional.add_argument(
         "--partSize",
         action="store",
         help="Particle size for auto picking",
-        default=200.0
+        default=200.0,
     )
     optional.add_argument(
         "--superResolution",
         action="store_true",
         help="Super resolution used, default 'False'.",
-        default=False
+        default=False,
     )
     optional.add_argument(
         "--phasePlateData",
         action="store_true",
         help="Phase plate used, default 'False'.",
-        default=False
+        default=False,
     )
     optional.add_argument(
         "--no2dClass",
         action="store_true",
         help="Only movie import, MotioCor2 and Gctf, no 2D classification",
-        default=False
+        default=False,
     )
     optional.add_argument(
         "--onlyISPyB",
         action="store_true",
         help="Only upload data to ISPyB i.e. no processing, default 'False'.",
-        default=False
+        default=False,
     )
     optional.add_argument(
         "--noISPyB",
         action="store_true",
         help="Don't upload to ISPyB or iCAT, default 'False'.",
-        default=False
+        default=False,
     )
     optional.add_argument(
-        "--defectMapPath",
-        action="store",
-        help="Defect map file path",
-        default=None
+        "--defectMapPath", action="store", help="Defect map file path", default=None
     )
     optional.add_argument(
-        "--gainFilePath",
-        action="store",
-        help="Gain file path",
-        default=None
+        "--gainFilePath", action="store", help="Gain file path", default=None
     )
     optional.add_argument(
         "--particleElimination",
         action="store_true",
         help="Don't eliminate particles after extract particles.",
-        default=False
+        default=False,
     )
     optional.add_argument(
         "--secondGrid",
         action="store_true",
         help="If set: timeout increased to 72 h, GPUs 4-7 used",
-        default=False
+        default=False,
     )
     results = parser.parse_args()
 
@@ -182,8 +160,12 @@ def getCommandlineOptions():
         "proteinAcronym": results.protein,
         "sampleAcronym": results.sample,
         "doseInitial": float(results.doseInitial),
-        "magnification": int(results.magnification) if results.magnification is not None else None,
-        "imagesCount": int(results.imagesCount) if results.imagesCount is not None else None,
+        "magnification": int(results.magnification)
+        if results.magnification is not None
+        else None,
+        "imagesCount": int(results.imagesCount)
+        if results.imagesCount is not None
+        else None,
         "voltage": int(results.voltage) if results.voltage is not None else None,
         "dosePerFrame": float(results.dosePerFrame),
         "dataStreaming": True,
@@ -199,8 +181,7 @@ def getCommandlineOptions():
         "partSize": float(results.partSize),
         "defectMapPath": results.defectMapPath,
         "gainFilePath": results.gainFilePath,
-        "secondGrid": results.secondGrid
+        "secondGrid": results.secondGrid,
     }
 
     return optDict
-

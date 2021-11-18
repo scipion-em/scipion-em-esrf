@@ -189,7 +189,8 @@ else:
     print("First movie full path file: {0}".format(firstMovieFullPath))
 
 
-if configDict["dataType"] == 2:  # "SERIALEM"
+if configDict["dataType"] == 2:
+    # "SERIALEM"
     if defectFilePath is None:
         print("ERROR - No defect file path found in directory {0}!".format(tifDir))
         sys.exit(1)
@@ -213,13 +214,13 @@ if configDict["dataType"] == 2:  # "SERIALEM"
         gainFilePath, defectMapPath
     )
 else:
+    # "EPU" or "EPU_TIFF"
     configDict["extraParams2"] = ""
 
     if configDict["gainFilePath"] is None:
         if configDict["dataType"] == 1:  # "EPU_TIFF"
-            raise RuntimeError("Missing gainFilePath for EPU TIFF data!")
-        else:
-            configDict["gainFilePath"] = ""
+            print("Warning - missing gainFilePath for EPU TIFF data!")
+        configDict["gainFilePath"] = ""
     elif not os.path.exists(configDict["gainFilePath"]):
         print("ERROR! Cannot find gain file {0}".format(configDict["gainFilePath"]))
         sys.exit(1)

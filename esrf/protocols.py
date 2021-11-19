@@ -34,8 +34,6 @@
 import os
 import sys
 
-sys.path.insert(0, "/opt/pxsoft/scipion/v3_dev/ubuntu20.04/scipion-em-esrf")
-
 import json
 import time
 import pprint

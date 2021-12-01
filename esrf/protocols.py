@@ -641,13 +641,13 @@ class MonitorISPyB_ESRF(Monitor):
                         )
                         timeNow = time.time()
                         deltaTime = timeNow - startTime
-                        if deltaTime > 5:
+                        if deltaTime > 60:
                             self.info(
                                 "Import movies: Timeout waiting for meta-data files to appear on disk!!!"
                             )
                             doContinue = False
                         else:
-                            time.sleep(2)
+                            time.sleep(5)
                             (
                                 micrographSnapshotFullPath_new,
                                 micrographFullPath_new,

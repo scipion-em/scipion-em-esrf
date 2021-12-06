@@ -1425,7 +1425,7 @@ class MonitorISPyB_ESRF(Monitor):
                 and not self.allParams[movieName]["archived"]
             ):
                 listPathsToBeArchived.append(self.allParams[movieName]["movieFullPath"])
-                self.allParams[movieName]["archived"] = True
+                # self.allParams[movieName]["archived"] = True
                 try:
                     sumPositionX += float(self.allParams[movieName]["positionX"])
                     sumPositionY += float(self.allParams[movieName]["positionY"])
@@ -1464,6 +1464,7 @@ class MonitorISPyB_ESRF(Monitor):
             self.info("self.proposal: {0}".format(self.proposal))
             self.info("self.sampleAcronym: {0}".format(self.sampleAcronym))
             self.info("dataSetName: {0}".format(dataSetName))
+            self.info("no movies: {0}".format(len(listPathsToBeArchived)))
             self.info("dictIcatMetaData: {0}".format(pprint.pformat(dictIcatMetaData)))
             errorMessage = UtilsIcat.uploadToIcat(
                 listPathsToBeArchived,
@@ -1477,6 +1478,10 @@ class MonitorISPyB_ESRF(Monitor):
             if errorMessage is not None:
                 self.info("ERROR during icat upload!")
                 self.info(errorMessage)
+            else:
+                for movieName in self.allParams:
+                    if "gridSquare" in self.allParams[movieName] and self.allParams[movieName]["movieFullPath"] in listPathsToBeArchived:
+                        self.allParams[movieName]["archived"] = True
 
     def archiveOldGridSquare(self, gridSquareNotToArchive=None):
         gridSquare = None
@@ -1485,8 +1490,9 @@ class MonitorISPyB_ESRF(Monitor):
             self.allParams, gridSquareNotToArchive
         )
         if len(listGridSquareNotUploaded) > 0:
-            gridSquare = listGridSquareNotUploaded[0]
-            self.archiveGridSquare(gridSquare)
+            for gridSquare in listGridSquareNotUploaded:
+                self.archiveGridSquare(gridSquare)
+                time.sleep(30)
         return gridSquare
 
     def archiveGainAndDefectMap(self):

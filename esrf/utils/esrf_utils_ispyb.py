@@ -192,36 +192,41 @@ class UtilsISPyB(object):
         if particlePickerObject is not None:
             particlePickerId = particlePickerObject.particlePickerId
         else:
-            raise RuntimeError("ISPyB: particlePickerObject is None!")
+            particlePickerId = None
+            pass
+            # raise RuntimeError("ISPyB: particlePickerObject is None!")
 
         # Parse the "relion_it025_model.star" file
-        particleClassificationGroupObject = client.service.addParticleClassificationGroup(
-            particlePickerId=particlePickerId,
-            type="2D",
-            batchNumber="0",
-            numberOfParticlesPerBatch="0",
-            numberOfClassesPerBatch="0",
-            symmetry="",
-            classificationProgram="Relion 2D classification",
-        )
-
-        if particleClassificationGroupObject is not None:
-            particleClassificationGroupId = (
-                particleClassificationGroupObject.particleClassificationGroupId
+        if particlePickerId is not None:
+            particleClassificationGroupObject = client.service.addParticleClassificationGroup(
+                particlePickerId=particlePickerId,
+                type="2D",
+                batchNumber="0",
+                numberOfParticlesPerBatch="0",
+                numberOfClassesPerBatch="0",
+                symmetry="",
+                classificationProgram="Relion 2D classification",
             )
-        else:
-            raise RuntimeError("ISPyB: particleClassificationGroupId is None!")
 
-        for classModel in dictModel["classes"]:
-            particleClassificationObject = client.service.addParticleClassification(
-                particleClassificationGroupId=particleClassificationGroupId,
-                classNumber=classModel["index"],
-                classImageFullPath=classModel["classImageFullPath"],
-                classDistribution=str(classModel["classDistribution"]),
-                rotationAccuracy=str(classModel["accuracyRotations"]),
-                translationAccuracy=str(classModel["accuracyTranslationsAngst"]),
-                estimatedResolution=str(classModel["estimatedResolution"]),
-                overallFourierCompleteness=str(
-                    classModel["overallFourierCompleteness"]
-                ),
-            )
+            if particleClassificationGroupObject is not None:
+                particleClassificationGroupId = (
+                    particleClassificationGroupObject.particleClassificationGroupId
+                )
+            else:
+                particleClassificationGroupId = None
+                pass
+                # raise RuntimeError("ISPyB: particleClassificationGroupId is None!")
+            if particleClassificationGroupId is not None:
+                for classModel in dictModel["classes"]:
+                    particleClassificationObject = client.service.addParticleClassification(
+                        particleClassificationGroupId=particleClassificationGroupId,
+                        classNumber=classModel["index"],
+                        classImageFullPath=classModel["classImageFullPath"],
+                        classDistribution=str(classModel["classDistribution"]),
+                        rotationAccuracy=str(classModel["accuracyRotations"]),
+                        translationAccuracy=str(classModel["accuracyTranslationsAngst"]),
+                        estimatedResolution=str(classModel["estimatedResolution"]),
+                        overallFourierCompleteness=str(
+                            classModel["overallFourierCompleteness"]
+                        ),
+                    )

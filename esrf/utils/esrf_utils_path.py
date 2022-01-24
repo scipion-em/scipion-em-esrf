@@ -66,6 +66,13 @@ class UtilsPath(object):
     @staticmethod
     def getEpuTiffMovieJpegMrcXml(movieFilePath):
         gridSquareSnapshot = None
+        fileDir = os.path.dirname(movieFilePath)
+        if os.path.exists(fileDir):
+            # Patch provided by Sebastien 2018/02/09 for forcing NFS cache:
+            # logger.debug("NFS cache clear, doing os.fstat on directory {0}".format(fileDir))
+            fd = os.open(fileDir, os.O_DIRECTORY)
+            statResult = os.fstat(fd)
+            os.close(fd)
         dictFileName = UtilsPath.getEpuTiffMovieFileNameParameters(movieFilePath)
         filePrefix = "{directory}/{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}".format(
             **dictFileName
@@ -608,6 +615,8 @@ class UtilsPath(object):
         directory = workingDir
         if directory.startswith("/gpfs/easy"):
             directory = directory.replace("/gpfs/easy", "")
+        elif directory.startswith("/gpfs/jazzy"):
+            directory = directory.replace("/gpfs/jazzy", "")
         elif directory.startswith("/gz"):
             directory = directory.replace("/gz", "")
         elif directory.startswith("/hz"):
@@ -690,6 +699,7 @@ class UtilsPath(object):
                     if not os.path.exists(pyarchFileDir):
                         os.makedirs(pyarchFileDir, 0o755)
                     shutil.copy(filePath, pyarchFilePath)
+                    os.chmod(pyarchFilePath, 0o644)
                 else:
                     # Test path:
                     testPath = "/data/pyarch/2017/cm01/test"
@@ -727,6 +737,7 @@ class UtilsPath(object):
                             else:
                                 os.makedirs(timePath, 0o755)
                                 shutil.copy(filePath, pyarchFilePath)
+                                os.chmod(filePath, 0o644)
                             isDone = True
             except:
                 print("ERROR uploading file {0} tp pyarch!".format(filePath))

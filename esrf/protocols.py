@@ -1453,7 +1453,8 @@ class MonitorISPyB_ESRF(Monitor):
                 ]
             else:
                 listGalleryPath = []
-            dataSetName = gridSquareToBeArchived
+            dateTimeString = time.strftime("[%Y-%m-%d %H:%M:%S]", time.localtime(time.time()))
+            dataSetName = "{0} {1}".format(gridSquareToBeArchived, dateTimeString)
             self.allParams[dataSetName] = dictIcatMetaData
             self.info(
                 "listPathsToBeArchived: {0}".format(
@@ -1527,7 +1528,8 @@ class MonitorISPyB_ESRF(Monitor):
                     "EM_magnification": self.magnification,
                 }
                 self.info(pprint.pformat(dictIcatMetaData))
-                dataSetName = "GainAndDefectMap"
+                dateTimeString = time.strftime("[%Y-%m-%d %H:%M:%S]", time.localtime(time.time()))
+                dataSetName = "GainAndDefectMap {0}".format(dateTimeString)
                 listGalleryPath = []
                 try:
                     errorMessage = UtilsIcat.uploadToIcat(

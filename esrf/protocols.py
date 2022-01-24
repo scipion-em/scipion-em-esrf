@@ -641,13 +641,13 @@ class MonitorISPyB_ESRF(Monitor):
                         )
                         timeNow = time.time()
                         deltaTime = timeNow - startTime
-                        if deltaTime > 60:
+                        if deltaTime > 120:
                             self.info(
                                 "Import movies: Timeout waiting for meta-data files to appear on disk!!!"
                             )
                             doContinue = False
                         else:
-                            time.sleep(5)
+                            time.sleep(10)
                             (
                                 micrographSnapshotFullPath_new,
                                 micrographFullPath_new,
@@ -1492,7 +1492,7 @@ class MonitorISPyB_ESRF(Monitor):
         if len(listGridSquareNotUploaded) > 0:
             for gridSquare in listGridSquareNotUploaded:
                 self.archiveGridSquare(gridSquare)
-                time.sleep(30)
+                time.sleep(60)
         return gridSquare
 
     def archiveGainAndDefectMap(self):

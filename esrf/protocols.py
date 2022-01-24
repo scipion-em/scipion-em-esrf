@@ -32,8 +32,6 @@
 # [2] Diamond Light Source, Ltd
 
 import os
-import sys
-
 import json
 import time
 import pprint
@@ -48,7 +46,7 @@ import pyworkflow.protocol.params as params
 from pyworkflow import VERSION_1_1
 from pyworkflow.protocol import getUpdatedProtocol
 from emfacilities.protocols import ProtMonitor, Monitor, PrintNotifier
-from pwem.protocols import ProtImportMovies, ProtAlignMovies, ProtCTFMicrographs
+from pwem.protocols import ProtImportMovies, ProtCTFMicrographs
 from pwem.protocols import ProtClassify2D
 from relion.protocols import ProtRelionClassify2D
 
@@ -230,7 +228,7 @@ class ProtMonitorISPyB_ESRF(ProtMonitor):
 
 
 class MonitorISPyB_ESRF(Monitor):
-    """ This will will be monitoring a CTF estimation protocol.
+    """This will will be monitoring a CTF estimation protocol.
     It will internally handle a database to store produced
     CTF values.
     """
@@ -270,7 +268,7 @@ class MonitorISPyB_ESRF(Monitor):
                 try:
                     dictAllParams = json.loads(open(self.allParamsJsonFile).read())
                     self.allParams = collections.OrderedDict(dictAllParams)
-                except:
+                except BaseException:
                     self.allParams = collections.OrderedDict()
             else:
                 self.allParams = collections.OrderedDict()
@@ -385,7 +383,6 @@ class MonitorISPyB_ESRF(Monitor):
             # self.info("dictFileNameParameters: {0}".format(dictFileNameParameters))
             self.movieDirectory = dictFileNameParameters["directory"]
             gridSquare = dictFileNameParameters["gridSquare"]
-            prefix = dictFileNameParameters["prefix"]
             date = dictFileNameParameters["date"]
             hour = dictFileNameParameters["hour"]
             movieNumber = dictFileNameParameters["movieNumber"]
@@ -397,7 +394,7 @@ class MonitorISPyB_ESRF(Monitor):
             if not os.path.exists(processDir):
                 try:
                     os.makedirs(processDir, 0o755)
-                except OSError as e:
+                except OSError:
                     processDir = None
 
             self.movieDirectory = os.path.dirname(movieFullPath)
@@ -471,7 +468,7 @@ class MonitorISPyB_ESRF(Monitor):
                     dosePerImage = round(
                         float(dictMetaData["dose"]) / 10.0 ** 20 / float(imagesCount), 2
                     )
-                except:
+                except BaseException:
                     self.info("ERROR reading XML file {0}".format(xmlMetaDataFullPath))
                     traceback.print_exc()
 
@@ -546,7 +543,7 @@ class MonitorISPyB_ESRF(Monitor):
                 "positionX": positionX,
                 "positionY": positionY,
             }
-            if not "EM_meta_data" in self.allParams:
+            if "EM_meta_data" not in self.allParams:
                 self.allParams["EM_meta_data"] = {
                     "EM_directory": prot.filesPath.get(),
                     "EM_protein_acronym": self.proteinAcronym,
@@ -561,9 +558,9 @@ class MonitorISPyB_ESRF(Monitor):
                     "EM_amplitude_contrast": amplitudeContrast,
                     "EM_sampling_rate": samplingRate,
                 }
-            if not gridSquare in self.allParams:
+            if gridSquare not in self.allParams:
                 self.allParams[gridSquare] = {}
-            if not "listGalleryPath" in self.allParams[gridSquare]:
+            if "listGalleryPath" not in self.allParams[gridSquare]:
                 self.allParams[gridSquare]["listGalleryPath"] = [
                     gridSquareSnapshotFullPath
                 ]
@@ -593,7 +590,6 @@ class MonitorISPyB_ESRF(Monitor):
             # self.info("dictFileNameParameters: {0}".format(dictFileNameParameters))
             self.movieDirectory = dictFileNameParameters["directory"]
             gridSquare = dictFileNameParameters["gridSquare"]
-            prefix = dictFileNameParameters["prefix"]
             date = dictFileNameParameters["date"]
             hour = dictFileNameParameters["hour"]
             movieNumber = dictFileNameParameters["movieNumber"]
@@ -612,7 +608,7 @@ class MonitorISPyB_ESRF(Monitor):
                 if not os.path.exists(processDir):
                     try:
                         os.makedirs(processDir, 0o755)
-                    except OSError as e:
+                    except OSError:
                         processDir = None
 
                 self.movieDirectory = os.path.dirname(movieFullPath)
@@ -714,7 +710,7 @@ class MonitorISPyB_ESRF(Monitor):
                             / float(imagesCount),
                             2,
                         )
-                    except:
+                    except BaseException:
                         self.info(
                             "ERROR reading XML file {0}".format(xmlMetaDataFullPath)
                         )
@@ -791,7 +787,7 @@ class MonitorISPyB_ESRF(Monitor):
                     "positionX": positionX,
                     "positionY": positionY,
                 }
-                if not "EM_meta_data" in self.allParams:
+                if "EM_meta_data" not in self.allParams:
                     self.allParams["EM_meta_data"] = {
                         "EM_directory": prot.filesPath.get(),
                         "EM_protein_acronym": self.proteinAcronym,
@@ -806,7 +802,7 @@ class MonitorISPyB_ESRF(Monitor):
                         "EM_amplitude_contrast": amplitudeContrast,
                         "EM_sampling_rate": samplingRate,
                     }
-                if not gridSquare in self.allParams:
+                if gridSquare not in self.allParams:
                     self.allParams[gridSquare] = {}
                 # if not "listGalleryPath" in self.allParams[gridSquare]:
                 #     self.allParams[gridSquare]["listGalleryPath"] = [gridSquareSnapshotFullPath]
@@ -835,7 +831,6 @@ class MonitorISPyB_ESRF(Monitor):
         else:
             # self.info("dictFileNameParameters: {0}".format(dictFileNameParameters))
             self.movieDirectory = dictFileNameParameters["directory"]
-            prefix = dictFileNameParameters["prefix"]
             movieNumber = dictFileNameParameters["movieNumber"]
             movieName = dictFileNameParameters["movieName"]
             self.info("Import movies: movieName: {0}".format(movieName))
@@ -845,7 +840,7 @@ class MonitorISPyB_ESRF(Monitor):
             if not os.path.exists(processDir):
                 try:
                     os.makedirs(processDir, 0o755)
-                except OSError as e:
+                except OSError:
                     processDir = None
             self.movieDirectory = os.path.dirname(movieFullPath)
             # Get SerialEM metadata
@@ -968,7 +963,7 @@ class MonitorISPyB_ESRF(Monitor):
                 "positionX": positionX,
                 "positionY": positionY,
             }
-            if not "EM_meta_data" in self.allParams:
+            if "EM_meta_data" not in self.allParams:
                 self.allParams["EM_meta_data"] = {
                     "EM_directory": prot.filesPath.get(),
                     "EM_protein_acronym": self.proteinAcronym,
@@ -1034,16 +1029,22 @@ class MonitorISPyB_ESRF(Monitor):
             # self.info("*"*80)
             # self.info("Motion corr micrographFullPath: {0}".format(micrographFullPath))
             if self.dataType == 0:  # "EPU"
-                dictFileNameParameters = UtilsPath.getMovieFileNameParametersFromMotioncorrPath(
-                    micrographFullPath
+                dictFileNameParameters = (
+                    UtilsPath.getMovieFileNameParametersFromMotioncorrPath(
+                        micrographFullPath
+                    )
                 )
             elif self.dataType == 1:  # "EPU_TIFF"
-                dictFileNameParameters = UtilsPath.getEpuTiffMovieFileNameParametersFromMotioncorrPath(
-                    micrographFullPath
+                dictFileNameParameters = (
+                    UtilsPath.getEpuTiffMovieFileNameParametersFromMotioncorrPath(
+                        micrographFullPath
+                    )
                 )
             elif self.dataType == 2:  # "SERIALEM"
-                dictFileNameParameters = UtilsPath.getSerialEMMovieFileNameParametersFromMotioncorrPath(
-                    micrographFullPath
+                dictFileNameParameters = (
+                    UtilsPath.getSerialEMMovieFileNameParametersFromMotioncorrPath(
+                        micrographFullPath
+                    )
                 )
             else:
                 raise RuntimeError("Unknown data type: {0}".format(self.dataType))
@@ -1051,7 +1052,7 @@ class MonitorISPyB_ESRF(Monitor):
             # self.info("Motion corr movie name: {0}".format(movieName))
             if (
                 movieName in self.allParams
-                and not "motionCorrectionId" in self.allParams[movieName]
+                and "motionCorrectionId" not in self.allParams[movieName]
             ):
                 self.info(
                     "Align movies: movie {0}".format(
@@ -1180,16 +1181,22 @@ class MonitorISPyB_ESRF(Monitor):
         for ctf in self.iter_updated_set(prot.outputCTF):
             micrographFullPath = ctf.getMicrograph().getFileName()
             if self.dataType == 0:  # "EPU"
-                dictFileNameParameters = UtilsPath.getMovieFileNameParametersFromMotioncorrPath(
-                    micrographFullPath
+                dictFileNameParameters = (
+                    UtilsPath.getMovieFileNameParametersFromMotioncorrPath(
+                        micrographFullPath
+                    )
                 )
             elif self.dataType == 1:  # "EPU"
-                dictFileNameParameters = UtilsPath.getEpuTiffMovieFileNameParametersFromMotioncorrPath(
-                    micrographFullPath
+                dictFileNameParameters = (
+                    UtilsPath.getEpuTiffMovieFileNameParametersFromMotioncorrPath(
+                        micrographFullPath
+                    )
                 )
             elif self.dataType == 2:  # "SERIALEM"
-                dictFileNameParameters = UtilsPath.getSerialEMMovieFileNameParametersFromMotioncorrPath(
-                    micrographFullPath
+                dictFileNameParameters = (
+                    UtilsPath.getSerialEMMovieFileNameParametersFromMotioncorrPath(
+                        micrographFullPath
+                    )
                 )
             else:
                 raise RuntimeError("Unknown data type: {0}".format(self.dataType))
@@ -1197,7 +1204,7 @@ class MonitorISPyB_ESRF(Monitor):
             if (
                 movieName in self.allParams
                 and "motionCorrectionId" in self.allParams[movieName]
-                and not "CTFid" in self.allParams[movieName]
+                and "CTFid" not in self.allParams[movieName]
             ):
                 self.info(
                     "CTF: movie {0}".format(
@@ -1417,7 +1424,7 @@ class MonitorISPyB_ESRF(Monitor):
                     sumPositionX += float(self.allParams[movieName]["positionX"])
                     sumPositionY += float(self.allParams[movieName]["positionY"])
                     indexPosition += 1
-                except:
+                except ValueError:
                     pass
             elif (
                 "movieFullPath" in self.allParams[movieName]
@@ -1430,7 +1437,7 @@ class MonitorISPyB_ESRF(Monitor):
                     sumPositionX += float(self.allParams[movieName]["positionX"])
                     sumPositionY += float(self.allParams[movieName]["positionY"])
                     indexPosition += 1
-                except:
+                except ValueError:
                     pass
         noImagesToBeArchived = len(listPathsToBeArchived)
         if noImagesToBeArchived > 0:
@@ -1453,7 +1460,9 @@ class MonitorISPyB_ESRF(Monitor):
                 ]
             else:
                 listGalleryPath = []
-            dateTimeString = time.strftime("[%Y-%m-%d %H:%M:%S]", time.localtime(time.time()))
+            dateTimeString = time.strftime(
+                "[%Y-%m-%d %H:%M:%S]", time.localtime(time.time())
+            )
             dataSetName = "{0} {1}".format(gridSquareToBeArchived, dateTimeString)
             self.allParams[dataSetName] = dictIcatMetaData
             self.info(
@@ -1481,7 +1490,11 @@ class MonitorISPyB_ESRF(Monitor):
                 self.info(errorMessage)
             else:
                 for movieName in self.allParams:
-                    if "gridSquare" in self.allParams[movieName] and self.allParams[movieName]["movieFullPath"] in listPathsToBeArchived:
+                    if (
+                        "gridSquare" in self.allParams[movieName]
+                        and self.allParams[movieName]["movieFullPath"]
+                        in listPathsToBeArchived
+                    ):
                         self.allParams[movieName]["archived"] = True
 
     def archiveOldGridSquare(self, gridSquareNotToArchive=None):
@@ -1500,7 +1513,7 @@ class MonitorISPyB_ESRF(Monitor):
         directory = None
         listPathsToBeArchived = []
         if self.defectMapPath != "" or self.gainFilePath != "":
-            if not "GainAndDefectMap" in self.allParams:
+            if "GainAndDefectMap" not in self.allParams:
                 self.allParams["GainAndDefectMap"] = {}
                 self.allParams["GainAndDefectMap"]["archived"] = False
             if not self.allParams["GainAndDefectMap"]["archived"]:
@@ -1528,7 +1541,9 @@ class MonitorISPyB_ESRF(Monitor):
                     "EM_magnification": self.magnification,
                 }
                 self.info(pprint.pformat(dictIcatMetaData))
-                dateTimeString = time.strftime("[%Y-%m-%d %H:%M:%S]", time.localtime(time.time()))
+                dateTimeString = time.strftime(
+                    "[%Y-%m-%d %H:%M:%S]", time.localtime(time.time())
+                )
                 dataSetName = "GainAndDefectMap {0}".format(dateTimeString)
                 listGalleryPath = []
                 try:
@@ -1543,7 +1558,7 @@ class MonitorISPyB_ESRF(Monitor):
                     )
                     if errorMessage is not None:
                         self.info("WARNING! Couldn't archive gain and defect map")
-                except:
+                except BaseException:
                     # We give up on uploading gain and defect map files
                     self.info("WARNING! Couldn't archive gain and defect map")
                 self.allParams["GainAndDefectMap"]["archived"] = True

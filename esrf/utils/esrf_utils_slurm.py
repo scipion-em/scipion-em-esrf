@@ -25,11 +25,18 @@
 # *
 # **************************************************************************
 
+import os
+import subprocess
 
-import pwem
 
+class UtilsSlurm(object):
 
+    @staticmethod
+    def checkIfRunningProcesses(userName="opcm01"):
+        stdout = subprocess.check_output("squeue").decode('utf-8')
+        isRunning = userName in stdout and not "srun" in stdout
+        return isRunning
 
-class Plugin(pwem.Plugin):
-    pass
-
+    @staticmethod
+    def killAllProcesses(userName="opcm01"):
+        stdout = subprocess.check_output(["scancel", "-u", userName]).decode('utf-8')

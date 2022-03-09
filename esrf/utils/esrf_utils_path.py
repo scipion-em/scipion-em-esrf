@@ -298,26 +298,47 @@ class UtilsPath(object):
         """
         try:
             dictResult = {}
+            dictResult["directory"] = os.path.dirname(mrcFilePath)
             p = re.compile(
                 "^(.*)/(GridSquare_[0-9]*)/" + \
                 "Data/(.*)_([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)" + \
                 "-([0-9]*)(_?.*)\.(.*)"
             )
             m = p.match(mrcFilePath)
-            dictResult["directory"] = os.path.dirname(mrcFilePath)
-            dictResult["gridSquare"] = m.group(2)   
-            dictResult["prefix"] = m.group(3)   
-            dictResult["id1"] = m.group(4)   
-            dictResult["id2"] = m.group(5)   
-            dictResult["id3"] = m.group(6)   
-            dictResult["date"] = m.group(7)   
-            dictResult["hour"] = m.group(8)   
-            dictResult["movieNumber"] = m.group(9)   
-            dictResult["extra"] = m.group(10)   
-            dictResult["suffix"] = m.group(11)   
-            dictResult["movieName"] = \
-                "{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}-{movieNumber}".format(**dictResult)
+            if m is not None:
+                dictResult["gridSquare"] = m.group(2)
+                dictResult["prefix"] = m.group(3)
+                dictResult["id1"] = m.group(4)
+                dictResult["id2"] = m.group(5)
+                dictResult["id3"] = m.group(6)
+                dictResult["date"] = m.group(7)
+                dictResult["hour"] = m.group(8)
+                dictResult["movieNumber"] = m.group(9)
+                dictResult["extra"] = m.group(10)
+                dictResult["suffix"] = m.group(11)
+                dictResult["movieName"] = \
+                    "{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}-{movieNumber}".format(**dictResult)
+            else:
+                # Try without the GridSquare directory
+                p = re.compile(
+                    "^(.*)/(.*)_([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)" + \
+                    "-([0-9]*)(_?.*)\.(.*)"
+                )
+                m = p.match(mrcFilePath)
+                dictResult["gridSquare"] = None
+                dictResult["prefix"] = m.group(2)
+                dictResult["id1"] = m.group(3)
+                dictResult["id2"] = m.group(4)
+                dictResult["id3"] = m.group(5)
+                dictResult["date"] = m.group(6)
+                dictResult["hour"] = m.group(7)
+                dictResult["movieNumber"] = m.group(8)
+                dictResult["extra"] = m.group(9)
+                dictResult["suffix"] = m.group(10)
+                dictResult["movieName"] = \
+                    "{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}-{movieNumber}".format(**dictResult)
         except Exception as e:
+            raise e
             dictResult = None
         # Check numbers
         if not dictResult["hour"].isdigit() or not dictResult["movieNumber"].isdigit():

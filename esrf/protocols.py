@@ -40,13 +40,13 @@ import shutil
 import traceback
 import collections
 
-
 import pyworkflow.protocol.params as params
-from pyworkflow import VERSION_1_1
-from pyworkflow.em.protocol import ProtMonitor, Monitor, PrintNotifier
-from pyworkflow.em.protocol import ProtImportMovies, ProtAlignMovies, ProtCTFMicrographs
-from pyworkflow.protocol import getProtocolFromDb
 
+from pyworkflow import VERSION_1_1
+from pyworkflow.protocol import getUpdatedProtocol
+from emfacilities.protocols import ProtMonitor, Monitor, PrintNotifier
+from pwem.protocols import ProtImportMovies, ProtAlignMovies, ProtCTFMicrographs
+from xmipp3.protocols import XmippProtMovieMaxShift
 from esrf.utils.esrf_utils_ispyb import UtilsISPyB
 from esrf.utils.esrf_utils_path import UtilsPath
 from esrf.utils.esrf_utils_icat import UtilsIcat
@@ -59,81 +59,104 @@ class ProtMonitorISPyB_ESRF(ProtMonitor):
     _label = 'monitor to ISPyB at the ESRF'
     _lastUpdateVersion = VERSION_1_1
 
+    def __init__(self, **kwargs):
+        ProtMonitor.__init__(self, **kwargs)
+
     def _defineParams(self, form):
         ProtMonitor._defineParams(self, form)
 
-        group1 = form.addGroup('Experiment')
-        group1.addParam('proposal', params.StringParam,
-                      label="Proposal",
-                      help="Proposal")
+        section1 = form.addSection(label='Names')
 
-        group1.addParam('sampleAcronym', params.StringParam,
-                      label="Sample acronym",
-                      help="Name of the sample acronym")
+        section1.addParam(
+            'proposal', params.StringParam,
+            default="unknown",
+            label="Proposal", important=True,
+            help="Proposal")
 
-        group1.addParam('proteinAcronym', params.StringParam,
-                      label="Protein acronym",
-                      help="Name of the protein acronym")
+        section1.addParam(
+            'sampleAcronym', params.StringParam,
+            default="unknown",
+            label="Sample acronym", important=True,
+            help="Name of the sample acronym")
 
-        group1.addParam('voltage', params.IntParam,
-                      label="Voltage",
-                      help="Voltage in [V]")
+        section1.addParam(
+            'proteinAcronym', params.StringParam,
+            default="unknown",
+            label="Protein acronym", important=True,
+            help="Name of the protein acronym")
 
-        group1.addParam('magnification', params.IntParam,
-                      label="Nominal magnification",
-                      help="Nominal magnification")
+        section2 = form.addSection(label='Experiment')
 
-        group1.addParam('imagesCount', params.IntParam,
-                      label="Images count",
-                      help="Number of images per movie")
+        section2.addParam(
+            'serialEM', params.BooleanParam,
+            default = False,
+            label="Serial EM",
+            help="Set if Serial EM is used, if not set assumes EPU.")
 
-        group1.addParam('alignFrame0', params.IntParam,
-                      label="Align Frame 0",
-                      help="Starting frame for motion correction")
+        section2.addParam(
+            'voltage', params.IntParam,
+            default=300000,
+            label="Voltage", important=True,
+            help="Voltage in [V]")
 
-        group1.addParam('alignFrameN', params.IntParam,
-                      label="Align Frame N",
-                      help="End frame for motion correction")
+        section2.addParam(
+            'magnification', params.IntParam,
+            default=100000,
+            label="Nominal magnification", important=True,
+            help="Nominal magnification")
 
-        group2 = form.addGroup('Parameters')
+        section2.addParam(
+            'imagesCount', params.IntParam,
+            default=40,
+            label="Images count", important=True,
+            help="Number of images per movie")
 
-        group2.addParam('serialEM', params.BooleanParam,
-                        label="Serial EM",
-                        help="Set if Serial EM is used, if not set assumes EPU.")
+        section2.addParam(
+            'alignFrame0', params.IntParam,
+            default=1,
+            label="Align Frame 0",
+            help="Starting frame for motion correction")
 
-        group2.addParam('db', params.EnumParam,
-                        choices=["production", "valid", "linsvensson"],
-                        label="Database",
-                        help="Select which ISPyB database you want to use.")
+        section2.addParam(
+            'alignFrameN', params.IntParam,
+            default=-1,
+            label="Align Frame N",
+            help="End frame for motion correction (-1 = all frames)")
 
-        group2.addParam('allParamsJsonFile', params.StringParam,
-                        label="All parameters json file",
-                        help="Json file containing all parameters from processing.")
+        section3 = form.addSection(label='ISPyB')
+
+        section3.addParam(
+            'db', params.EnumParam,
+            choices=["production", "valid", "linsvensson"],
+            default = 0,
+            label="Database",
+            help="Select which ISPyB database you want to use.")
+
+        section3.addParam(
+            'allParamsJsonFile', params.StringParam,
+            default="",
+            label="All parameters json file",
+            help="Json file containing all parameters from processing.")
 
     #--------------------------- INSERT steps functions ------------------------
     def _insertAllSteps(self):
         self._insertFunctionStep('monitorStep')
-        self._params = {
-            'db': "valid",
-            'serialEM': False
-        }
 
     #--------------------------- STEPS functions -------------------------------
     def monitorStep(self):
-
         dbNumber = self.db.get()
         urlBase = UtilsISPyB.getUrlBase(dbNumber)
         url = os.path.join(urlBase, "ToolsForEMWebService?wsdl")
         self.info("ISPyB URL: {0}".format(url))
         self.client = UtilsISPyB.getClient(url)
-        
-        # Update proposal
-        UtilsISPyB.updateProposalFromSMIS(dbNumber, self.proposal.get())
-              
+
+        # # Update proposal
+        # UtilsISPyB.updateProposalFromSMIS(dbNumber, self.proposal.get())
+        #
         monitor = MonitorISPyB_ESRF(self, workingDir=self._getPath(),
-                                        samplingInterval=self.samplingInterval.get(),
+                                        samplingInterval=30, # 30 seconds                                        # samplingInterval=self.samplingInterval.get(),
                                         monitorTime=4*24*60) # 4*24 H max monitor time
-    
+
         monitor.addNotifier(PrintNotifier())
         monitor.loop()
 
@@ -157,7 +180,7 @@ class MonitorISPyB_ESRF(Monitor):
         self.movieDirectory = None
         self.currentDir = os.getcwd()
         self.currentGridSquare = None
-        self.currentGridSquareLastMovieTime = time.time()
+        self.currentGridSquareLastMovieTime = None
         self.beamlineName = "cm01"
         self.serialEM = protocol.serialEM.get()
         self.voltage = protocol.voltage.get()
@@ -178,21 +201,10 @@ class MonitorISPyB_ESRF(Monitor):
                 except:
                     self.allParams = collections.OrderedDict()
             else:
-                self.allParams = collections.OrderedDict()    
+                self.allParams = collections.OrderedDict()
         else:
             self.allParamsJsonFile = None
             self.allParams = collections.OrderedDict()
-
-    def getUpdatedProtocol(self, protocol):
-        """ Retrieve the updated protocol and close db connections
-            """
-        prot2 = getProtocolFromDb(self.currentDir,
-                                  protocol.getDbPath(),
-                                  protocol.getObjId())
-        # Close DB connections
-        prot2.getProject().closeMapper()
-        prot2.closeMappers()
-        return prot2
 
     def step(self):
         self.info("MonitorISPyB: start step ------------------------")
@@ -200,57 +212,57 @@ class MonitorISPyB_ESRF(Monitor):
 
         if self.proposal == "None":
             print("WARNING! Proposal is 'None', no data uploaded to ISPyB")
-            finished = True    
+            finished = True
         else:
-            runs = [self.getUpdatedProtocol(p.get()) for p in self.protocol.inputProtocols] 
-            
-            g = self.project.getGraphFromRuns(runs)
-    
+            prots = [getUpdatedProtocol(p) for p in self.protocol.getInputProtocols()]
+
+            g = self.project.getGraphFromRuns(prots)
+
             nodes = g.getRoot().iterChildsBreadth()
-    
+
             isActiveImportMovies = True
             isActiveAlignMovies = True
             isActiveCTFMicrographs = True
-            
+
             for n in nodes:
                 prot = n.run
                 #self.info("Protocol name: {0}".format(prot.getRunName()))
-    
+
                 if isinstance(prot, ProtImportMovies):
                     self.uploadImportMovies(prot)
                     isActiveImportMovies = prot.isActive()
-                elif isinstance(prot, ProtAlignMovies) and hasattr(prot, 'outputMicrographs'):
+                elif isinstance(prot, XmippProtMovieMaxShift) and hasattr(prot, 'outputMicrographs'):
                     self.uploadAlignMovies(prot)
                     isActiveAlignMovies = prot.isActive()
                 elif isinstance(prot, ProtCTFMicrographs) and hasattr(prot, 'outputCTF'):
                     self.uploadCTFMicrographs(prot)
                     isActiveCTFMicrographs = prot.isActive()
-    
+
             # Check if archive last grid square
             if self.currentGridSquareLastMovieTime is not None:
                 timeElapsed = int(time.time() - self.currentGridSquareLastMovieTime)
                 self.info("Time elapsed since last movie detected: {0} s".format(timeElapsed))
-                # Timeout for uploading last grid square to icat: 1h, 3600 s
-                if self.currentGridSquare is not None and timeElapsed > 3600:
+                # Timeout for uploading last grid square to icat: 2h, 7200 s
+                if self.currentGridSquare is not None and timeElapsed > 7200:
                     self.archiveGridSquare(self.currentGridSquare)
                     self.currentGridSquare = None
                     # Check if old grid squares
                     self.archiveOldGridSquares()
-                    
-    
+
+
             # Update json file
             if self.allParamsJsonFile is not None:
                 f = open(self.allParamsJsonFile, "w")
                 f.write(json.dumps(self.allParams, indent=4))
                 f.close()
-    
+
 
             if isActiveImportMovies or isActiveAlignMovies or isActiveCTFMicrographs:
                 finished = False
             else:
                 self.info("MonitorISPyB: All upstream activities ended, stopping monitor")
                 finished = True
-                    
+
         self.info("MonitorISPyB: end step --------------------------")
 
         return finished
@@ -342,38 +354,32 @@ class MonitorISPyB_ESRF(Monitor):
             doseInitial = prot.doseInitial.get()
             dosePerFrame = prot.dosePerFrame.get()
 
-            try:
-                movieObject = self.client.service.addMovie(proposal=self.proposal,
-                                                           proteinAcronym=self.proteinAcronym,
-                                                           sampleAcronym=self.sampleAcronym,
-                                                           movieDirectory=self.movieDirectory,
-                                                           movieFullPath=movieFullPath,
-                                                           movieNumber=movieNumber,
-                                                           micrographFullPath=micrographPyarchPath,
-                                                           micrographSnapshotFullPath=micrographSnapshotPyarchPath,
-                                                           xmlMetaDataFullPath=xmlMetaDataPyarchPath,
-                                                           voltage=voltage,
-                                                           sphericalAberration=sphericalAberration,
-                                                           amplitudeContrast=amplitudeContrast,
-                                                           magnification=magnification,
-                                                           scannedPixelSize=samplingRate,
-                                                           imagesCount=imagesCount,
-                                                           dosePerImage=dosePerImage,
-                                                           positionX=positionX,
-                                                           positionY=positionY,
-                                                           beamlineName=self.beamlineName,
-                                                           gridSquareSnapshotFullPath=gridSquareSnapshotPyarchPath,
-                                                           )
-            except:
-                self.info("ERROR uploading movie {0}".format(movieFullPath))
-                traceback.print_exc()
-                movieObject = None
+            movieObject = self.client.service.addMovie(proposal=self.proposal,
+                                                       proteinAcronym=self.proteinAcronym,
+                                                       sampleAcronym=self.sampleAcronym,
+                                                       movieDirectory=self.movieDirectory,
+                                                       movieFullPath=movieFullPath,
+                                                       movieNumber=movieNumber,
+                                                       micrographFullPath=micrographPyarchPath,
+                                                       micrographSnapshotFullPath=micrographSnapshotPyarchPath,
+                                                       xmlMetaDataFullPath=xmlMetaDataPyarchPath,
+                                                       voltage=voltage,
+                                                       sphericalAberration=sphericalAberration,
+                                                       amplitudeContrast=amplitudeContrast,
+                                                       magnification=magnification,
+                                                       scannedPixelSize=samplingRate,
+                                                       imagesCount=imagesCount,
+                                                       dosePerImage=dosePerImage,
+                                                       positionX=positionX,
+                                                       positionY=positionY,
+                                                       beamlineName=self.beamlineName,
+                                                       gridSquareSnapshotFullPath=gridSquareSnapshotPyarchPath,
+                                                       )
 
             if movieObject is not None:
                 movieId = movieObject.movieId
             else:
-                self.info("ERROR: movieObject is None!")
-                movieId = None
+                raise RuntimeError("ISPyB Movie object is None!")
 
             self.allParams[movieName] = {
                 "movieNumber": movieNumber,
@@ -488,59 +494,53 @@ class MonitorISPyB_ESRF(Monitor):
             dosePerFrame = prot.dosePerFrame.get()
             doseInitial = prot.doseInitial.get()
             #
-            try:
-                self.info("proposal: {0}".format(self.proposal))
-                self.info("proteinAcronym: {0}".format(self.proteinAcronym))
-                self.info("sampleAcronym: {0}".format(self.sampleAcronym))
-                self.info("movieDirectory: {0}".format(self.movieDirectory))
-                self.info("movieFullPath: {0}".format(movieFullPath))
-                self.info("movieNumber: {0}".format(movieNumber))
-                self.info("micrographFullPath: {0}".format(micrographFullPath))
-                self.info("micrographSnapshotFullPath: {0}".format(micrographSnapshotFullPath))
-                self.info("xmlMetaDataFullPath: {0}".format(xmlMetaDataFullPath))
-                self.info("voltage: {0}".format(voltage))
-                self.info("sphericalAberration: {0}".format(sphericalAberration))
-                self.info("amplitudeContrast: {0}".format(amplitudeContrast))
-                self.info("magnification: {0}".format(magnification))
-                self.info("samplingRate: {0}".format(samplingRate))
-                self.info("imagesCount: {0}".format(imagesCount))
-                self.info("dosePerImage: {0}".format(dosePerImage))
-                self.info("positionX: {0}".format(positionX))
-                self.info("positionY: {0}".format(positionY))
-                self.info("beamlineName: {0}".format(self.beamlineName))
-                self.info("gridSquareSnapshotFullPath: {0}".format(gridSquareSnapshotFullPath))
-                movieObject = self.client.service.addMovie(proposal=self.proposal,
-                                                           proteinAcronym=self.proteinAcronym,
-                                                           sampleAcronym=self.sampleAcronym,
-                                                           movieDirectory=self.movieDirectory,
-                                                           movieFullPath=movieFullPath,
-                                                           movieNumber=movieNumber,
-                                                           micrographFullPath=micrographPyarchPath,
-                                                           micrographSnapshotFullPath=micrographSnapshotPyarchPath,
-                                                           xmlMetaDataFullPath=xmlMetaDataPyarchPath,
-                                                           voltage=voltage,
-                                                           sphericalAberration=sphericalAberration,
-                                                           amplitudeContrast=amplitudeContrast,
-                                                           magnification=magnification,
-                                                           scannedPixelSize=samplingRate,
-                                                           imagesCount=imagesCount,
-                                                           dosePerImage=dosePerImage,
-                                                           positionX=positionX,
-                                                           positionY=positionY,
-                                                           beamlineName=self.beamlineName,
-                                                           gridSquareSnapshotFullPath=gridSquareSnapshotPyarchPath,
-                                                           )
-            except:
-                raise
-                self.info("ERROR uploading movie {0}".format(movieFullPath))
-                traceback.print_exc()
-                movieObject = None
+            self.info("proposal: {0}".format(self.proposal))
+            self.info("proteinAcronym: {0}".format(self.proteinAcronym))
+            self.info("sampleAcronym: {0}".format(self.sampleAcronym))
+            self.info("movieDirectory: {0}".format(self.movieDirectory))
+            self.info("movieFullPath: {0}".format(movieFullPath))
+            self.info("movieNumber: {0}".format(movieNumber))
+            self.info("micrographFullPath: {0}".format(micrographFullPath))
+            self.info("micrographSnapshotFullPath: {0}".format(micrographSnapshotFullPath))
+            self.info("xmlMetaDataFullPath: {0}".format(xmlMetaDataFullPath))
+            self.info("voltage: {0}".format(voltage))
+            self.info("sphericalAberration: {0}".format(sphericalAberration))
+            self.info("amplitudeContrast: {0}".format(amplitudeContrast))
+            self.info("magnification: {0}".format(magnification))
+            self.info("samplingRate: {0}".format(samplingRate))
+            self.info("imagesCount: {0}".format(imagesCount))
+            self.info("dosePerImage: {0}".format(dosePerImage))
+            self.info("positionX: {0}".format(positionX))
+            self.info("positionY: {0}".format(positionY))
+            self.info("beamlineName: {0}".format(self.beamlineName))
+            self.info("gridSquareSnapshotFullPath: {0}".format(gridSquareSnapshotFullPath))
+            movieObject = self.client.service.addMovie(proposal=self.proposal,
+                                                       proteinAcronym=self.proteinAcronym,
+                                                       sampleAcronym=self.sampleAcronym,
+                                                       movieDirectory=self.movieDirectory,
+                                                       movieFullPath=movieFullPath,
+                                                       movieNumber=movieNumber,
+                                                       micrographFullPath=micrographPyarchPath,
+                                                       micrographSnapshotFullPath=micrographSnapshotPyarchPath,
+                                                       xmlMetaDataFullPath=xmlMetaDataPyarchPath,
+                                                       voltage=voltage,
+                                                       sphericalAberration=sphericalAberration,
+                                                       amplitudeContrast=amplitudeContrast,
+                                                       magnification=magnification,
+                                                       scannedPixelSize=samplingRate,
+                                                       imagesCount=imagesCount,
+                                                       dosePerImage=dosePerImage,
+                                                       positionX=positionX,
+                                                       positionY=positionY,
+                                                       beamlineName=self.beamlineName,
+                                                       gridSquareSnapshotFullPath=gridSquareSnapshotPyarchPath,
+                                                       )
 
             if movieObject is not None:
                 movieId = movieObject.movieId
             else:
-                self.info("ERROR: movieObject is None!")
-                movieId = None
+                raise RuntimeError("ISPyB Movie object is None!")
+
             gridSquare = "GridSquare_112345"
             self.allParams[movieName] = {
                 "movieNumber": movieNumber,
@@ -599,7 +599,7 @@ class MonitorISPyB_ESRF(Monitor):
             if movieFullPath in listMovieFullPath:
                 pass
                 #self.info("Movie already uploaded: {0}".format(movieFullPath))
-            else:                
+            else:
                 self.info("Import movies: movieFullPath: {0}".format(movieFullPath))
                 if self.serialEM:
                     self.uploadMoviesSerialEM(prot, movieFullPath)
@@ -625,10 +625,7 @@ class MonitorISPyB_ESRF(Monitor):
                     dictResult = UtilsPath.getSerialEMAlignMoviesPngLogFilePath(micrographFullPath)
                 else:
                     dictResult = UtilsPath.getAlignMoviesPngLogFilePath(micrographFullPath)
-                if "globalShiftPng" in dictResult:
-                    driftPlotFullPath = dictResult["globalShiftPng"]
-                else:
-                    driftPlotFullPath= None
+                driftPlotFullPath = dictResult["globalShiftPng"]
                 if "doseWeightMrc" in dictResult:
                     correctedDoseMicrographFullPath = dictResult["doseWeightMrc"]
                 else:
@@ -661,37 +658,31 @@ class MonitorISPyB_ESRF(Monitor):
                     shutil.copy(micrographFullPath, self.allParams[movieName]["processDir"])
                     shutil.copy(correctedDoseMicrographFullPath, self.allParams[movieName]["processDir"])
                     shutil.copy(logFileFullPath, self.allParams[movieName]["processDir"])
-                try:
-                    motionCorrectionObject = self.client.service.addMotionCorrection(
-                        proposal=self.proposal,
-                        movieFullPath=movieFullPath,
-                        firstFrame=firstFrame,
-                        lastFrame=lastFrame,
-                        dosePerFrame=dosePerFrame,
-                        doseWeight=doseWeight,
-                        totalMotion=totalMotion,
-                        averageMotionPerFrame=averageMotionPerFrame,
-                        driftPlotFullPath=driftPlotPyarchPath,
-                        micrographFullPath=micrographPyarchPath,
-                        correctedDoseMicrographFullPath=correctedDoseMicrographPyarchPath,
-                        micrographSnapshotFullPath=micrographSnapshotPyarchPath,
-                        logFileFullPath=logFilePyarchPath
-                    )
-                except:
-                    self.info("ERROR uploading motion correction for movie {0}".format(movieFullPath))
-                    traceback.print_exc()
-                    motionCorrectionObject = None
+                motionCorrectionObject = self.client.service.addMotionCorrection(
+                    proposal=self.proposal,
+                    movieFullPath=movieFullPath,
+                    firstFrame=firstFrame,
+                    lastFrame=lastFrame,
+                    dosePerFrame=dosePerFrame,
+                    doseWeight=doseWeight,
+                    totalMotion=totalMotion,
+                    averageMotionPerFrame=averageMotionPerFrame,
+                    driftPlotFullPath=driftPlotPyarchPath,
+                    micrographFullPath=micrographPyarchPath,
+                    correctedDoseMicrographFullPath=correctedDoseMicrographPyarchPath,
+                    micrographSnapshotFullPath=micrographSnapshotPyarchPath,
+                    logFileFullPath=logFilePyarchPath
+                )
 
                 if motionCorrectionObject is not None:
                     motionCorrectionId = motionCorrectionObject.motionCorrectionId
                 else:
-                    self.info("ERROR: motionCorrectionObject is None!")
-                    motionCorrectionId = None
-                    
+                    raise RuntimeError("ERROR: motionCorrectionObject is None!")
+                time.sleep(0.1)
                 self.allParams[movieName]["motionCorrectionId"] = motionCorrectionId
                 self.allParams[movieName]["totalMotion"] = totalMotion
                 self.allParams[movieName]["averageMotionPerFrame"] = averageMotionPerFrame
-                
+
                 self.info("Align movies done, motionCorrectionId = {0}".format(motionCorrectionId))
 
     def uploadCTFMicrographs(self, prot):
@@ -704,7 +695,7 @@ class MonitorISPyB_ESRF(Monitor):
             else:
                 dictFileNameParameters = UtilsPath.getMovieFileNameParametersFromMotioncorrPath(micrographFullPath)
             movieName = dictFileNameParameters["movieName"]
-            if movieName in self.allParams and not "CTFid" in self.allParams[movieName]:
+            if movieName in self.allParams and "motionCorrectionId" in self.allParams[movieName] and not "CTFid" in self.allParams[movieName]:
                 self.info("CTF: movie {0}".format(os.path.basename(self.allParams[movieName]["movieFullPath"])))
                 movieFullPath = self.allParams[movieName]["movieFullPath"]
                 spectraImageSnapshotFullPath = None
@@ -717,63 +708,56 @@ class MonitorISPyB_ESRF(Monitor):
                 crossCorrelationCoefficient = None
                 phaseShift = None
                 resolutionLimit = None
-                estimatedBfactor = None                
-                try:
-                    dictResults = UtilsPath.getCtfMetaData(workingDir, micrographFullPath)
-                    spectraImageSnapshotFullPath = dictResults["spectraImageSnapshotFullPath"]
-                    spectraImageSnapshotPyarchPath = UtilsPath.copyToPyarchPath(spectraImageSnapshotFullPath)
-                    spectraImageFullPath = dictResults["spectraImageFullPath"]
-                    spectraImagePyarchPath = None
-                    defocusU = dictResults["Defocus_U"]
-                    defocusV = dictResults["Defocus_V"]
-                    angle = dictResults["Angle"]
-                    crossCorrelationCoefficient = dictResults["CCC"]
-                    phaseShift = dictResults["Phase_shift"]
-                    resolutionLimit = dictResults["resolutionLimit"]
-                    estimatedBfactor = dictResults["estimatedBfactor"]
-                    if self.allParams[movieName]["processDir"] is not None:
-                        shutil.copy(spectraImageFullPath, self.allParams[movieName]["processDir"])
-                        shutil.copy(dictResults["logFilePath"], self.allParams[movieName]["processDir"])
-                except:
-                    self.info("ERROR uploading CTF for movie {0}".format(movieFullPath))
-                    traceback.print_exc()
-                    ctfObject = None                
-                
+                estimatedBfactor = None
+
+                dictResults = UtilsPath.getCtfMetaData(workingDir, micrographFullPath)
+                spectraImageSnapshotFullPath = dictResults["spectraImageSnapshotFullPath"]
+                spectraImageSnapshotPyarchPath = UtilsPath.copyToPyarchPath(spectraImageSnapshotFullPath)
+                spectraImageFullPath = dictResults["spectraImageFullPath"]
+                spectraImagePyarchPath = None
+                defocusU = dictResults["Defocus_U"]
+                defocusV = dictResults["Defocus_V"]
+                angle = dictResults["Angle"]
+                crossCorrelationCoefficient = dictResults["CCC"]
+                phaseShift = dictResults["Phase_shift"]
+                resolutionLimit = dictResults["resolutionLimit"]
+                estimatedBfactor = dictResults["estimatedBfactor"]
+                if self.allParams[movieName]["processDir"] is not None:
+                    shutil.copy(spectraImageFullPath, self.allParams[movieName]["processDir"])
+                    shutil.copy(dictResults["logFilePath"], self.allParams[movieName]["processDir"])
+
                 logFilePath = UtilsPath.copyToPyarchPath(dictResults["logFilePath"])
-#                self.info("proposal : {0}".format(self.proposal))
-#                self.info("movieFullPath : {0}".format(movieFullPath))
-#                self.info("spectraImageSnapshotFullPath : {0}".format(spectraImageSnapshotPyarchPath))
-#                self.info("spectraImageFullPath : {0}".format(spectraImagePyarchPath))
-#                self.info("defocusU : {0}".format(defocusU))
-#                self.info("defocusV : {0}".format(defocusV))
-#                self.info("angle : {0}".format(angle))
-#                self.info("crossCorrelationCoefficient : {0}".format(crossCorrelationCoefficient))
-#                self.info("resolutionLimit : {0}".format(resolutionLimit))
-#                self.info("estimatedBfactor : {0}".format(estimatedBfactor))
-#                self.info("logFilePath : {0}".format(logFilePath))
-                try:
-                    ctfObject = self.client.service.addCTF(proposal=self.proposal, 
-                                        movieFullPath=movieFullPath,
-                                        spectraImageSnapshotFullPath=spectraImageSnapshotPyarchPath,
-                                        spectraImageFullPath=spectraImagePyarchPath,
-                                        defocusU=defocusU,
-                                        defocusV=defocusV,
-                                        angle=angle,
-                                        crossCorrelationCoefficient=crossCorrelationCoefficient,
-                                        resolutionLimit=resolutionLimit,
-                                        estimatedBfactor=estimatedBfactor,
-                                        logFilePath=logFilePath)
-                except:
-                    self.info("ERROR uploading CTF for movie {0}".format(movieFullPath))
-                    traceback.print_exc()
-                    ctfObject = None
+                # self.info("proposal : {0}".format(self.proposal))
+                # self.info("movieFullPath : {0}".format(movieFullPath))
+                # self.info("spectraImageSnapshotFullPath : {0}".format(spectraImageSnapshotPyarchPath))
+                # self.info("spectraImageFullPath : {0}".format(spectraImagePyarchPath))
+                # self.info("defocusU : {0}".format(defocusU))
+                # self.info("defocusV : {0}".format(defocusV))
+                # self.info("angle : {0}".format(angle))
+                # self.info("crossCorrelationCoefficient : {0}".format(crossCorrelationCoefficient))
+                # self.info("resolutionLimit : {0}".format(resolutionLimit))
+                # self.info("estimatedBfactor : {0}".format(estimatedBfactor))
+                # self.info("logFilePath : {0}".format(logFilePath))
+
+                ctfObject = self.client.service.addCTF(proposal=self.proposal,
+                                    movieFullPath=movieFullPath,
+                                    spectraImageSnapshotFullPath=spectraImageSnapshotPyarchPath,
+                                    spectraImageFullPath=spectraImagePyarchPath,
+                                    defocusU=defocusU,
+                                    defocusV=defocusV,
+                                    angle=angle,
+                                    crossCorrelationCoefficient=crossCorrelationCoefficient,
+                                    resolutionLimit=resolutionLimit,
+                                    estimatedBfactor=estimatedBfactor,
+                                    logFilePath=logFilePath)
 
                 if ctfObject is not None:
                     CTFid = ctfObject.CTFid
                 else:
-                    self.info("ERROR: ctfObject is None!")
-                    CTFid = None
-                    
+                    raise RuntimeError("ISPyB: ctfObject is None!")
+
+                time.sleep(0.1)
+
                 self.allParams[movieName]["CTFid"] = CTFid
                 self.allParams[movieName]["phaseShift"] = phaseShift
                 self.allParams[movieName]["defocusU"] = defocusU
@@ -781,13 +765,13 @@ class MonitorISPyB_ESRF(Monitor):
                 self.allParams[movieName]["angle"] = angle
                 self.allParams[movieName]["crossCorrelationCoefficient"] = crossCorrelationCoefficient
                 self.allParams[movieName]["resolutionLimit"] = resolutionLimit
-                
+
                 self.info("CTF done, CTFid = {0}".format(CTFid))
 
 
     def archiveGridSquare(self, gridSquareToBeArchived):
         # Archive remaining movies
-        self.info("Archiving grid square: {0}".format(gridSquareToBeArchived))  
+        self.info("Archiving grid square: {0}".format(gridSquareToBeArchived))
         listPathsToBeArchived = []
         sumPositionX = 0.0
         sumPositionY = 0.0
@@ -823,17 +807,18 @@ class MonitorISPyB_ESRF(Monitor):
             self.info("self.sampleAcronym: {0}".format(self.sampleAcronym))
             self.info("dataSetName: {0}".format(dataSetName))
             self.info("dictIcatMetaData: {0}".format(pprint.pformat(dictIcatMetaData)))
-            errorMessage = UtilsIcat.uploadToIcat(listPathsToBeArchived, directory, self.proposal,  
+            errorMessage = UtilsIcat.uploadToIcat(listPathsToBeArchived, directory, self.proposal,
                                                   self.sampleAcronym, dataSetName, dictIcatMetaData,
                                                   listGalleryPath)
             if errorMessage is not None:
                 self.info("ERROR during icat upload!")
                 self.info(errorMessage)
-            
+
     def archiveOldGridSquares(self, gridSquareNotToArchive=None):
+        self.info("Archiving old grid squares (in any)")
         # Check if there are remaining grid squares to be uploaded:
         dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(self.allParams, gridSquareNotToArchive)
         for gridSquareToBeArchived in dictGridSquares:
             self.archiveGridSquare(gridSquareToBeArchived)
-            
-        
+
+

@@ -26,7 +26,10 @@
 # **************************************************************************
 
 import os
+import sys
+import json
 import time
+import pprint
 import unittest
 
 from  esrf.utils.esrf_utils_icat import UtilsIcat
@@ -59,6 +62,115 @@ class Test(unittest.TestCase):
         UtilsIcat.uploadToIcat(
             listFiles, directory, proposal, sample, dataSetName, dictMetadata
         )
+
+    def findStartEndTime(self, listMovies):
+        startTime = None
+        endTime = None
+        for moviePath in listMovies:
+            movieDateTime = " ".join(moviePath.split("_")[-2:])
+            movieDateTime = movieDateTime.split("-")[0]
+            # print(movieDateTime)
+            if startTime is None or startTime > movieDateTime:
+                startTime = movieDateTime
+            if endTime is None or endTime < movieDateTime:
+                endTime = movieDateTime
+        # print(startTime, endTime)
+        return startTime, endTime
+
+    def archiveGridSquare(self, proposal, sampleAcronym, allParams, gridSquareToBeArchived):
+        # Archive remaining movies
+        print("Archiving grid square: {0}".format(gridSquareToBeArchived))
+        listPathsToBeArchived = []
+        sumPositionX = 0.0
+        sumPositionY = 0.0
+        indexPosition = 0
+        for movieName in allParams:
+            if "gridSquare" in allParams[movieName] and allParams[movieName]["gridSquare"] == gridSquareToBeArchived and not allParams[movieName]["archived"]:
+                listPathsToBeArchived.append(allParams[movieName]["movieFullPath"])
+                allParams[movieName]["archived"] = True
+                try:
+                    sumPositionX += float(allParams[movieName]["positionX"])
+                    sumPositionY += float(allParams[movieName]["positionY"])
+                    indexPosition += 1
+                except:
+                    pass
+        noImagesToBeArchived = len(listPathsToBeArchived)
+        if noImagesToBeArchived > 0:
+            if indexPosition > 0:
+                meanPositionX = sumPositionX / indexPosition
+                meanPositionY = sumPositionY / indexPosition
+            else:
+                meanPositionX = None
+                meanPositionY = None
+            startTime, endTime = self.findStartEndTime(listPathsToBeArchived)
+            dictIcatMetaData = dict(allParams["EM_meta_data"])
+            dictIcatMetaData["EM_position_x"] = meanPositionX
+            dictIcatMetaData["EM_position_y"] = meanPositionY
+            #  '20201002 220415'
+            startTime = startTime[0:4] + "-" + startTime[4:6] + \
+                        "-" + startTime[6:8] + \
+                        "T" + startTime[9:11] + ":" + startTime[11:13] + \
+                        ":" + startTime[13:15]
+            endTime = endTime[0:4] + "-" + endTime[4:6] + \
+                        "-" + endTime[6:8] + \
+                        "T" + endTime[9:11] + ":" + endTime[11:13] + \
+                        ":" + endTime[13:15]
+            dictIcatMetaData["startTime"] = startTime
+            dictIcatMetaData["endTime"] = endTime
+            directory = dictIcatMetaData["EM_directory"]
+            listGalleryPath = allParams[gridSquareToBeArchived]["listGalleryPath"]
+            dataSetName = "{0}_{1}".format(gridSquareToBeArchived, round(time.time()))
+            allParams[dataSetName] = dictIcatMetaData
+            print("listPathsToBeArchived: {0}".format(pprint.pformat(listPathsToBeArchived)))
+            print("directory: {0}".format(directory))
+            print("proposal: {0}".format(proposal))
+            print("sampleAcronym: {0}".format(sampleAcronym))
+            print("dataSetName: {0}".format(dataSetName))
+            print("dictIcatMetaData: {0}".format(pprint.pformat(dictIcatMetaData)))
+            errorMessage = UtilsIcat.uploadToIcat(listPathsToBeArchived, directory, proposal,
+                                                  sampleAcronym, dataSetName, dictIcatMetaData,
+                                                  listGalleryPath)
+            if errorMessage is not None:
+                print("ERROR during icat upload!")
+                print(errorMessage)
+
+
+    # def tes_archive_blc12442(self):
+    #     proposal = "blc12442"
+    #     sampleAcronym = "Grid2"
+    #     allParamsFile = "/home/esrf/svensson/CryoEM_archiving/BLC12442/allParams.json"
+    #     with open(allParamsFile) as fd:
+    #         allParams = json.loads(fd.read())
+    #     # Set all archived to false
+    #     # for key in allParams:
+    #     #     allParams[key]["archived"] = False
+    #     # pprint.pprint(allParams)
+    #     dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(allParams)
+    #     pprint.pprint(dictGridSquares.keys())
+    #     for gridSquareToBeArchived in dictGridSquares:
+    #         self.archiveGridSquare(proposal, sampleAcronym, allParams, gridSquareToBeArchived)
+    #         with open(allParamsFile, "w") as fd:
+    #             fd.write(json.dumps(allParams, indent=4))
+    #         sys.exit(0)
+
+
+    def tes_archive_mx2261_20201104(self):
+        proposal = "mx2261"
+        sampleAcronym = "Grid1"
+        allParamsFile = "/home/esrf/svensson/CryoEM_archiving/mx2261_20201104/allParams.json"
+        with open(allParamsFile) as fd:
+            allParams = json.loads(fd.read())
+        # Set all archived to false
+        # for key in allParams:
+        #     allParams[key]["archived"] = False
+        # pprint.pprint(allParams)
+        dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(allParams)
+        pprint.pprint(dictGridSquares.keys())
+        for gridSquareToBeArchived in dictGridSquares:
+            self.archiveGridSquare(proposal, sampleAcronym, allParams, gridSquareToBeArchived)
+            with open(allParamsFile, "w") as fd:
+                fd.write(json.dumps(allParams, indent=4))
+            sys.exit(0)
 
 
 if __name__ == "__main__":

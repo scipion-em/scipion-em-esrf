@@ -1,9 +1,9 @@
 # coding: utf-8
 # **************************************************************************
 # *
-# * Author:     Yaiza Rancel (yrancel@cnb.csic.es) [1]
+# * Author:     Olof Svensson (svensson@esrf.fr) [1]
 # *
-# * [1] Unidad de  Bioinformatica of Centro Nacional de Biotecnologia , CSIC
+# * [1] European Synchrotron Radiation Facility
 # *
 # * This program is free software; you can redistribute it and/or modify
 # * it under the terms of the GNU General Public License as published by
@@ -25,4 +25,13 @@
 # *
 # **************************************************************************
 
-from protocol_monitor_ispyb_esrf import ProtMonitorISPyB_ESRF
+import unittest
+
+from esrf.utils.esrf_utils_slurm import UtilsSlurm
+
+
+class Test(unittest.TestCase):
+
+    def test_checkIfRunningProcesses(self):
+        isRunning = UtilsSlurm.checkIfRunningProcesses()
+        print(isRunning)

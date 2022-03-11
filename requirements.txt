@@ -1,8 +1,3 @@
-scipion-em-facilities
-scipion-em-sictem
-scipion-em-eman2
-scipion-em-gctf
-scipion-em-motioncorr
-scipion-em-relion
-scipion-em-sphire
-scipion-em-xmipp
+pycuda
+suds
+

@@ -51,7 +51,7 @@ setup(
     author_email="svensson@esrf.fr",  # Optional
     keywords="scipion ESRF ISPyB upload and ICAT archiving",  # Optional
     packages=find_packages(),
-    install_requires=["suds-jurko"],
+    install_requires=["suds"],
     entry_points={"pyworkflow.plugin": "esrf = esrf"},
     package_data={"esrf": ["protocols.conf"],},  # Optional
 )

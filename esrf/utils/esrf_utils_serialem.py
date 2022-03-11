@@ -30,7 +30,6 @@ import subprocess
 
 
 class UtilsSerialEM(object):
-
     @staticmethod
     def createGainFile(dm4File, gainDir):
         fileName = os.path.splitext(os.path.basename(dm4File))[0]

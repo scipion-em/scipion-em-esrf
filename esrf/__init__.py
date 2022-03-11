@@ -29,7 +29,5 @@
 import pwem
 
 
-
 class Plugin(pwem.Plugin):
     pass
-

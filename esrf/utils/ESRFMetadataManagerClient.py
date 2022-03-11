@@ -37,6 +37,7 @@ import traceback
 from email.mime.text import MIMEText
 import smtplib
 
+
 class MetadataManagerClient(object):
 
     """
@@ -62,9 +63,10 @@ class MetadataManagerClient(object):
         # Tango Devices instances
         import PyTango.client
 
-        MetadataManagerClient.metadataManager = PyTango.client.Device(metadataManagerName)
+        MetadataManagerClient.metadataManager = PyTango.client.Device(
+            metadataManagerName
+        )
         MetadataManagerClient.metaExperiment = PyTango.client.Device(metaExperimentName)
-
 
     def printStatus(self):
         print("DataRoot: %s" % MetadataManagerClient.metaExperiment.dataRoot)
@@ -78,7 +80,6 @@ class MetadataManagerClient(object):
         status += "Sample: %s\n" % MetadataManagerClient.metaExperiment.sample
         status += "Dataset: %s\n" % MetadataManagerClient.metadataManager.scanName
         return status
-
 
     def _setAttribute(self, proxy, attributeName, newValue):
         """
@@ -100,26 +101,38 @@ class MetadataManagerClient(object):
                 if currentValue == newValue:
                     break
             except Exception as e:
-                print("Unexpected error in MetadataManagerClient._setAttribute: {0}".format(e))
-                print("proxy = '{0}', attributeName = '{1}', newValue = '{2}'".format(
-                      proxy, attributeName, newValue))
+                print(
+                    "Unexpected error in MetadataManagerClient._setAttribute: {0}".format(
+                        e
+                    )
+                )
+                print(
+                    "proxy = '{0}', attributeName = '{1}', newValue = '{2}'".format(
+                        proxy, attributeName, newValue
+                    )
+                )
                 print("Trying again, trial #{0}".format(counter))
                 time.sleep(1)
         if currentValue == newValue:
             setattr(self, attributeName, newValue)
         else:
-            raise RuntimeError("Cannot set '{0}' attribute '{1}' to '{2}'!".format(proxy, attributeName, newValue))
-        
-    def appendFile(self, filePath):
-        self._setAttribute(MetadataManagerClient.metadataManager, "lastDataFile", filePath)
+            raise RuntimeError(
+                "Cannot set '{0}' attribute '{1}' to '{2}'!".format(
+                    proxy, attributeName, newValue
+                )
+            )
 
+    def appendFile(self, filePath):
+        self._setAttribute(
+            MetadataManagerClient.metadataManager, "lastDataFile", filePath
+        )
 
     def start(self, dataRoot, proposal, sampleName, datasetName):
         """ Starts a new dataset """
         # Check if in state RUNNING, if yes abort scan
         if self.getMetadataManagerState() == "RUNNING":
             MetadataManagerClient.metadataManager.AbortScan()
-            
+
         # setting proposal
         self._setAttribute(MetadataManagerClient.metaExperiment, "proposal", proposal)
 
@@ -130,18 +143,24 @@ class MetadataManagerClient(object):
         self._setAttribute(MetadataManagerClient.metaExperiment, "sample", sampleName)
 
         # setting datasetName
-        self._setAttribute(MetadataManagerClient.metadataManager, "scanName", datasetName)
+        self._setAttribute(
+            MetadataManagerClient.metadataManager, "scanName", datasetName
+        )
 
         # Start scan
-        if (self.getMetadataManagerState() == "ON") and (self.getMetaExperimentState() == "ON"):
+        if (self.getMetadataManagerState() == "ON") and (
+            self.getMetaExperimentState() == "ON"
+        ):
             MetadataManagerClient.metadataManager.StartScan()
         else:
-            raise RuntimeError("Cannot start scan! MetadataManagerState= {0}, MetaExperimentState = {1}".format(
-                    self.getMetadataManagerState(), self.getMetaExperimentState()))
+            raise RuntimeError(
+                "Cannot start scan! MetadataManagerState= {0}, MetaExperimentState = {1}".format(
+                    self.getMetadataManagerState(), self.getMetaExperimentState()
+                )
+            )
 
         # Give the server some time to react
         time.sleep(1)
-
 
     def end(self):
         try:
@@ -160,28 +179,29 @@ class MetadataManagerClient(object):
 
     def getMessageList(self):
         return list(MetadataManagerClient.metadataManager.messageList)
-    
+
     def abortScan(self):
         MetadataManagerClient.metadataManager.AbortScan()
 
-            
+
 if __name__ == "__main__":
     os.environ["TANGO_HOST"] = "l-cryoem-2.esrf.fr:20000"
-    dataDir = \
-        "/data/visitor/mx2005/cm01/20171209/RAW_DATA/baseplate-epu-grid2/" + \
-        "Images-Disc1/GridSquare_7259648/Data/"
-    foilHoleDir = \
-        dataDir + \
-        "process/FoilHole_7265309_Data_7264706_7264707_20171207_1704-10925/"
+    dataDir = (
+        "/data/visitor/mx2005/cm01/20171209/RAW_DATA/baseplate-epu-grid2/"
+        + "Images-Disc1/GridSquare_7259648/Data/"
+    )
+    foilHoleDir = (
+        dataDir + "process/FoilHole_7265309_Data_7264706_7264707_20171207_1704-10925/"
+    )
     listFiles = [
         dataDir + "FoilHole_7265309_Data_7264706_7264707_20171207_1704-10925.mrc",
-        foilHoleDir +
-        "FoilHole_7265309_Data_7264706_7264707_20171207_1704-10925_aligned_mic_DW.mrc",
-        foilHoleDir +
-        "FoilHole_7265309_Data_7264706_7264707_20171207_1704-10925_aligned_mic.mrc",
+        foilHoleDir
+        + "FoilHole_7265309_Data_7264706_7264707_20171207_1704-10925_aligned_mic_DW.mrc",
+        foilHoleDir
+        + "FoilHole_7265309_Data_7264706_7264707_20171207_1704-10925_aligned_mic.mrc",
         foilHoleDir + "run.log",
         foilHoleDir + "ctfEstimation.mrc",
-                          ]
+    ]
     directory = "/data/visitor/mx2005/cm01/20171209/RAW_DATA/baseplate-epu-grid2"
     proposal = "id310001"
     sample = "sample1"
@@ -196,9 +216,11 @@ if __name__ == "__main__":
         client.appendFile(archivePath)
     dictMetadata = {"definition": "EM"}
     for attributeName, value in dictMetadata.iteritems():
-        print("Setting metadata client attribute '{0}' to '{1}'".format(attributeName, value))
+        print(
+            "Setting metadata client attribute '{0}' to '{1}'".format(
+                attributeName, value
+            )
+        )
         setattr(client.metadataManager, attributeName, str(value))
     client.printStatus()
     client.end()
-
-

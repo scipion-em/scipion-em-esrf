@@ -31,7 +31,6 @@ from esrf.utils.esrf_utils_slurm import UtilsSlurm
 
 
 class Test(unittest.TestCase):
-
     def test_checkIfRunningProcesses(self):
         isRunning = UtilsSlurm.checkIfRunningProcesses()
         print(isRunning)

@@ -37,29 +37,46 @@ from suds.cache import NoCache
 
 
 class UtilsISPyB(object):
-
     @staticmethod
     def getHttpAuthenticated():
-        username = os.environ.get('ISPyB_user', None)
-        password = os.environ.get('ISPyB_pass', None)
+        username = os.environ.get("ISPyB_user", None)
+        password = os.environ.get("ISPyB_pass", None)
         if username is None or password is None:
-            raise RuntimeError("Missing ISPyB user name and / or password! Please ser ISPyB_user and ISPyB_pass.")
+            raise RuntimeError(
+                "Missing ISPyB user name and / or password! Please ser ISPyB_user and ISPyB_pass."
+            )
         return HttpAuthenticated(username=username, password=password)
-    
+
     @staticmethod
     def getUrlBase(dbNumber):
         config = configparser.ConfigParser()
-        config.read('/opt/pxsoft/scipion/config/esrf.properties')
+        config.read("/opt/pxsoft/scipion/config/esrf.properties")
         # URL
-        urlBase = str(config.get('UrlBase', 'url_{0}'.format(dbNumber)))
+        urlBase = str(config.get("UrlBase", "url_{0}".format(dbNumber)))
         return urlBase
-    
+
     @staticmethod
     def splitProposalInCodeAndNumber(proposal):
         code = None
         number = None
         if proposal is not None:
-            listCodes = ["fx", "mxihr", "mx", "bx", "ix", "in", "im", "ih-ls", "ih-mx", "blc", "bm161", "sc", "tc", "opcm", "opid"]
+            listCodes = [
+                "fx",
+                "mxihr",
+                "mx",
+                "bx",
+                "ix",
+                "in",
+                "im",
+                "ih-ls",
+                "ih-mx",
+                "blc",
+                "bm161",
+                "sc",
+                "tc",
+                "opcm",
+                "opid",
+            ]
             proposalLowerCase = proposal.lower()
             for tmpCode in listCodes:
                 if proposalLowerCase.startswith(tmpCode):
@@ -70,13 +87,13 @@ class UtilsISPyB(object):
                         code = None
                         number = None
         return code, number
-    
+
     @staticmethod
     def getClient(url):
         # Authentication
         httpAuthenticated = UtilsISPyB.getHttpAuthenticated()
         client = Client(url, transport=httpAuthenticated, cache=NoCache(), timeout=15)
-        return client  
+        return client
 
     @staticmethod
     def updateProposalFromSMIS(dbNumber, proposal):
@@ -86,7 +103,7 @@ class UtilsISPyB(object):
         code, number = UtilsISPyB.splitProposalInCodeAndNumber(proposal)
         response = client.service.updateProposalFromSMIS(code, number)
         print(response)
- 
+
     @staticmethod
     def findSessions(dbNumber, proposal, beamline):
         urlBase = UtilsISPyB.getUrlBase(dbNumber)
@@ -95,9 +112,11 @@ class UtilsISPyB(object):
         client = UtilsISPyB.getClient(url)
         code, number = UtilsISPyB.splitProposalInCodeAndNumber(proposal)
         # print(code, number, beamline)
-        sessions = client.service.findSessionsByProposalAndBeamLine(code, number, beamline)
-        return sessions      
-    
+        sessions = client.service.findSessionsByProposalAndBeamLine(
+            code, number, beamline
+        )
+        return sessions
+
     @staticmethod
     def findProposal(dbNumber, proposal):
         urlBase = UtilsISPyB.getUrlBase(dbNumber)
@@ -108,8 +127,7 @@ class UtilsISPyB(object):
         # print(code, number)
         proposal = client.service.findProposal(code, number)
         return proposal
-    
-    
+
     @staticmethod
     def createSession(dbNumber, proposal, beamline):
         sessions = []
@@ -119,17 +137,17 @@ class UtilsISPyB(object):
             startTime = datetime.datetime.combine(currentTime, datetime.time(0, 0))
             tomorrow = startTime + datetime.timedelta(days=1)
             endTime = datetime.datetime.combine(tomorrow, datetime.time(7, 59, 59))
-    
+
             # Create a session
             newSessionDict = {}
-            newSessionDict['proposalId'] = proposalDict["proposalId"]
-            newSessionDict['startDate'] = startTime
-            newSessionDict['endDate'] = endTime
-            newSessionDict['beamlineName'] = beamline.upper()
-            newSessionDict['scheduled'] = 0
-            newSessionDict['nbShifts'] = 3
-            newSessionDict['comments'] = "Session created by Scipion"
-            
+            newSessionDict["proposalId"] = proposalDict["proposalId"]
+            newSessionDict["startDate"] = startTime
+            newSessionDict["endDate"] = endTime
+            newSessionDict["beamlineName"] = beamline.upper()
+            newSessionDict["scheduled"] = 0
+            newSessionDict["nbShifts"] = 3
+            newSessionDict["comments"] = "Session created by Scipion"
+
             urlBase = UtilsISPyB.getUrlBase(dbNumber)
             url = os.path.join(urlBase, "ToolsForCollectionWebService?wsdl")
             print(url)
@@ -139,7 +157,6 @@ class UtilsISPyB(object):
             print(code, number, beamline)
             sessions = client.service.storeOrUpdateSession(newSessionDict)
         return sessions
-
 
     @staticmethod
     def getProposal(movieFilePath):
@@ -152,12 +169,64 @@ class UtilsISPyB(object):
                 proposalFromDirectory = listDirectory[3]
             else:
                 proposalFromDirectory = listDirectory[4]
-            proposalCode, proposalNumber = UtilsISPyB.splitProposalInCodeAndNumber(proposalFromDirectory)
+            proposalCode, proposalNumber = UtilsISPyB.splitProposalInCodeAndNumber(
+                proposalFromDirectory
+            )
             if proposalCode is not None:
                 proposal = proposalFromDirectory.lower()
         return proposal
-        
-    
-    
-    
- 
+
+    @staticmethod
+    def uploadClassify2D(
+        client, proposal, particleSize, dictParticle, dictModel, pyarchParticleFile
+    ):
+        particlePickerObject = client.service.addParticlePicker(
+            proposal=proposal,
+            firstMovieFullPath=dictParticle["firstMovieFullPath"],
+            pickingProgram="Cryolo CPU",
+            particlePickingTemplate="",
+            particleDiameter=str(particleSize),
+            numberOfParticles=dictParticle["numberOfParticles"],
+            fullPathToParticleFile=pyarchParticleFile,
+        )
+        if particlePickerObject is not None:
+            particlePickerId = particlePickerObject.particlePickerId
+        else:
+            particlePickerId = None
+            pass
+            # raise RuntimeError("ISPyB: particlePickerObject is None!")
+
+        # Parse the "relion_it025_model.star" file
+        if particlePickerId is not None:
+            particleClassificationGroupObject = client.service.addParticleClassificationGroup(
+                particlePickerId=particlePickerId,
+                type="2D",
+                batchNumber="0",
+                numberOfParticlesPerBatch="0",
+                numberOfClassesPerBatch="0",
+                symmetry="",
+                classificationProgram="Relion 2D classification",
+            )
+
+            if particleClassificationGroupObject is not None:
+                particleClassificationGroupId = (
+                    particleClassificationGroupObject.particleClassificationGroupId
+                )
+            else:
+                particleClassificationGroupId = None
+                pass
+                # raise RuntimeError("ISPyB: particleClassificationGroupId is None!")
+            if particleClassificationGroupId is not None:
+                for classModel in dictModel["classes"]:
+                    particleClassificationObject = client.service.addParticleClassification(
+                        particleClassificationGroupId=particleClassificationGroupId,
+                        classNumber=classModel["index"],
+                        classImageFullPath=classModel["classImageFullPath"],
+                        classDistribution=str(classModel["classDistribution"]),
+                        rotationAccuracy=str(classModel["accuracyRotations"]),
+                        translationAccuracy=str(classModel["accuracyTranslationsAngst"]),
+                        estimatedResolution=str(classModel["estimatedResolution"]),
+                        overallFourierCompleteness=str(
+                            classModel["overallFourierCompleteness"]
+                        ),
+                    )

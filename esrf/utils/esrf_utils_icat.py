@@ -32,24 +32,30 @@ import time
 import traceback
 
 from esrf.utils.ESRFMetadataManagerClient import MetadataManagerClient
+from esrf.utils.esrf_utils_path import UtilsPath
+
 
 class UtilsIcat(object):
-    
-
     @staticmethod
     def getDataFilesToBeArchived(allParams):
         listFiles = []
         return listFiles
 
-
-    
     @staticmethod
-    def uploadToIcat(listFiles, directory, proposal, sample, dataSetName, dictMetadata={}, listGalleryPath=[]):
+    def uploadToIcat(
+        listFiles,
+        directory,
+        proposal,
+        sample,
+        dataSetName,
+        dictMetadata={},
+        listGalleryPath=[],
+    ):
         errorMessage = None
         try:
             os.environ["TANGO_HOST"] = "l-cryoem-2.esrf.fr:20000"
-            metadataManagerName = 'cm01/metadata/ingest'
-            metaExperimentName = 'cm01/metadata/experiment'
+            metadataManagerName = "cm01/metadata/ingest"
+            metaExperimentName = "cm01/metadata/experiment"
             client = MetadataManagerClient(metadataManagerName, metaExperimentName)
         except:
             errorMessage = UtilsIcat.getStackTraceLog()
@@ -59,7 +65,7 @@ class UtilsIcat(object):
                 client.start(directory, proposal, sample, dataSetName)
             except:
                 errorMessage = UtilsIcat.getStackTraceLog()
-                
+
         if errorMessage is None:
             try:
                 for filePath in listFiles:
@@ -80,7 +86,11 @@ class UtilsIcat(object):
                     else:
                         galleryString += ", " + galleryPath
                 if galleryString != "":
-                    setattr(client.metadataManager, "ResourcesGalleryFilePaths", galleryString)
+                    setattr(
+                        client.metadataManager,
+                        "ResourcesGalleryFilePaths",
+                        galleryString,
+                    )
             except:
                 print("ERROR when uploading gallery paths:")
                 print(UtilsIcat.getStackTraceLog())
@@ -93,18 +103,28 @@ class UtilsIcat(object):
         return errorMessage
 
     @staticmethod
-    def findGridSquaresNotUploaded(allParams, gridSquareNotToArchive=None):
-        dictGridSquares = {}
-        for key in allParams:
-            entry = allParams[key]
-            if "archived" in entry and not entry["archived"] and "gridSquare" in entry:
-                gridSquare = entry["gridSquare"]
-                if gridSquare != gridSquareNotToArchive:
-                    if not gridSquare in dictGridSquares:
-                        dictGridSquares[gridSquare] = []
-                    dictGridSquares[gridSquare].append(key)
-        return dictGridSquares
-
+    def findGridSquaresNotUploaded(
+        allParams, gridSquareNotToArchive=None, timeout=3600
+    ):
+        listGridSquares = []
+        for key, entry in allParams.items():
+            if "archived" in entry and not entry["archived"]:
+                if "gridSquare" in entry:
+                    gridSquare = entry["gridSquare"]
+                    if (
+                        time.time() > allParams[gridSquare]["lastMovieTime"] + timeout
+                        and not gridSquare in listGridSquares
+                    ):
+                        listGridSquares.append(gridSquare)
+                elif "movieFullPath" in entry:
+                    movieFullPath = entry["movieFullPath"]
+                    dictFileNameParameters = UtilsPath.getEpuTiffMovieFileNameParameters(
+                        movieFullPath
+                    )
+                    gridSquare = dictFileNameParameters["gridSquare"]
+                    if not gridSquare in listGridSquares:
+                        listGridSquares.append(gridSquare)
+        return listGridSquares
 
     @staticmethod
     def getStackTraceLog():
@@ -112,5 +132,10 @@ class UtilsIcat(object):
         errorMessage = "{0} {1}\n".format(exc_type, exc_value)
         listTrace = traceback.extract_tb(exc_traceback)
         for listLine in listTrace:
-            errorMessage += "  File \"%s\", line %d, in %s%s\n" % (listLine[0], listLine[1], listLine[2], os.linesep)
+            errorMessage += '  File "%s", line %d, in %s%s\n' % (
+                listLine[0],
+                listLine[1],
+                listLine[2],
+                os.linesep,
+            )
         return errorMessage

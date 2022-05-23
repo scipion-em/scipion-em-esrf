@@ -28,7 +28,7 @@
 import argparse
 
 
-def getCommandlineOptions():
+def getCommandlineOptions(use_celery=False):
     parser = argparse.ArgumentParser(
         description="Application for starting Scipion workflow for CM01"
     )
@@ -151,9 +151,22 @@ def getCommandlineOptions():
         help="If set: timeout increased to 72 h, GPUs 4-7 used",
         default=False,
     )
+    optional.add_argument(
+        "--doProcessDir",
+        action="store_true",
+        help="If set: copy of micrographs to RAW_DATA",
+        default=False,
+    )
+    if use_celery:
+        optional.add_argument(
+            "--celery_worker",
+            action="store",
+            help="Celery worker (dgx01, cmproc3, etc)",
+            default="dgx01",
+        )
     results = parser.parse_args()
 
-    optDict = {
+    opt_dict = {
         "dataDirectory": results.directory,
         "filesPattern": results.filesPattern,
         "scipionProjectName": results.scipionProjectName,
@@ -182,6 +195,9 @@ def getCommandlineOptions():
         "defectMapPath": results.defectMapPath,
         "gainFilePath": results.gainFilePath,
         "secondGrid": results.secondGrid,
+        "doProcessDir": results.doProcessDir,
     }
+    if use_celery:
+        opt_dict["celery_worker"] = results.celery_worker
 
-    return optDict
+    return opt_dict

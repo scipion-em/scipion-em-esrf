@@ -68,8 +68,7 @@ shutil._USE_CP_SENDFILE = False
 
 
 def getUpdatedProtocol(protocol):
-    """ Retrieve the updated protocol and close db connections
-        """
+    """Retrieve the updated protocol and close db connections"""
     prot2 = None
     try:
         prot2 = getProtocolFromDb(

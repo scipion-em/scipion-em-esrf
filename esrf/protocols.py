@@ -182,6 +182,14 @@ class ProtMonitorISPyB_ESRF(ProtMonitor):
             help="Particle size used for particle picking",
         )
 
+        section2.addParam(
+            "doProcessDir",
+            params.BooleanParam,
+            default=False,
+            label="Enable process dir?",
+            help="Copy of motion corrected micrographs to RAW_DATA dir."
+        )
+
         section3 = form.addSection(label="ISPyB")
 
         section3.addParam(
@@ -258,6 +266,7 @@ class MonitorISPyB_ESRF(Monitor):
         self.gainFilePath = protocol.gainFilePath.get()
         self.defectMapPath = protocol.defectMapPath.get()
         self.particleSize = protocol.particleSize.get()
+        self.doProcessDir = protocol.doProcessDir.get()
         self.positionX = None
         self.positionY = None
         self.collectionDate = None
@@ -388,15 +397,17 @@ class MonitorISPyB_ESRF(Monitor):
             movieNumber = dictFileNameParameters["movieNumber"]
             movieName = dictFileNameParameters["movieName"]
             self.info("Import movies: movieName: {0}".format(movieName))
-            processDir = os.path.join(
-                os.path.dirname(movieFullPath), "process", movieName
-            )
-            if not os.path.exists(processDir):
-                try:
-                    os.makedirs(processDir, 0o755)
-                except OSError:
-                    processDir = None
-
+            if self.doProcessDir:
+                processDir = os.path.join(
+                    os.path.dirname(movieFullPath), "process", movieName
+                )
+                if not os.path.exists(processDir):
+                    try:
+                        os.makedirs(processDir, 0o755)
+                    except OSError:
+                        processDir = None
+            else:
+                processDir = None
             self.movieDirectory = os.path.dirname(movieFullPath)
 
             (
@@ -602,14 +613,17 @@ class MonitorISPyB_ESRF(Monitor):
                 self.info("Movie {0} already uploaded to ISPyB".format(movieName))
             else:
                 self.info("Import movies: movieName: {0}".format(movieName))
-                processDir = os.path.join(
-                    os.path.dirname(movieFullPath), "process", movieName
-                )
-                if not os.path.exists(processDir):
-                    try:
-                        os.makedirs(processDir, 0o755)
-                    except OSError:
-                        processDir = None
+                if self.doProcessDir:
+                    processDir = os.path.join(
+                        os.path.dirname(movieFullPath), "process", movieName
+                    )
+                    if not os.path.exists(processDir):
+                        try:
+                            os.makedirs(processDir, 0o755)
+                        except OSError:
+                            processDir = None
+                else:
+                    processDir = None
 
                 self.movieDirectory = os.path.dirname(movieFullPath)
                 # self.info("movieFullPath: {0}".format(movieFullPath))
@@ -834,14 +848,17 @@ class MonitorISPyB_ESRF(Monitor):
             movieNumber = dictFileNameParameters["movieNumber"]
             movieName = dictFileNameParameters["movieName"]
             self.info("Import movies: movieName: {0}".format(movieName))
-            processDir = os.path.join(
-                os.path.dirname(movieFullPath), "process", movieName
-            )
-            if not os.path.exists(processDir):
-                try:
-                    os.makedirs(processDir, 0o755)
-                except OSError:
-                    processDir = None
+            if self.doProcessDir:
+                processDir = os.path.join(
+                    os.path.dirname(movieFullPath), "process", movieName
+                )
+                if not os.path.exists(processDir):
+                    try:
+                        os.makedirs(processDir, 0o755)
+                    except OSError:
+                        processDir = None
+            else:
+                processDir = None
             self.movieDirectory = os.path.dirname(movieFullPath)
             # Get SerialEM metadata
             mdocFullPath = movieFullPath + ".mdoc"

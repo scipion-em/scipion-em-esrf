@@ -4,6 +4,7 @@ import json
 import glob
 import time
 import celery
+import socket
 import tempfile
 import datetime
 
@@ -16,9 +17,24 @@ from esrf.utils.esrf_utils_path import UtilsPath
 app = celery.Celery()
 app.config_from_object("celeryconfig")
 
+# Make sure that there's no other worker running on this computer
+user_name = os.getlogin()
+host_name = socket.gethostname()
+queue_name = user_name + "@" + host_name
+
+# import pprint
+# pprint.pprint(app.control.inspect().stats())
+active_workers = celery.current_app.control.inspect().active()
+if active_workers is not None:
+    for key, value in active_workers.items():
+        print(key, value)
+        if host_name in key:
+            print("A Scipion Celery worker is already running on this computer!")
+            sys.exit(1)
+
 
 @app.task()
-def revoke_tst():
+def revoke_tst(input_data):
     print("In test_revoke")
     try:
         while True:
@@ -241,8 +257,9 @@ def update_all_params(config_dict):
 
 
 @app.task()
-def run_workflow(config_dict_string):
-    config_dict = json.loads(config_dict_string)
+def run_workflow(config_dict):
+    config_dict["dataType"] = 1  # "EPU_TIFF"
+    # config_dict = json.loads(config_dict_string)
     # Set up location
     set_location(config_dict)
     # Set up ispyb data base
@@ -258,14 +275,15 @@ def run_workflow(config_dict_string):
     # Update the allParamsJsonFile with the config_dict
     update_all_params(config_dict)
 
-    # the project may be a soft link which may be unavailable to the cluster so get the real path
-    manager = pyworkflow.project.manager.Manager()
-    try:
-        project_path = os.readlink(
-            manager.getProjectPath(config_dict["scipionProjectName"])
-        )
-    except:
-        project_path = manager.getProjectPath(config_dict["scipionProjectName"])
+    # the project may be a soft link which may be unavailable to the cluster
+    # so get the real path
+    # manager = pyworkflow.project.manager.Manager()
+    # try:
+    #     project_path = os.readlink(
+    #         manager.getProjectPath(config_dict["scipionProjectName"])
+    #     )
+    # except Exception:
+    #     project_path = manager.getProjectPath(config_dict["scipionProjectName"])
 
     preprocessWorkflow(config_dict)
 
@@ -330,9 +348,21 @@ def run_workflow(config_dict_string):
                 try:
                     print("Trying to stop protocol '{0}'".format(prot))
                     project.stopProtocol(prot)
-                except:
+                except Exception:
                     print("Couldn't stop protocol {0}".format(prot))
 
 
 if __name__ == "__main__":
-    app.worker_main(argv=["worker", "-l", "INFO", "-E"])
+    app.worker_main(
+        argv=[
+            "worker",
+            "-l",
+            "INFO",
+            "-E",
+            "--concurrency=1",
+            "-Q",
+            queue_name,
+            "-n",
+            queue_name,
+        ]
+    )

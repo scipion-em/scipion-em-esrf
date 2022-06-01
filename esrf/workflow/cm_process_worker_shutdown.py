@@ -4,7 +4,7 @@ import subprocess
 
 user_name = os.getlogin()
 host_name = socket.gethostname()
-queue_name = user_name + "@" + host_name
+queue_name = "celery." + user_name + "@" + host_name
 
 worker_pid_list = []
 try:

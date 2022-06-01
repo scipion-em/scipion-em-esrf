@@ -18,7 +18,7 @@ from esrf.utils.esrf_utils_path import UtilsPath
 
 user_name = os.getlogin()
 host_name = socket.gethostname()
-queue_name = user_name + "@" + host_name
+queue_name = "celery." + user_name + "@" + host_name
 
 # Set up logging
 logger = logging.getLogger()
@@ -50,6 +50,7 @@ app.config_from_object("esrf.workflow.celeryconfig")
 # Make sure that there's no other worker running on this computer
 active_workers = celery.current_app.control.inspect().active()
 if active_workers is not None:
+    print(key, value)
     for key, value in active_workers.items():
         logger.info(key, value)
         if host_name in key:

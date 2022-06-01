@@ -5,6 +5,8 @@ import glob
 import time
 import celery
 import socket
+import pprint
+import logging
 import tempfile
 import datetime
 
@@ -14,36 +16,58 @@ from esrf.workflow.workflow import preprocessWorkflow
 
 from esrf.utils.esrf_utils_path import UtilsPath
 
-app = celery.Celery()
-app.config_from_object("celeryconfig")
-
-# Make sure that there's no other worker running on this computer
 user_name = os.getlogin()
 host_name = socket.gethostname()
 queue_name = user_name + "@" + host_name
 
+# Set up logging
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+log_dir = os.path.join("/tmp_14_days", user_name, "scipion_logs")
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir, exist_ok=True, mode=0o775)
+log_file_name = "celery_worker_{0}.log".format(
+        time.strftime(
+            "%Y-%m-%d", time.localtime(time.time())
+        )
+    )
+log_path = os.path.join(log_dir, log_file_name)
+fileHandler = logging.handlers.RotatingFileHandler(
+    log_path, maxBytes=10000000, backupCount=10
+)
+log_file_format = "%(asctime)s %(module)-20s %(funcName)-15s %(levelname)-8s %(message)s"
+formatter = logging.Formatter(log_file_format)
+fileHandler.setFormatter(formatter)
+logger.addHandler(fileHandler)
+print(log_path)
+logger.info("Testing!")
+app = celery.Celery()
+app.config_from_object("esrf.workflow.celeryconfig")
+
 # import pprint
 # pprint.pprint(app.control.inspect().stats())
+
+# Make sure that there's no other worker running on this computer
 active_workers = celery.current_app.control.inspect().active()
 if active_workers is not None:
     for key, value in active_workers.items():
-        print(key, value)
+        logger.info(key, value)
         if host_name in key:
-            print("A Scipion Celery worker is already running on this computer!")
+            logger.info("A Scipion Celery worker is already running on this computer!")
             sys.exit(1)
 
 
 @app.task()
 def revoke_tst(input_data):
-    print("In test_revoke")
+    logger.info("In test_revoke")
     try:
         while True:
             time.sleep(5)
-            print("Sleeping...")
+            logger.info("Sleeping...")
     except:
-        print("In Except")
+        logger.info("In Except")
     finally:
-        print("In finally")
+        logger.info("In finally")
 
 
 def getUpdatedProtocol(protocol):
@@ -57,7 +81,7 @@ def getUpdatedProtocol(protocol):
         prot2.getProject().closeMapper()
         prot2.closeMappers()
     except Exception as e:
-        print("ERROR! Exception caught: {0}".format(e))
+        logger.info("ERROR! Exception caught: {0}".format(e))
     return prot2
 
 
@@ -78,37 +102,37 @@ def set_location(config_dict):
         location = tempfile.mkdtemp(prefix="ScipionUserData_")
     if not os.path.exists(os.path.dirname(location)):
         os.makedirs(os.path.dirname(location), mode=0o755)
-    print("Scipion project location: {0}".format(location))
+    logger.info("Scipion project location: {0}".format(location))
     config_dict["location"] = location
     # All param json file
     config_dict["allParamsJsonFile"] = os.path.join(location, "allParams.json")
-    print("Location of allParams file: {0}".format(config_dict["allParamsJsonFile"]))
+    logger.info("Location of allParams file: {0}".format(config_dict["allParamsJsonFile"]))
     if os.path.exists(config_dict["allParamsJsonFile"]):
-        print("Using existing allParams file")
+        logger.info("Using existing allParams file")
     return location
 
 
 def set_ispyb_database(config_dict):
     if config_dict["proposal"] is None:
-        print("WARNING! No data will be uploaded to ISPyB.")
+        logger.info("WARNING! No data will be uploaded to ISPyB.")
         config_dict["noISPyB"] = True
         config_dict["db"] = -1
     elif config_dict["noISPyB"]:
-        print("No upload to ISPyB or iCAT")
+        logger.info("No upload to ISPyB or iCAT")
         config_dict["proposal"] = "None"
         config_dict["db"] = -1
     else:
         if config_dict["proposal"] == "mx415":
             # Use valid data base
-            print("ISPyB valid data base used")
+            logger.info("ISPyB valid data base used")
             config_dict["db"] = 1
         elif config_dict["proposal"] == "mx2112":
             # Use valid data base
-            print("ISPyB production data base used")
+            logger.info("ISPyB production data base used")
             config_dict["db"] = 1
         else:
             # Use productiond data base
-            print("ISPyB production data base used")
+            logger.info("ISPyB production data base used")
             config_dict["db"] = 0
 
 
@@ -127,7 +151,7 @@ def create_blackfile_list(config_dict):
             for filePath in black_list:
                 f.write(filePath + "\n")
         config_dict["blacklistFile"] = blacklist_file
-        print("Black list file : " + config_dict["blacklistFile"])
+        logger.info("Black list file : " + config_dict["blacklistFile"])
 
 
 def set_em_data(config_dict):
@@ -193,52 +217,52 @@ def set_gpu_data(config_dict):
 
 
 def print_config(config_dict):
-    print("")
-    print("Parameters:")
-    print("")
-    print("{0:30s}{1:>8s}".format("proposal", config_dict["proposal"]))
-    print("{0:30s}{1:8s}".format("dataDirectory", config_dict["dataDirectory"]))
-    print("{0:30s}{1:>8s}".format("filesPattern", config_dict["filesPattern"]))
-    print("{0:30s}{1:>8s}".format("proteinAcronym", config_dict["proteinAcronym"]))
-    print("{0:30s}{1:>8s}".format("sampleAcronym", config_dict["sampleAcronym"]))
-    print("{0:30s}{1:8.0f}".format("voltage", config_dict["voltage"]))
-    print("{0:30s}{1:8d}".format("imagesCount", config_dict["imagesCount"]))
-    print("{0:30s}{1:8.2f}".format("doseInitial", config_dict["doseInitial"]))
-    print("{0:30s}{1:8.2f}".format("dosePerFrame", config_dict["dosePerFrame"]))
-    print(
+    logger.info("")
+    logger.info("Parameters:")
+    logger.info("")
+    logger.info("{0:30s}{1:>8s}".format("proposal", config_dict["proposal"]))
+    logger.info("{0:30s}{1:8s}".format("dataDirectory", config_dict["dataDirectory"]))
+    logger.info("{0:30s}{1:>8s}".format("filesPattern", config_dict["filesPattern"]))
+    logger.info("{0:30s}{1:>8s}".format("proteinAcronym", config_dict["proteinAcronym"]))
+    logger.info("{0:30s}{1:>8s}".format("sampleAcronym", config_dict["sampleAcronym"]))
+    logger.info("{0:30s}{1:8.0f}".format("voltage", config_dict["voltage"]))
+    logger.info("{0:30s}{1:8d}".format("imagesCount", config_dict["imagesCount"]))
+    logger.info("{0:30s}{1:8.2f}".format("doseInitial", config_dict["doseInitial"]))
+    logger.info("{0:30s}{1:8.2f}".format("dosePerFrame", config_dict["dosePerFrame"]))
+    logger.info(
         "{0:30s}{1:8.1f}".format(
             "sphericalAberration", config_dict["sphericalAberration"]
         )
     )
-    print("{0:30s}{1:8.1f}".format("gainFlip", config_dict["gainFlip"]))
-    print("{0:30s}{1:8.1f}".format("gainRot", config_dict["gainRot"]))
-    print("{0:30s}{1:8.2f}".format("minDefocus", config_dict["minDefocus"]))
-    print("{0:30s}{1:8.2f}".format("maxDefocus", config_dict["maxDefocus"]))
-    print("{0:30s}{1:8.1f}".format("astigmatism", config_dict["astigmatism"]))
-    print("{0:30s}{1:8d}".format("convsize", config_dict["convsize"]))
-    print("{0:30s}{1:>8}".format("doPhShEst", config_dict["doPhShEst"]))
-    print("{0:30s}{1:8.1f}".format("phaseShiftL", config_dict["phaseShiftL"]))
-    print("{0:30s}{1:8.1f}".format("phaseShiftH", config_dict["phaseShiftH"]))
-    print("{0:30s}{1:8.1f}".format("phaseShiftS", config_dict["phaseShiftS"]))
-    print("{0:30s}{1:8.1f}".format("phaseShiftT", config_dict["phaseShiftT"]))
-    print("{0:30s}{1:8.3f}".format("lowRes", config_dict["lowRes"]))
-    print("{0:30s}{1:8.3f}".format("highRes", config_dict["highRes"]))
-    print("{0:30s}{1:8.0f}".format("magnification", config_dict["magnification"]))
-    print("{0:30s}{1:8.2f}".format("samplingRate", config_dict["samplingRate"]))
-    print("{0:30s}{1:8.2f}".format("sampling2D", config_dict["sampling2D"]))
-    print("{0:30s}{1:8.2f}".format("partSize", config_dict["partSize"]))
-    print("{0:30s}{1:8.1f}".format("binFactor", config_dict["binFactor"]))
-    print("{0:30s}{1:>8}".format("dataStreaming", config_dict["dataStreaming"]))
-    print("{0:30s}{1:>8s}".format("motioncor2Gpu", config_dict["motioncor2Gpu"]))
-    print("{0:30s}{1:>8d}".format("motioncor2Cpu", config_dict["motioncor2Cpu"]))
-    print("{0:30s}{1:>8s}".format("gctfGpu", config_dict["gctfGpu"]))
-    print("{0:30s}{1:>8s}".format("gl2dGpu", config_dict["gl2dGpu"]))
-    print("{0:30s}{1:8d}".format("numCpus", config_dict["numCpus"]))
-    print("")
-    print("Scipion project name: {0}".format(config_dict["scipionProjectName"]))
-    print("Scipion user data location: {0}".format(config_dict["location"]))
-    print("All param json file: {0}".format(config_dict["allParamsJsonFile"]))
-    print("")
+    logger.info("{0:30s}{1:8.1f}".format("gainFlip", config_dict["gainFlip"]))
+    logger.info("{0:30s}{1:8.1f}".format("gainRot", config_dict["gainRot"]))
+    logger.info("{0:30s}{1:8.2f}".format("minDefocus", config_dict["minDefocus"]))
+    logger.info("{0:30s}{1:8.2f}".format("maxDefocus", config_dict["maxDefocus"]))
+    logger.info("{0:30s}{1:8.1f}".format("astigmatism", config_dict["astigmatism"]))
+    logger.info("{0:30s}{1:8d}".format("convsize", config_dict["convsize"]))
+    logger.info("{0:30s}{1:>8}".format("doPhShEst", config_dict["doPhShEst"]))
+    logger.info("{0:30s}{1:8.1f}".format("phaseShiftL", config_dict["phaseShiftL"]))
+    logger.info("{0:30s}{1:8.1f}".format("phaseShiftH", config_dict["phaseShiftH"]))
+    logger.info("{0:30s}{1:8.1f}".format("phaseShiftS", config_dict["phaseShiftS"]))
+    logger.info("{0:30s}{1:8.1f}".format("phaseShiftT", config_dict["phaseShiftT"]))
+    logger.info("{0:30s}{1:8.3f}".format("lowRes", config_dict["lowRes"]))
+    logger.info("{0:30s}{1:8.3f}".format("highRes", config_dict["highRes"]))
+    logger.info("{0:30s}{1:8.0f}".format("magnification", config_dict["magnification"]))
+    logger.info("{0:30s}{1:8.2f}".format("samplingRate", config_dict["samplingRate"]))
+    logger.info("{0:30s}{1:8.2f}".format("sampling2D", config_dict["sampling2D"]))
+    logger.info("{0:30s}{1:8.2f}".format("partSize", config_dict["partSize"]))
+    logger.info("{0:30s}{1:8.1f}".format("binFactor", config_dict["binFactor"]))
+    logger.info("{0:30s}{1:>8}".format("dataStreaming", config_dict["dataStreaming"]))
+    logger.info("{0:30s}{1:>8s}".format("motioncor2Gpu", config_dict["motioncor2Gpu"]))
+    logger.info("{0:30s}{1:>8d}".format("motioncor2Cpu", config_dict["motioncor2Cpu"]))
+    logger.info("{0:30s}{1:>8s}".format("gctfGpu", config_dict["gctfGpu"]))
+    logger.info("{0:30s}{1:>8s}".format("gl2dGpu", config_dict["gl2dGpu"]))
+    logger.info("{0:30s}{1:8d}".format("numCpus", config_dict["numCpus"]))
+    logger.info("")
+    logger.info("Scipion project name: {0}".format(config_dict["scipionProjectName"]))
+    logger.info("Scipion user data location: {0}".format(config_dict["location"]))
+    logger.info("All param json file: {0}".format(config_dict["allParamsJsonFile"]))
+    logger.info("")
 
 
 def update_all_params(config_dict):
@@ -309,7 +333,7 @@ def run_workflow(config_dict):
             ):
                 project.scheduleProtocol(prot)
             else:
-                print(
+                logger.info(
                     "\nNot scheduling '%s' protocol named '%s'.\n"
                     % (prot_class_name, prot_label_name)
                 )
@@ -320,11 +344,11 @@ def run_workflow(config_dict):
             do_continue = False
             try:
                 updated_runs = [getUpdatedProtocol(p) for p in runs]
-                print("")
-                print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                logger.info("")
+                logger.info(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
                 for prot in updated_runs:
                     if prot is not None:
-                        print(
+                        logger.info(
                             "{0} status: {1}".format(
                                 prot.getRunName(), prot.getStatusMessage()
                             )
@@ -332,37 +356,43 @@ def run_workflow(config_dict):
                         if prot.isActive():
                             do_continue = True
             except Exception as e:
-                print("ERROR! Exception caught: {0}".format(e))
-                print("Trying to continue anyway...")
+                logger.info("ERROR! Exception caught: {0}".format(e))
+                logger.info("Trying to continue anyway...")
                 do_continue = True
             time.sleep(5)
     except Exception as e:
-        print("In except")
-        print(e)
+        logger.info("In except")
+        logger.info(e)
     finally:
-        print("In finally")
-        print("Killing all scipion processes")
+        logger.info("In finally")
+        logger.info("Killing all scipion processes")
         runs = project.getRuns()
         for prot in runs:
             if prot.isActive():
                 try:
-                    print("Trying to stop protocol '{0}'".format(prot))
+                    logger.info("Trying to stop protocol '{0}'".format(prot))
                     project.stopProtocol(prot)
                 except Exception:
-                    print("Couldn't stop protocol {0}".format(prot))
+                    logger.info("Couldn't stop protocol {0}".format(prot))
 
 
-if __name__ == "__main__":
-    app.worker_main(
-        argv=[
-            "worker",
-            "-l",
-            "INFO",
-            "-E",
-            "--concurrency=1",
-            "-Q",
-            queue_name,
-            "-n",
-            queue_name,
-        ]
-    )
+# if __name__ == "__main__":
+#     argv = [
+#         "worker",
+#         "-l",
+#         "INFO",
+#         "-E",
+#         "--concurrency=3",
+#         "-Q",
+#         queue_name,
+#         "-n",
+#         queue_name,
+#         "--logfile",
+#         log_path,
+#         "--loglevel",
+#         "INFO",
+#         # "--detach"
+#     ]
+#     logger.info("Starting worker with the commands:")
+#     logger.info(pprint.pformat(argv))
+#     app.worker_main(argv=argv)

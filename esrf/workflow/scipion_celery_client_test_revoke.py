@@ -1,14 +1,16 @@
 import json
 import time
 import celery
-
+input_data = {}
 from celery import app
-
-
-future = celery.execute.send_task(
-        "__main__.revoke_tst",
-        args=()
-    )
+worker_name = "svensson@cmproc3"
+app = celery.Celery()
+app.config_from_object("esrf.workflow.celeryconfig")
+future = app.send_task(
+    "esrf.workflow.cm_process_worker.revoke_tst",
+    args=({"input_data": False},),
+    queue=worker_name
+)
 print(future)
 print(dir(future))
 celery_id = future.id

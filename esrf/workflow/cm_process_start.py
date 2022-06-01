@@ -1,10 +1,8 @@
 import os
 import sys
 import glob
+import time
 import celery
-
-
-from celery import app
 
 if "v3_dev" in __file__:
     sys.path.insert(0, "/opt/pxsoft/scipion/v3_dev/ubuntu20.04/scipion-em-esrf")
@@ -16,7 +14,7 @@ from esrf.utils.esrf_utils_path import UtilsPath
 from esrf.utils.esrf_utils_ispyb import UtilsISPyB
 from esrf.workflow.command_line_parser import getCommandlineOptions
 
-print(getCommandlineOptions.__module__)
+# print(getCommandlineOptions.__module__)
 config_dict = getCommandlineOptions(use_celery=True)
 # config_dict = {
 #     "dataDirectory": "/data/visitor/mx2112/cm01/20220426/RAW_DATA/igm-grid3-2",
@@ -191,11 +189,19 @@ if found_worker:
         print("{0:25s}= {1}".format(arg_key, arg_value))
     answer = input("Are you sure? (yes/no): ")
     if answer.lower().startswith("y"):
-        future = celery.execute.send_task(
-            "__main__.run_workflow",
+        app = celery.Celery()
+        app.config_from_object("esrf.workflow.celeryconfig")
+        future = app.send_task(
+            "esrf.workflow.cm_process_worker.run_workflow",
             args=(config_dict,),
             queue=worker_name,
         )
         print("Started!")
+        answer = input("Revoke (yes/no)? ")
+        if answer == "yes":
+            time.sleep(1)
+            # app.control.revoke(celery_id)
+            future.revoke(terminate=True)
+            print("Revoked!")
 else:
     print("No worker found!")

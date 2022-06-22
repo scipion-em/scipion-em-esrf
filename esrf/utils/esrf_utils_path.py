@@ -559,21 +559,21 @@ class UtilsPath(object):
         """
         dictResult = {}
         p = re.compile(
-            "^(.*)/GridSquare_([0-9]*)_"
+            "^(.*)/Images-Disc(.*)_GridSquare_([0-9]*)_"
             + "Data_(.*)_([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)"
             + "_fractions_(.*)\.(.*)"
         )
         m = p.match(mrcFilePath)
         if m is not None:
-            dictResult["gridSquare"] = m.group(2)
-            dictResult["prefix"] = m.group(3)
-            dictResult["id1"] = m.group(4)
-            dictResult["id2"] = m.group(5)
-            dictResult["id3"] = m.group(6)
-            dictResult["date"] = m.group(7)
-            dictResult["hour"] = m.group(8)
-            dictResult["extra"] = m.group(9)
-            dictResult["suffix"] = m.group(10)
+            dictResult["gridSquare"] = m.group(3)
+            dictResult["prefix"] = m.group(4)
+            dictResult["id1"] = m.group(5)
+            dictResult["id2"] = m.group(6)
+            dictResult["id3"] = m.group(7)
+            dictResult["date"] = m.group(8)
+            dictResult["hour"] = m.group(9)
+            dictResult["extra"] = m.group(10)
+            dictResult["suffix"] = m.group(11)
             dictResult[
                 "movieName"
             ] = "{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}_fractions".format(

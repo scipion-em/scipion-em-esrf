@@ -1043,8 +1043,8 @@ class MonitorISPyB_ESRF(Monitor):
         self.protocol.info("ESRF ISPyB upload motion corr results")
         for micrograph in self.iter_updated_set(prot.outputMicrographs):
             micrographFullPath = os.path.join(self.currentDir, micrograph.getFileName())
-            # self.info("*"*80)
-            # self.info("Motion corr micrographFullPath: {0}".format(micrographFullPath))
+            self.info("*"*80)
+            self.info("Motion corr micrographFullPath: {0}".format(micrographFullPath))
             if self.dataType == 0:  # "EPU"
                 dictFileNameParameters = (
                     UtilsPath.getMovieFileNameParametersFromMotioncorrPath(
@@ -1065,12 +1065,13 @@ class MonitorISPyB_ESRF(Monitor):
                 )
             else:
                 raise RuntimeError("Unknown data type: {0}".format(self.dataType))
-            movieName = dictFileNameParameters["movieName"]
-            # self.info("Motion corr movie name: {0}".format(movieName))
             if (
-                movieName in self.allParams
-                and "motionCorrectionId" not in self.allParams[movieName]
+                "movieName" in dictFileNameParameters
+                and dictFileNameParameters["movieName"] in self.allParams
+                and "motionCorrectionId" not in self.allParams[dictFileNameParameters["movieName"]]
             ):
+                movieName = dictFileNameParameters["movieName"]
+                # self.info("Motion corr movie name: {0}".format(movieName))
                 self.info(
                     "Align movies: movie {0}".format(
                         os.path.basename(self.allParams[movieName]["movieFullPath"])
@@ -1203,7 +1204,7 @@ class MonitorISPyB_ESRF(Monitor):
                         micrographFullPath
                     )
                 )
-            elif self.dataType == 1:  # "EPU"
+            elif self.dataType == 1:  # "EPU TIFF"
                 dictFileNameParameters = (
                     UtilsPath.getEpuTiffMovieFileNameParametersFromMotioncorrPath(
                         micrographFullPath
@@ -1217,12 +1218,13 @@ class MonitorISPyB_ESRF(Monitor):
                 )
             else:
                 raise RuntimeError("Unknown data type: {0}".format(self.dataType))
-            movieName = dictFileNameParameters["movieName"]
             if (
-                movieName in self.allParams
-                and "motionCorrectionId" in self.allParams[movieName]
-                and "CTFid" not in self.allParams[movieName]
+                "movieName" in dictFileNameParameters
+                and dictFileNameParameters["movieName"] in self.allParams
+                and "motionCorrectionId" in self.allParams[dictFileNameParameters["movieName"]]
+                and "CTFid" not in self.allParams[dictFileNameParameters["movieName"]]
             ):
+                movieName = dictFileNameParameters["movieName"]
                 self.info(
                     "CTF: movie {0}".format(
                         os.path.basename(self.allParams[movieName]["movieFullPath"])

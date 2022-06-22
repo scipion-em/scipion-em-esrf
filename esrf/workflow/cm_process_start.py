@@ -52,7 +52,7 @@ if config_dict["filesPattern"] is None:
     # No filesPattern, let's assume that we are dealing with EPU data
     config_dict[
         "filesPattern"
-    ] = "Images-Disc1/GridSquare_*/Data/FoilHole_*_fractions.tiff"
+    ] = "Images-Disc*/GridSquare_*/Data/FoilHole_*_fractions.tiff"
 
 # Check how many movies are present on disk
 listMovies = glob.glob(
@@ -197,11 +197,11 @@ if found_worker:
             queue=worker_name,
         )
         print("Started!")
-        answer = input("Revoke (yes/no)? ")
-        if answer == "yes":
-            time.sleep(1)
-            # app.control.revoke(celery_id)
-            future.revoke(terminate=True)
-            print("Revoked!")
+        # answer = input("Revoke (yes/no)? ")
+        # if answer == "yes":
+        #     time.sleep(1)
+        #     # app.control.revoke(celery_id)
+        #     future.revoke(terminate=True)
+        #     print("Revoked!")
 else:
     print("No worker found!")

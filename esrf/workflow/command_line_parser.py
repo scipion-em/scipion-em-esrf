@@ -64,7 +64,7 @@ def getCommandlineOptions(use_celery=False):
         "--filesPattern",
         action="store",
         help="file pattern for finding EM movies, default pattern "
-        + "'Images-Disc1/GridSquare_*/Data/FoilHole_*-*.mrc'",
+        + "'Images-Disc*/GridSquare_*/Data/FoilHole_*-*.mrc'",
         default=None,
     )
     optional.add_argument(

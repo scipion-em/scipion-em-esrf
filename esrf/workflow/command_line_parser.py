@@ -28,7 +28,7 @@
 import argparse
 
 
-def getCommandlineOptions(use_celery=False):
+def getCommandlineOptions():
     parser = argparse.ArgumentParser(
         description="Application for starting Scipion workflow for CM01"
     )
@@ -67,11 +67,11 @@ def getCommandlineOptions(use_celery=False):
         + "'Images-Disc*/GridSquare_*/Data/FoilHole_*-*.mrc'",
         default=None,
     )
-    optional.add_argument(
-        "--scipionProjectName",
-        action="store",
-        help="Scipion project name, is only used internally in Scipion.",
-    )
+    # optional.add_argument(
+    #     "--scipionProjectName",
+    #     action="store",
+    #     help="Scipion project name, is only used internally in Scipion.",
+    # )
     optional.add_argument(
         "--doseInitial", action="store", help="Initial dose, default zero.", default=0.0
     )
@@ -157,19 +157,18 @@ def getCommandlineOptions(use_celery=False):
         help="If set: copy of micrographs to RAW_DATA",
         default=False,
     )
-    if use_celery:
-        optional.add_argument(
-            "--celery_worker",
-            action="store",
-            help="Celery worker (dgx01, cmproc3, etc)",
-            default="dgx01",
-        )
+    optional.add_argument(
+        "--celery_worker",
+        action="store",
+        help="Celery worker (dgx01, cmproc3, etc)",
+        default=None,
+    )
     results = parser.parse_args()
 
     opt_dict = {
         "dataDirectory": results.directory,
         "filesPattern": results.filesPattern,
-        "scipionProjectName": results.scipionProjectName,
+        # "scipionProjectName": results.scipionProjectName,
         "proteinAcronym": results.protein,
         "sampleAcronym": results.sample,
         "doseInitial": float(results.doseInitial),
@@ -196,8 +195,7 @@ def getCommandlineOptions(use_celery=False):
         "gainFilePath": results.gainFilePath,
         "secondGrid": results.secondGrid,
         "doProcessDir": results.doProcessDir,
+        "celery_worker": results.celery_worker,
     }
-    if use_celery:
-        opt_dict["celery_worker"] = results.celery_worker
 
     return opt_dict

@@ -3,9 +3,9 @@ import sys
 import json
 import glob
 import time
+import pprint
 import celery
 import socket
-import pprint
 import logging
 import tempfile
 import datetime
@@ -20,46 +20,62 @@ user_name = os.getlogin()
 host_name = socket.gethostname()
 queue_name = "celery." + user_name + "@" + host_name
 
-# Set up logging
-logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
-log_dir = os.path.join("/tmp_14_days", user_name, "scipion_logs")
-if not os.path.exists(log_dir):
-    os.makedirs(log_dir, exist_ok=True, mode=0o775)
-log_file_name = "celery_worker_{0}.log".format(
-        time.strftime(
-            "%Y-%m-%d", time.localtime(time.time())
-        )
-    )
-log_path = os.path.join(log_dir, log_file_name)
-fileHandler = logging.handlers.RotatingFileHandler(
-    log_path, maxBytes=10000000, backupCount=10
-)
-log_file_format = "%(asctime)s %(module)-20s %(funcName)-15s %(levelname)-8s %(message)s"
-formatter = logging.Formatter(log_file_format)
-fileHandler.setFormatter(formatter)
-logger.addHandler(fileHandler)
-print(log_path)
-logger.info("Testing!")
-app = celery.Celery()
-app.config_from_object("esrf.workflow.celeryconfig")
-
+# logger = logging.getLogger("cm_process_worker")
+# streamHandler = logging.StreamHandler()
+# logFileFormat = "%(asctime)s %(levelname)-8s %(message)s"
+# formatter = logging.Formatter(logFileFormat)
+# streamHandler.setFormatter(formatter)
+# streamHandler.setLevel(logging.INFO)
+# logger.addHandler(streamHandler)
+# logger.setLevel(logging.INFO)
+# logger.debug("1"*80)
+# logger.info("2"*80)
+# logger.warning("3"*80)
+# logger.error("4"*80)
 # import pprint
 # pprint.pprint(app.control.inspect().stats())
 
-# Make sure that there's no other worker running on this computer
-active_workers = celery.current_app.control.inspect().active()
-if active_workers is not None:
-    print(key, value)
-    for key, value in active_workers.items():
-        logger.info(key, value)
-        if host_name in key:
-            logger.info("A Scipion Celery worker is already running on this computer!")
-            sys.exit(1)
+app = celery.Celery()
+app.config_from_object("esrf.workflow.celeryconfig")
+
+def init_logging(config_dict):
+    # Set up logging
+    logger = logging.getLogger("cm_process_worker")
+    # Set up stream handler
+    stream_handler = logging.StreamHandler()
+    log_file_format = "%(asctime)s %(levelname)-8s %(message)s"
+    formatter = logging.Formatter(log_file_format)
+    stream_handler.setFormatter(formatter)
+    stream_handler.setLevel(logging.INFO)
+    logger.addHandler(stream_handler)
+    # Set up log file handler
+    log_path = config_dict["log_path"]
+    info_hdlr = logging.FileHandler(log_path)
+    info_formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+    info_hdlr.setFormatter(info_formatter)
+    info_hdlr.setLevel(logging.DEBUG)
+    logger.addHandler(info_hdlr)
+    logger.setLevel(logging.DEBUG)
+    return logger
+
+
+def check_active_workers(config_dict):
+    # Check if there are worker(s) already running on this computer
+    logger = logging.getLogger("cm_process_worker")
+    logger.info("Checking active workers.")
+    active_workers = celery.current_app.control.inspect().active()
+    if active_workers is not None and config_dict["celery_worker"] is None:
+        for key, value in active_workers.items():
+            logger.debug("Worker: {0} {1}".format(key, value))
+            if host_name in key:
+                logger.warning("A Scipion Celery worker is already running on this computer!")
+    else:
+        logger.info("No active workers detected.")
 
 
 @app.task()
 def revoke_tst(input_data):
+    logger = logging.getLogger("cm_process_worker")
     logger.info("In test_revoke")
     try:
         while True:
@@ -73,6 +89,7 @@ def revoke_tst(input_data):
 
 def getUpdatedProtocol(protocol):
     """Retrieve the updated protocol and close db connections"""
+    logger = logging.getLogger("cm_process_worker")
     prot2 = None
     try:
         prot2 = pyworkflow.protocol.getProtocolFromDb(
@@ -97,6 +114,7 @@ def get_num_gpus():
 
 
 def set_location(config_dict):
+    logger = logging.getLogger("cm_process_worker")
     if "dataDirectory" in config_dict and "RAW_DATA" in config_dict["dataDirectory"]:
         location = config_dict["dataDirectory"].replace("RAW_DATA", "PROCESSED_DATA")
     else:
@@ -107,13 +125,16 @@ def set_location(config_dict):
     config_dict["location"] = location
     # All param json file
     config_dict["allParamsJsonFile"] = os.path.join(location, "allParams.json")
-    logger.info("Location of allParams file: {0}".format(config_dict["allParamsJsonFile"]))
+    logger.info(
+        "Location of allParams file: {0}".format(config_dict["allParamsJsonFile"])
+    )
     if os.path.exists(config_dict["allParamsJsonFile"]):
         logger.info("Using existing allParams file")
     return location
 
 
 def set_ispyb_database(config_dict):
+    logger = logging.getLogger("cm_process_worker")
     if config_dict["proposal"] is None:
         logger.info("WARNING! No data will be uploaded to ISPyB.")
         config_dict["noISPyB"] = True
@@ -138,6 +159,7 @@ def set_ispyb_database(config_dict):
 
 
 def create_blackfile_list(config_dict):
+    logger = logging.getLogger("cm_process_worker")
     config_dict["blacklistFile"] = None
     if os.path.exists(config_dict["allParamsJsonFile"]):
         # Check how many movies are present on disk
@@ -218,13 +240,16 @@ def set_gpu_data(config_dict):
 
 
 def print_config(config_dict):
+    logger = logging.getLogger("cm_process_worker")
     logger.info("")
     logger.info("Parameters:")
     logger.info("")
     logger.info("{0:30s}{1:>8s}".format("proposal", config_dict["proposal"]))
     logger.info("{0:30s}{1:8s}".format("dataDirectory", config_dict["dataDirectory"]))
     logger.info("{0:30s}{1:>8s}".format("filesPattern", config_dict["filesPattern"]))
-    logger.info("{0:30s}{1:>8s}".format("proteinAcronym", config_dict["proteinAcronym"]))
+    logger.info(
+        "{0:30s}{1:>8s}".format("proteinAcronym", config_dict["proteinAcronym"])
+    )
     logger.info("{0:30s}{1:>8s}".format("sampleAcronym", config_dict["sampleAcronym"]))
     logger.info("{0:30s}{1:8.0f}".format("voltage", config_dict["voltage"]))
     logger.info("{0:30s}{1:8d}".format("imagesCount", config_dict["imagesCount"]))
@@ -283,8 +308,11 @@ def update_all_params(config_dict):
 
 @app.task()
 def run_workflow(config_dict):
-    config_dict["dataType"] = 1  # "EPU_TIFF"
-    # config_dict = json.loads(config_dict_string)
+    logger = init_logging(config_dict)
+    logger.info("Starting new workflow.")
+    logger.debug(pprint.pformat(config_dict))
+    # First check that a worker is not running on this computer
+    check_active_workers(config_dict)
     # Set up location
     set_location(config_dict)
     # Set up ispyb data base

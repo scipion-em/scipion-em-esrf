@@ -27,7 +27,6 @@
 
 
 import os
-import sys
 import datetime
 import configparser
 
@@ -198,14 +197,16 @@ class UtilsISPyB(object):
 
         # Parse the "relion_it025_model.star" file
         if particlePickerId is not None:
-            particleClassificationGroupObject = client.service.addParticleClassificationGroup(
-                particlePickerId=particlePickerId,
-                type="2D",
-                batchNumber="0",
-                numberOfParticlesPerBatch="0",
-                numberOfClassesPerBatch="0",
-                symmetry="",
-                classificationProgram="Relion 2D classification",
+            particleClassificationGroupObject = (
+                client.service.addParticleClassificationGroup(
+                    particlePickerId=particlePickerId,
+                    type="2D",
+                    batchNumber="0",
+                    numberOfParticlesPerBatch="0",
+                    numberOfClassesPerBatch="0",
+                    symmetry="",
+                    classificationProgram="Relion 2D classification",
+                )
             )
 
             if particleClassificationGroupObject is not None:
@@ -218,15 +219,19 @@ class UtilsISPyB(object):
                 # raise RuntimeError("ISPyB: particleClassificationGroupId is None!")
             if particleClassificationGroupId is not None:
                 for classModel in dictModel["classes"]:
-                    particleClassificationObject = client.service.addParticleClassification(
-                        particleClassificationGroupId=particleClassificationGroupId,
-                        classNumber=classModel["index"],
-                        classImageFullPath=classModel["classImageFullPath"],
-                        classDistribution=str(classModel["classDistribution"]),
-                        rotationAccuracy=str(classModel["accuracyRotations"]),
-                        translationAccuracy=str(classModel["accuracyTranslationsAngst"]),
-                        estimatedResolution=str(classModel["estimatedResolution"]),
-                        overallFourierCompleteness=str(
-                            classModel["overallFourierCompleteness"]
-                        ),
+                    particleClassificationObject = (  # noqa F841
+                        client.service.addParticleClassification(
+                            particleClassificationGroupId=particleClassificationGroupId,
+                            classNumber=classModel["index"],
+                            classImageFullPath=classModel["classImageFullPath"],
+                            classDistribution=str(classModel["classDistribution"]),
+                            rotationAccuracy=str(classModel["accuracyRotations"]),
+                            translationAccuracy=str(
+                                classModel["accuracyTranslationsAngst"]
+                            ),
+                            estimatedResolution=str(classModel["estimatedResolution"]),
+                            overallFourierCompleteness=str(
+                                classModel["overallFourierCompleteness"]
+                            ),
+                        )
                     )

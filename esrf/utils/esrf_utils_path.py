@@ -31,9 +31,7 @@ import glob
 import json
 import math
 import time
-import socket
 import shutil
-import pprint
 import datetime
 import traceback
 import xml.etree.ElementTree
@@ -71,7 +69,7 @@ class UtilsPath(object):
             # Patch provided by Sebastien 2018/02/09 for forcing NFS cache:
             # logger.debug("NFS cache clear, doing os.fstat on directory {0}".format(fileDir))
             fd = os.open(fileDir, os.O_DIRECTORY)
-            statResult = os.fstat(fd)
+            statResult = os.fstat(fd)  # noqa F841
             os.close(fd)
         dictFileName = UtilsPath.getEpuTiffMovieFileNameParameters(movieFilePath)
         filePrefix = "{directory}/{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}".format(
@@ -100,9 +98,6 @@ class UtilsPath(object):
     @staticmethod
     def getSerialEMMovieJpegMdoc(topDir, movieFilePath):
         gridSquareSnapshot = None
-        dictFileName = UtilsPath.getSerialEMMovieFileNameParameters(
-            topDir, movieFilePath
-        )
         jpeg = None
         mdoc = movieFilePath + ".mdoc"
         if not os.path.exists(mdoc):
@@ -120,8 +115,8 @@ class UtilsPath(object):
         mrcMovieNumber = dictMrcFile["movieNumber"]
         listPng = glob.glob(os.path.join(mrcDirectory, "*.png"))
         for pngFile in listPng:
-            dictFileNameParameters = UtilsPath.getMovieFileNameParametersFromMotioncorrPath(
-                pngFile
+            dictFileNameParameters = (
+                UtilsPath.getMovieFileNameParametersFromMotioncorrPath(pngFile)
             )
             movieNumber = dictFileNameParameters["movieNumber"]
             if (
@@ -136,8 +131,8 @@ class UtilsPath(object):
                 dictResult["thumbnailPng"] = pngFile
         listMrc = glob.glob(os.path.join(mrcDirectory, "*.mrc"))
         for mrcFile in listMrc:
-            dictFileNameParameters = UtilsPath.getMovieFileNameParametersFromMotioncorrPath(
-                mrcFile
+            dictFileNameParameters = (
+                UtilsPath.getMovieFileNameParametersFromMotioncorrPath(mrcFile)
             )
             movieNumber = dictFileNameParameters["movieNumber"]
             if (
@@ -162,8 +157,8 @@ class UtilsPath(object):
         mrcMovieNumber = dictMrcFile["movieNumber"]
         listPng = glob.glob(os.path.join(mrcDirectory, "*.png"))
         for pngFile in listPng:
-            dictFileNameParameters = UtilsPath.getEpuTiffMovieFileNameParametersFromMotioncorrPath(
-                pngFile
+            dictFileNameParameters = (
+                UtilsPath.getEpuTiffMovieFileNameParametersFromMotioncorrPath(pngFile)
             )
             movieNumber = dictFileNameParameters["movieNumber"]
             if (
@@ -178,8 +173,8 @@ class UtilsPath(object):
                 dictResult["thumbnailPng"] = pngFile
         listMrc = glob.glob(os.path.join(mrcDirectory, "*.mrc"))
         for mrcFile in listMrc:
-            dictFileNameParameters = UtilsPath.getEpuTiffMovieFileNameParametersFromMotioncorrPath(
-                mrcFile
+            dictFileNameParameters = (
+                UtilsPath.getEpuTiffMovieFileNameParametersFromMotioncorrPath(mrcFile)
             )
             movieNumber = dictFileNameParameters["movieNumber"]
             if (
@@ -204,8 +199,8 @@ class UtilsPath(object):
         mrcMovieNumber = dictMrcFile["movieNumber"]
         listPng = glob.glob(os.path.join(mrcDirectory, "*.png"))
         for pngFile in listPng:
-            dictFileNameParameters = UtilsPath.getSerialEMMovieFileNameParametersFromMotioncorrPath(
-                pngFile
+            dictFileNameParameters = (
+                UtilsPath.getSerialEMMovieFileNameParametersFromMotioncorrPath(pngFile)
             )
             movieNumber = dictFileNameParameters["movieNumber"]
             if (
@@ -220,8 +215,8 @@ class UtilsPath(object):
                 dictResult["thumbnailPng"] = pngFile
         listMrc = glob.glob(os.path.join(mrcDirectory, "*.mrc"))
         for mrcFile in listMrc:
-            dictFileNameParameters = UtilsPath.getSerialEMMovieFileNameParametersFromMotioncorrPath(
-                mrcFile
+            dictFileNameParameters = (
+                UtilsPath.getSerialEMMovieFileNameParametersFromMotioncorrPath(mrcFile)
             )
             movieNumber = dictFileNameParameters["movieNumber"]
             if (
@@ -237,7 +232,7 @@ class UtilsPath(object):
 
     @staticmethod
     def etree_to_dict(t):
-        p = re.compile("^\{(.*)\}")
+        p = re.compile("^{(.*)}")
         m = p.match(t.tag)
         if m is not None:
             t.tag = t.tag[m.span()[1] :]
@@ -338,6 +333,23 @@ class UtilsPath(object):
         return value
 
     @staticmethod
+    def createSpectraImageSnapshot(extraDirectory, mrcFileBase):
+        spectraImageSnapshotFullPath = None
+        spectraImageFullPath = os.path.join(extraDirectory, mrcFileBase + "_ctf.mrc")
+        if os.path.exists(spectraImageFullPath):
+            spectraImageSnapshotFullPath = os.path.join(
+                extraDirectory, mrcFileBase + "_ctf.jpeg"
+            )
+            os.system(
+                "bimg {0} {1}".format(
+                    spectraImageFullPath, spectraImageSnapshotFullPath
+                )
+            )
+            if not os.path.exists(spectraImageSnapshotFullPath):
+                spectraImageSnapshotFullPath = None
+        return spectraImageFullPath, spectraImageSnapshotFullPath
+
+    @staticmethod
     def getCtfMetaData(workingDir, mrcFilePath):
         dictResults = {
             "spectraImageSnapshotFullPath": None,
@@ -355,29 +367,17 @@ class UtilsPath(object):
         mrcFileBase = os.path.basename(mrcFilePath).split(".mrc")[0]
         extraDirectory = os.path.join(workingDir, "extra")
         if os.path.exists(extraDirectory):
-            spectraImageFullPath = os.path.join(
-                extraDirectory, mrcFileBase + "_ctf.mrc"
-            )
-            if os.path.exists(spectraImageFullPath):
-                dictResults["spectraImageFullPath"] = spectraImageFullPath
-                spectraImageSnapshotFullPath = os.path.join(
-                    extraDirectory, mrcFileBase + "_ctf.jpeg"
-                )
-                os.system(
-                    "bimg {0} {1}".format(
-                        spectraImageFullPath, spectraImageSnapshotFullPath
-                    )
-                )
-                if os.path.exists(spectraImageSnapshotFullPath):
-                    dictResults[
-                        "spectraImageSnapshotFullPath"
-                    ] = spectraImageSnapshotFullPath
+            (
+                spectraImageFullPath,
+                spectraImageSnapshotFullPath,
+            ) = UtilsPath.createSpectraImageSnapshot(workingDir, mrcFilePath)
+            dictResults["spectraImageFullPath"] = spectraImageFullPath
+            dictResults["spectraImageSnapshotFullPath"] = spectraImageSnapshotFullPath
             ctfEstimationPath = os.path.join(extraDirectory, mrcFileBase + "_ctf.log")
             if os.path.exists(ctfEstimationPath):
                 f = open(ctfEstimationPath)
                 lines = f.readlines()
                 f.close()
-                index = 0
                 for index in range(len(lines)):
                     if "Final Values" in lines[index]:
                         listLabels = lines[index - 1].split()
@@ -407,7 +407,7 @@ class UtilsPath(object):
             p = re.compile(
                 "^(.*)/(GridSquare_[0-9]*)/"
                 + "Data/(.*)_([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)"
-                + "-([0-9]*)(_?.*)\.(.*)"
+                + "-([0-9]*)(_?.*).(.*)"
             )
             m = p.match(mrcFilePath)
             if m is not None:
@@ -430,7 +430,7 @@ class UtilsPath(object):
                 # Try without the GridSquare directory
                 p = re.compile(
                     "^(.*)/(.*)_([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)"
-                    + "-([0-9]*)(_?.*)\.(.*)"
+                    + "-([0-9]*)(_?.*).(.*)"
                 )
                 m = p.match(mrcFilePath)
                 dictResult["gridSquare"] = None
@@ -468,7 +468,7 @@ class UtilsPath(object):
             p = re.compile(
                 "^(.*)/(GridSquare_[0-9]*)/"
                 + "Data/(.*)_([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)"
-                + "_fractions\.(.*)"
+                + "_fractions.(.*)"
             )
             m = p.match(mrcFilePath)
             if m is not None:
@@ -502,7 +502,7 @@ class UtilsPath(object):
         """
         movieFileName = os.path.basename(tifFilePath)
         dictResult = {}
-        p = re.compile("^(.*)_([0-9]*)\.(.*)")
+        p = re.compile("^(.*)_([0-9]*).(.*)")
         m = p.match(movieFileName)
         dictResult["directory"] = os.path.dirname(tifFilePath)
         dictResult["prefix"] = m.group(1)
@@ -530,7 +530,7 @@ class UtilsPath(object):
         dictResult = {}
         p = re.compile(
             "^(.*)/(GridSquare_[0-9]*)*(_Data_)*(.*)_"
-            + "([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)-([0-9]*)(_?.*)\.(.*)"
+            + "([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)-([0-9]*)(_?.*).(.*)"
         )
         m = p.match(mrcFilePath)
         dictResult["directory"] = os.path.dirname(mrcFilePath)
@@ -561,7 +561,7 @@ class UtilsPath(object):
         p = re.compile(
             "^(.*)/Images-Disc(.*)_GridSquare_([0-9]*)_"
             + "Data_(.*)_([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)"
-            + "_fractions_(.*)\.(.*)"
+            + "_fractions_(.*).(.*)"
         )
         m = p.match(mrcFilePath)
         if m is not None:
@@ -589,7 +589,7 @@ class UtilsPath(object):
         """
         try:
             dictResult = {}
-            p = re.compile("^(.*)/(.*)_([0-9]*)_(.*)\.(.*)")
+            p = re.compile("^(.*)/(.*)_([0-9]*)_(.*).(.*)")
             m = p.match(mrcFilePath)
             dictResult["directory"] = os.path.dirname(mrcFilePath)
             dictResult["prefix"] = m.group(2)
@@ -597,12 +597,21 @@ class UtilsPath(object):
             dictResult["extra"] = m.group(4)
             dictResult["suffix"] = m.group(5)
             dictResult["movieName"] = "{prefix}_{movieNumber}".format(**dictResult)
-        except Exception as e:
+        except BaseException:
             dictResult = None
         # Check numbers
         if not dictResult["movieNumber"].isdigit():
             dictResult = None
         return dictResult
+
+    @staticmethod
+    def removeFileSystemPrefix(filePath):
+        newFilePath = filePath
+        for prefix in ["/gpfs/easy", "/gpfs/jazzy", "/gz", "hz"]:
+            if filePath.startswith(prefix):
+                newFilePath = filePath.replace(prefix, "")
+                break
+        return newFilePath
 
     @staticmethod
     def getPyarchFilePath(workingDir):
@@ -611,16 +620,8 @@ class UtilsPath(object):
         /data/visitor/mx415/id14eh1/20100209 -> /data/pyarch/2010/id14eh1/mx415/20100209
         """
         pyarchFilePath = None
-        # Check problem of /gpfs/easy
-        directory = workingDir
-        if directory.startswith("/gpfs/easy"):
-            directory = directory.replace("/gpfs/easy", "")
-        elif directory.startswith("/gpfs/jazzy"):
-            directory = directory.replace("/gpfs/jazzy", "")
-        elif directory.startswith("/gz"):
-            directory = directory.replace("/gz", "")
-        elif directory.startswith("/hz"):
-            directory = directory.replace("/hz", "")
+        # Check problem of type /gpfs/easy
+        directory = UtilsPath.removeFileSystemPrefix(workingDir)
         list_directory = directory.split(os.sep)
         list_beamline = ["cm01"]
         # Check that we have at least four levels of directories:
@@ -636,7 +637,7 @@ class UtilsPath(object):
                 if intYear < 2017 and intYear > 2100:
                     # Something looks wrong, take the current year...
                     year = str(datetime.datetime.now().year)
-            except:
+            except BaseException:
                 # Something looks wrong, take the current year...
                 year = str(datetime.datetime.now().year)
 
@@ -674,7 +675,7 @@ class UtilsPath(object):
                 proposal = list_directory[4]
                 listOfRemainingDirectories = list_directory[5:]
 
-            if (proposal != None) and (beamline != None):
+            if (proposal is not None) and (beamline is not None):
                 pyarchFilePath = os.path.join(os.sep, "data")
                 pyarchFilePath = os.path.join(pyarchFilePath, "pyarch")
                 pyarchFilePath = os.path.join(pyarchFilePath, year)
@@ -720,26 +721,11 @@ class UtilsPath(object):
                             time.sleep(1)
                         else:
                             pyarchFilePath = os.path.join(timePath, fileName)
-                            if "linsvensson" in socket.gethostname():
-                                if os.path.getsize(filePath) < 1e6:
-                                    # For the moment, only copy file if
-                                    # smaller than 1 MB
-                                    os.system(
-                                        "ssh mxhpc2-1705 'mkdir -p {0}'".format(
-                                            timePath
-                                        )
-                                    )
-                                    os.system(
-                                        "scp {0} mxhpc2-1705:{1}".format(
-                                            filePath, pyarchFilePath
-                                        )
-                                    )
-                            else:
-                                os.makedirs(timePath, 0o755)
-                                shutil.copy(filePath, pyarchFilePath)
-                                os.chmod(filePath, 0o644)
+                            os.makedirs(timePath, 0o755)
+                            shutil.copy(filePath, pyarchFilePath)
+                            os.chmod(filePath, 0o644)
                             isDone = True
-            except:
+            except BaseException:
                 print("ERROR uploading file {0} tp pyarch!".format(filePath))
                 traceback.print_exc()
             if pyarchFilePath is None or not os.path.exists(pyarchFilePath):
@@ -758,13 +744,12 @@ class UtilsPath(object):
             noPoints = 0
             # Look for mrc file
             mrcFileName = os.path.basename(filePath)
-            done = False
             foundMrc = False
             foundShiftTable = False
             listXShift = []
             listYShift = []
             totalMotion = 0.0
-            while not done:
+            while index < len(listLines):
                 line = listLines[index]
                 if mrcFileName in line:
                     foundMrc = True
@@ -772,7 +757,6 @@ class UtilsPath(object):
                     if "Full-frame alignment shift" in line:
                         foundShiftTable = True
                     elif foundShiftTable:
-                        # print(indexMrc, [line])
                         if len(line) > 1:
                             listLine = line.split()
                             try:
@@ -783,15 +767,13 @@ class UtilsPath(object):
                                 listYShift.append(yShift)
                                 totalMotion += math.sqrt(xShift ** 2 + yShift ** 2)
                                 noPoints += 1
-                            except:
+                            except BaseException:
                                 pass
                         else:
                             foundShiftTable = False
                             foundMrc = False
 
                 index += 1
-                if index >= len(listLines):
-                    done = True
             dictResults["noPoints"] = noPoints
             dictResults["totalMotion"] = round(totalMotion, 1)
             dictResults["averageMotionPerFrame"] = round(totalMotion / noPoints, 1)
@@ -840,9 +822,7 @@ class UtilsPath(object):
     def getBlacklist(listMovies, allParamsJsonFile):
         with open(allParamsJsonFile, "r") as f:
             dictAllParams = json.loads(f.read())
-        blackList = []
         dictGridSquare = {}
-        listMovieNames = []
         # First find all grid squares which contain
         # movies that have not been processed
         for movie in listMovies:
@@ -871,10 +851,6 @@ class UtilsPath(object):
     def getBlacklistAllMovies(listMovies, allParamsJsonFile):
         with open(allParamsJsonFile, "r") as f:
             dictAllParams = json.loads(f.read())
-        blackList = []
-        dictGridSquare = {}
-        listMovieNames = []
-        #
         blacklist = []
         for movie in listMovies:
             movieName = os.path.splitext(os.path.basename(movie))[0]

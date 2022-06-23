@@ -32,26 +32,29 @@ from esrf.utils.esrf_utils_ispyb import UtilsISPyB
 
 class Test(unittest.TestCase):
     def test_getProposal(self):
-        movieFilePath = (
+        movie_file_path = (
             "/data/visitor/mx2001/cm01/20171124/RAW_DATA/Data-hug-grid1/"
             + "Images-Disc1/GridSquare_24748253/Data/"
             + "FoilHole_24762814_Data_24757346_24757347_20171126_0223-4929.mrc"
         )
-        proposal = UtilsISPyB.getProposal(movieFilePath)
+        proposal = UtilsISPyB.getProposal(movie_file_path)
         self.assertEqual("mx2001", proposal)
-        movieFilePath = "/data/cm01/inhouse/BLC11341/20180410/RAW_DATA/EPU_BLC11341"
-        proposal = UtilsISPyB.getProposal(movieFilePath)
+        movie_file_path = "/data/cm01/inhouse/BLC11341/20180410/RAW_DATA/EPU_BLC11341"
+        proposal = UtilsISPyB.getProposal(movie_file_path)
         self.assertEqual("blc11341", proposal)
-        movieFilePath = "/data/cm01/inhouse/ih-ls3046/20180410/RAW_DATA/EPU_BLC11341"
-        proposal = UtilsISPyB.getProposal(movieFilePath)
+        movie_file_path = "/data/cm01/inhouse/ih-ls3046/20180410/RAW_DATA/EPU_BLC11341"
+        proposal = UtilsISPyB.getProposal(movie_file_path)
         self.assertEqual("ih-ls3046", proposal)
-        movieFilePath = (
+        movie_file_path = (
             "/data/cm01/cmihr1/IH-LS3214/20190220/RAW_DATA/"
             + "EPU-IHLS3214-comp-grid1/Images-Disc1/GridSquare_19849110/Data/"
             + "FoilHole_19853578_Data_19852496_19852497_20190221_0414-0634.mrc"
         )
-        proposal = UtilsISPyB.getProposal(movieFilePath)
+        proposal = UtilsISPyB.getProposal(movie_file_path)
         self.assertEqual("ih-ls3214", proposal)
+        movie_file_path = "/data/visitor/mx2112/cm01/20220426/PROCESSED_DATA/igm-grid3-2"
+        proposal = UtilsISPyB.getProposal(movie_file_path)
+        self.assertEqual("mx2112", proposal)
 
     def test_getClient(self):
         urlBase = UtilsISPyB.getUrlBase(1)

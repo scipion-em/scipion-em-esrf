@@ -32,6 +32,10 @@
 import os
 import sys
 import time
+import logging
+import traceback
+from email.mime.text import MIMEText
+import smtplib
 
 
 class MetadataManagerClient(object):
@@ -124,7 +128,7 @@ class MetadataManagerClient(object):
         )
 
     def start(self, dataRoot, proposal, sampleName, datasetName):
-        """Starts a new dataset"""
+        """ Starts a new dataset """
         # Check if in state RUNNING, if yes abort scan
         if self.getMetadataManagerState() == "RUNNING":
             MetadataManagerClient.metadataManager.AbortScan()
@@ -140,7 +144,7 @@ class MetadataManagerClient(object):
 
         # setting datasetName
         self._setAttribute(
-            MetadataManagerClient.metadataManager, "datasetName", datasetName
+            MetadataManagerClient.metadataManager, "scanName", datasetName
         )
 
         # Start scan
@@ -163,9 +167,9 @@ class MetadataManagerClient(object):
             MetadataManagerClient.metadataManager.endScan()
             # Give the server some time to react
             time.sleep(1)
-        except Exception as e:
+        except:
             print("Unexpected error:", sys.exc_info()[0])
-            raise e
+            raise
 
     def getMetadataManagerState(self):
         return str(MetadataManagerClient.metadataManager.state())

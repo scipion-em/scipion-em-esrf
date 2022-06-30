@@ -141,22 +141,22 @@ elif proposal is None:
     else:
         proposal = None
 
-    if proposal is None:
-        print("WARNING! No data will be uploaded to ISPyB.")
-        db = 3
+if proposal is None:
+    print("WARNING! No data will be uploaded to ISPyB.")
+    db = 3
+else:
+    if proposal == "mx415":
+        # Use valid data base
+        print("ISPyB valid data base used")
+        db = 1
+    elif proposal == "mx2112":
+        # Use valid data base
+        print("ISPyB production data base used")
+        db = 1
     else:
-        if proposal == "mx415":
-            # Use valid data base
-            print("ISPyB valid data base used")
-            db = 1
-        elif proposal == "mx2112":
-            # Use valid data base
-            print("ISPyB production data base used")
-            db = 1
-        else:
-            # Use productiond data base
-            print("ISPyB production data base used")
-            db = 0
+        # Use productiond data base
+        print("ISPyB production data base used")
+        db = 0
 
 config_dict["proposal"] = proposal
 config_dict["db"] = db
@@ -177,7 +177,7 @@ if not os.path.exists(log_dir):
 log_file_name = "{0}.log".format(config_dict["scipionProjectName"])
 config_dict["log_path"] = os.path.join(log_dir, log_file_name)
 
-if config_dict["celery_worker"] is None:
+if config_dict["celery_worker"] == "None":
     run_workflow(config_dict)
 else:
 

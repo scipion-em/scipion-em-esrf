@@ -245,7 +245,7 @@ class Test(unittest.TestCase):
         self.assertEqual(dictRef, dictResult)
 
     def test_getEpuTiffAlignMoviesPngLogFilePath(self):
-        mrcFilePath = "/data/visitor/mx2112/cm01/20210614/PROCESSED_DATA/ApoF-test1/ApoF-test1_20210616-085412/Runs/000064_ProtMotionCorr/extra/GridSquare_10847341_Data_FoilHole_10851620_Data_10853313_10853315_20210611_161457_fractions_aligned_mic.mrc"
+        mrcFilePath = "/data/visitor/mx2112/cm01/20220630/PROCESSED_DATA/ih-ls3403_MTb-56_Blue3/mx2112_test1_g1_20220630-155702/Runs/000065_ProtMotionCorr/extra/Images-Disc1_GridSquare_29820840_Data_FoilHole_30945883_Data_29822705_29822707_20220630_091041_fractions_aligned_mic.mrc"
         dictResult = UtilsPath.getEpuTiffAlignMoviesPngLogFilePath(mrcFilePath)
         pprint.pprint(dictResult)
 

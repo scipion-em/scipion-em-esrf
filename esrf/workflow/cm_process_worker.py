@@ -139,9 +139,9 @@ def set_ispyb_database(config_dict):
         logger.info("WARNING! No data will be uploaded to ISPyB.")
         config_dict["noISPyB"] = True
         config_dict["db"] = -1
+        config_dict["proposal"] = "Unknown"
     elif config_dict["noISPyB"]:
         logger.info("No upload to ISPyB or iCAT")
-        config_dict["proposal"] = "None"
         config_dict["db"] = -1
     else:
         if config_dict["proposal"] == "mx415":

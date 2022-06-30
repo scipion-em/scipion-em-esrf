@@ -1065,6 +1065,7 @@ class MonitorISPyB_ESRF(Monitor):
                 )
             else:
                 raise RuntimeError("Unknown data type: {0}".format(self.dataType))
+            # self.info("dictFileNameParameters: \n{0}".format(pprint.pformat(dictFileNameParameters)))
             if (
                 "movieName" in dictFileNameParameters
                 and dictFileNameParameters["movieName"] in self.allParams
@@ -1092,6 +1093,7 @@ class MonitorISPyB_ESRF(Monitor):
                     )
                 else:
                     raise RuntimeError("Unknown data type: {0}".format(self.dataType))
+                # self.info("dictResult: \n{0}".format(pprint.pformat(dictResult)))
                 if "globalShiftPng" in dictResult:
                     driftPlotFullPath = dictResult["globalShiftPng"]
                 else:
@@ -1218,6 +1220,7 @@ class MonitorISPyB_ESRF(Monitor):
                 )
             else:
                 raise RuntimeError("Unknown data type: {0}".format(self.dataType))
+            self.info("dictFileNameParameters: \n{0}".format(pprint.pformat(dictFileNameParameters)))
             if (
                 "movieName" in dictFileNameParameters
                 and dictFileNameParameters["movieName"] in self.allParams
@@ -1244,6 +1247,7 @@ class MonitorISPyB_ESRF(Monitor):
                 estimatedBfactor = None
 
                 dictResults = UtilsPath.getCtfMetaData(workingDir, micrographFullPath)
+                self.info("dictResults: \n{0}".format(pprint.pformat(dictResults)))
                 spectraImageSnapshotFullPath = dictResults[
                     "spectraImageSnapshotFullPath"
                 ]
@@ -1530,7 +1534,7 @@ class MonitorISPyB_ESRF(Monitor):
 
     def archiveGainAndDefectMap(self):
         directory = None
-        listPathsToBeArchived = []
+        list_paths_to_be_archived = []
         if self.defectMapPath != "" or self.gainFilePath != "":
             if "GainAndDefectMap" not in self.allParams:
                 self.allParams["GainAndDefectMap"] = {}
@@ -1539,46 +1543,47 @@ class MonitorISPyB_ESRF(Monitor):
                 self.info("Archiving gain and defect map files")
                 self.info("Defect map file: {0}".format(self.defectMapPath))
                 self.info("Gain file: {0}".format(self.gainFilePath))
-                if self.defectMapPath != "":
+                if self.defectMapPath != "" and self.defectMapPath is not None:
                     self.allParams["GainAndDefectMap"][
                         "defectMapPath"
                     ] = self.defectMapPath
                     directory = os.path.dirname(self.defectMapPath)
                     self.info("Directory: {0}".format(directory))
-                    listPathsToBeArchived.append(self.defectMapPath)
-                if self.gainFilePath != "":
+                    list_paths_to_be_archived.append(self.defectMapPath)
+                if self.gainFilePath != "" and self.defectMapPath is not None:
                     self.allParams["GainAndDefectMap"][
                         "gainFilePath"
                     ] = self.gainFilePath
                     directory = os.path.dirname(self.gainFilePath)
                     self.info("Directory: {0}".format(directory))
-                    listPathsToBeArchived.append(self.gainFilePath)
-                dictIcatMetaData = {
-                    "EM_directory": directory,
-                    "EM_protein_acronym": self.proteinAcronym,
-                    "EM_voltage": self.voltage,
-                    "EM_magnification": self.magnification,
-                }
-                self.info(pprint.pformat(dictIcatMetaData))
-                dateTimeString = time.strftime(
-                    "[%Y-%m-%d %H:%M:%S]", time.localtime(time.time())
-                )
-                dataSetName = "GainAndDefectMap {0}".format(dateTimeString)
-                listGalleryPath = []
-                try:
-                    errorMessage = UtilsIcat.uploadToIcat(
-                        listPathsToBeArchived,
-                        directory,
-                        self.proposal,
-                        self.sampleAcronym,
-                        dataSetName,
-                        dictIcatMetaData,
-                        listGalleryPath,
+                    list_paths_to_be_archived.append(self.gainFilePath)
+                if len(list_paths_to_be_archived) > 0:
+                    dict_icat_meta_data = {
+                        "EM_directory": directory,
+                        "EM_protein_acronym": self.proteinAcronym,
+                        "EM_voltage": self.voltage,
+                        "EM_magnification": self.magnification,
+                    }
+                    self.info(pprint.pformat(dict_icat_meta_data))
+                    date_time_string = time.strftime(
+                        "[%Y-%m-%d %H:%M:%S]", time.localtime(time.time())
                     )
-                    if errorMessage is not None:
+                    data_set_name = "GainAndDefectMap {0}".format(date_time_string)
+                    list_gallery_path = []
+                    try:
+                        error_message = UtilsIcat.uploadToIcat(
+                            list_paths_to_be_archived,
+                            directory,
+                            self.proposal,
+                            self.sampleAcronym,
+                            data_set_name,
+                            dict_icat_meta_data,
+                            list_gallery_path,
+                        )
+                        if error_message is not None:
+                            self.info("WARNING! Couldn't archive gain and defect map")
+                    except BaseException:
+                        # We give up on uploading gain and defect map files
                         self.info("WARNING! Couldn't archive gain and defect map")
-                except BaseException:
-                    # We give up on uploading gain and defect map files
-                    self.info("WARNING! Couldn't archive gain and defect map")
-                self.allParams["GainAndDefectMap"]["archived"] = True
-                self.updateJsonFile()
+                    self.allParams["GainAndDefectMap"]["archived"] = True
+                    self.updateJsonFile()

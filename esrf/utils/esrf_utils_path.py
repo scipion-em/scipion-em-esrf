@@ -407,7 +407,7 @@ class UtilsPath(object):
             p = re.compile(
                 "^(.*)/(GridSquare_[0-9]*)/"
                 + "Data/(.*)_([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)"
-                + "-([0-9]*)(_?.*).(.*)"
+                + "-([0-9]*)(_?.*)\.(.*)"
             )
             m = p.match(mrcFilePath)
             if m is not None:
@@ -430,7 +430,7 @@ class UtilsPath(object):
                 # Try without the GridSquare directory
                 p = re.compile(
                     "^(.*)/(.*)_([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)"
-                    + "-([0-9]*)(_?.*).(.*)"
+                    + "-([0-9]*)(_?.*)\.(.*)"
                 )
                 m = p.match(mrcFilePath)
                 dictResult["gridSquare"] = None
@@ -468,7 +468,7 @@ class UtilsPath(object):
             p = re.compile(
                 "^(.*)/(GridSquare_[0-9]*)/"
                 + "Data/(.*)_([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)"
-                + "_fractions.(.*)"
+                + "_fractions\.(.*)"
             )
             m = p.match(mrcFilePath)
             if m is not None:
@@ -530,7 +530,7 @@ class UtilsPath(object):
         dictResult = {}
         p = re.compile(
             "^(.*)/(GridSquare_[0-9]*)*(_Data_)*(.*)_"
-            + "([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)-([0-9]*)(_?.*).(.*)"
+            + "([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)-([0-9]*)(_?.*)\.(.*)"
         )
         m = p.match(mrcFilePath)
         dictResult["directory"] = os.path.dirname(mrcFilePath)
@@ -561,7 +561,7 @@ class UtilsPath(object):
         p = re.compile(
             "^(.*)/Images-Disc(.*)_GridSquare_([0-9]*)_"
             + "Data_(.*)_([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)"
-            + "_fractions_(.*).(.*)"
+            + "_fractions_(.*)\.(.*)"
         )
         m = p.match(mrcFilePath)
         if m is not None:

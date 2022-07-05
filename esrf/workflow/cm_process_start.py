@@ -151,7 +151,7 @@ else:
         db = 1
     elif proposal == "mx2112":
         # Use valid data base
-        print("ISPyB production data base used")
+        print("ISPyB valid data base used")
         db = 1
     else:
         # Use productiond data base

@@ -1220,7 +1220,7 @@ class MonitorISPyB_ESRF(Monitor):
                 )
             else:
                 raise RuntimeError("Unknown data type: {0}".format(self.dataType))
-            self.info("dictFileNameParameters: \n{0}".format(pprint.pformat(dictFileNameParameters)))
+            # self.info("dictFileNameParameters: \n{0}".format(pprint.pformat(dictFileNameParameters)))
             if (
                 "movieName" in dictFileNameParameters
                 and dictFileNameParameters["movieName"] in self.allParams
@@ -1247,7 +1247,7 @@ class MonitorISPyB_ESRF(Monitor):
                 estimatedBfactor = None
 
                 dictResults = UtilsPath.getCtfMetaData(workingDir, micrographFullPath)
-                self.info("dictResults: \n{0}".format(pprint.pformat(dictResults)))
+                # self.info("dictResults: \n{0}".format(pprint.pformat(dictResults)))
                 spectraImageSnapshotFullPath = dictResults[
                     "spectraImageSnapshotFullPath"
                 ]

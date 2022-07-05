@@ -370,7 +370,7 @@ class UtilsPath(object):
             (
                 spectraImageFullPath,
                 spectraImageSnapshotFullPath,
-            ) = UtilsPath.createSpectraImageSnapshot(workingDir, mrcFilePath)
+            ) = UtilsPath.createSpectraImageSnapshot(extraDirectory, mrcFileBase)
             dictResults["spectraImageFullPath"] = spectraImageFullPath
             dictResults["spectraImageSnapshotFullPath"] = spectraImageSnapshotFullPath
             ctfEstimationPath = os.path.join(extraDirectory, mrcFileBase + "_ctf.log")

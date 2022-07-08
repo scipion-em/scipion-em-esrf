@@ -67,8 +67,12 @@ class UtilsISPyB(object):
                 "ix",
                 "in",
                 "im",
+                "ihls",
                 "ih-ls",
+                "ihmx",
                 "ih-mx",
+                "ihsc",
+                "ih-sc",
                 "blc",
                 "bm161",
                 "sc",
@@ -85,6 +89,13 @@ class UtilsISPyB(object):
                     if not number.isdigit():
                         code = None
                         number = None
+                    # "Fix" ih-ls, ih-mc and ih-sc proposals
+                    elif code == "ihls":
+                        code = "ih-ls"
+                    elif code == "ihmx":
+                        code = "ih-mx"
+                    elif code == "ihsc":
+                        code = "ih-sc"
         return code, number
 
     @staticmethod
@@ -160,19 +171,19 @@ class UtilsISPyB(object):
     @staticmethod
     def getProposal(movieFilePath):
         proposal = None
-        listDirectory = movieFilePath.split(os.sep)
+        list_directory = movieFilePath.split(os.sep)
         # First check: directory must start with "data":
-        if listDirectory[1] == "data":
-            proposalFromDirectory = None
-            if listDirectory[2] == "visitor":
-                proposalFromDirectory = listDirectory[3]
+        if list_directory[1] == "data":
+            proposal_from_directory = None
+            if list_directory[2] == "visitor":
+                proposal_from_directory = list_directory[3]
             else:
-                proposalFromDirectory = listDirectory[4]
-            proposalCode, proposalNumber = UtilsISPyB.splitProposalInCodeAndNumber(
-                proposalFromDirectory
+                proposal_from_directory = list_directory[4]
+            proposal_code, proposal_number = UtilsISPyB.splitProposalInCodeAndNumber(
+                proposal_from_directory
             )
-            if proposalCode is not None:
-                proposal = proposalFromDirectory.lower()
+            if proposal_code is not None:
+                proposal = "{0}{1}".format(proposal_code, proposal_number)
         return proposal
 
     @staticmethod

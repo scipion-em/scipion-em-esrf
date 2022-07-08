@@ -56,6 +56,17 @@ class Test(unittest.TestCase):
         proposal = UtilsISPyB.getProposal(movie_file_path)
         self.assertEqual("mx2112", proposal)
 
+    def test_getProposalInhouse(self):
+        movie_file_path = "/data/visitor/ihls3404/cm01/20220707/RAW_DATA/IHLS_3404_FluPol/. "
+        proposal = UtilsISPyB.getProposal(movie_file_path)
+        self.assertEqual("ih-ls3404", proposal)
+        movie_file_path = "/data/visitor/ihmx3404/cm01/20220707/RAW_DATA/IHLS_3404_FluPol/. "
+        proposal = UtilsISPyB.getProposal(movie_file_path)
+        self.assertEqual("ih-mx3404", proposal)
+        movie_file_path = "/data/visitor/ihsc3404/cm01/20220707/RAW_DATA/IHLS_3404_FluPol/. "
+        proposal = UtilsISPyB.getProposal(movie_file_path)
+        self.assertEqual("ih-sc3404", proposal)
+
     def test_getClient(self):
         urlBase = UtilsISPyB.getUrlBase(1)
         url = os.path.join(urlBase, "UpdateFromSMISWebService?wsdl")

@@ -1,3 +1,4 @@
+import gc
 import os
 import sys
 import json
@@ -7,6 +8,7 @@ import pprint
 import celery
 import socket
 import logging
+import objgraph
 import tempfile
 import datetime
 
@@ -309,6 +311,29 @@ def update_all_params(config_dict):
 @app.task()
 def run_workflow(config_dict):
     logger = init_logging(config_dict)
+    try:
+        run_workflow_main(config_dict, logger)
+    except BaseException:
+        pass
+    logger.debug("Before gc")
+    while gc.collect():
+        pass
+    logger.debug("After gc")
+    has_found_project = False
+    for object in gc.get_objects():
+        if isinstance(object, pyworkflow.project.Project):
+            logger.warning("Project found!")
+            has_found_project = True
+            log_dir = os.path.dirname(config_dict["log_path"])
+            scipion_project_name = config_dict["scipionProjectName"]
+            graph_path = os.path.join(log_dir, scipion_project_name + ".png")
+            objgraph.show_backrefs([object], filename=graph_path, max_depth=10)
+    if not has_found_project:
+        logger.debug("Project not found!")
+    time.sleep(2)
+
+
+def run_workflow_main(config_dict, logger):
     logger.info("Starting new workflow.")
     logger.debug(pprint.pformat(config_dict))
     # First check that a worker is not running on this computer
@@ -403,6 +428,8 @@ def run_workflow(config_dict):
                     project.stopProtocol(prot)
                 except Exception:
                     logger.info("Couldn't stop protocol {0}".format(prot))
+
+
 
 
 # if __name__ == "__main__":

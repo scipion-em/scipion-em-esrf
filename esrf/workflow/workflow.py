@@ -509,7 +509,7 @@ def preprocessWorkflow(configDict):
             no_classes = 50
             return no_classes
 
-        for outputSize in [5000, 20000, 50000, 100000, 200000]:
+        for outputSize in [5000, 20000]:
             # for outputSize in [1000, 4000]:
             allAvgs = []
             classifiers = []
@@ -619,6 +619,66 @@ def preprocessWorkflow(configDict):
 
     # --------- SUPPORT BRANCH ---------------------------
 
+    # --------- MANUAL CHECKPOINT STAGE 1 ----------------------------------
+    # {
+    #     "object.className": "ProtManualCheckpoint",
+    #     "object.id": "3472",
+    #     "object.label": "pwem - manual check point (Stage 1)",
+    #     "object.comment": "",
+    #     "_useQueue": false,
+    #     "_prerequisites": "",
+    #     "_queueParams": null,
+    #     "runName": null,
+    #     "runMode": 0,
+    #     "timeout": "1h"
+    # },
+    protSupportBranchManualCheckpointStage1 = project.newProtocol(
+        ProtManualCheckpoint,
+        objLabel="pwem - manual check point (Stage 1)",
+        timeout="1h",
+    )
+    _registerProt(protSupportBranchManualCheckpointStage1, "CheckPoint")
+
+    # --------- MANUAL CHECKPOINT STAGE 2 ----------------------------------
+    # {
+    #     "object.className": "ProtManualCheckpoint",
+    #     "object.id": "3502",
+    #     "object.label": "pwem - manual check point (Stage 2) ",
+    #     "object.comment": "",
+    #     "_useQueue": false,
+    #     "_prerequisites": "",
+    #     "_queueParams": null,
+    #     "runName": null,
+    #     "runMode": 0,
+    #     "timeout": "1h"
+    # },
+    protSupportBranchManualCheckpointStage2 = project.newProtocol(
+        ProtManualCheckpoint,
+        objLabel="pwem - manual check point (Stage 2)",
+        timeout="1h",
+    )
+    _registerProt(protSupportBranchManualCheckpointStage2, "CheckPoint")
+
+    # --------- MANUAL CHECKPOINT STAGE 3 ----------------------------------
+    # {
+    #     "object.className": "ProtManualCheckpoint",
+    #     "object.id": "3532",
+    #     "object.label": "pwem - manual check point (Stage 3)",
+    #     "object.comment": "",
+    #     "_useQueue": false,
+    #     "_prerequisites": "",
+    #     "_queueParams": null,
+    #     "runName": null,
+    #     "runMode": 1,
+    #     "timeout": "1h"
+    # },
+    protSupportBranchManualCheckpointStage3 = project.newProtocol(
+        ProtManualCheckpoint,
+        objLabel="pwem - manual check point (Stage 3)",
+        timeout="1h",
+    )
+    _registerProt(protSupportBranchManualCheckpointStage3, "CheckPoint")
+
     # --------- TRIGGER 1 ----------------------------------
     # {
     #     "object.className": "XmippProtTriggerData",
@@ -641,7 +701,7 @@ def preprocessWorkflow(configDict):
     protSupportBranchTrigInitPick = project.newProtocol(
         XmippProtTriggerData,
         objLabel="xmipp3 - trigger data (initial picking)",
-        outputSize=25,
+        outputSize=10,
         delay=5,
         allImages=False,
         splitImages=False,
@@ -811,8 +871,13 @@ def preprocessWorkflow(configDict):
         triggerSignal=False,
         delay=4,
     )
+    # protSupportBranchTrigStopSignal._prerequisites.set(
+    #     [protSupportBranchManualCheckpointStage1]
+    # )
     setExtendedInput(
-        protSupportBranchTrigStopSignal.inputImages, protCTFs, "outputMicrographs"
+        protSupportBranchTrigStopSignal.inputImages,
+        protCTFs,
+        "outputMicrographs"
     )
     _registerProt(protSupportBranchTrigStopSignal, "Micrographs")
 
@@ -1139,65 +1204,6 @@ def preprocessWorkflow(configDict):
     )
     _registerProt(protSupportBranchConsensusPicking, "Picking")
 
-    # --------- MANUAL CHECKPOINT STAGE 1 ----------------------------------
-    # {
-    #     "object.className": "ProtManualCheckpoint",
-    #     "object.id": "3472",
-    #     "object.label": "pwem - manual check point (Stage 1)",
-    #     "object.comment": "",
-    #     "_useQueue": false,
-    #     "_prerequisites": "",
-    #     "_queueParams": null,
-    #     "runName": null,
-    #     "runMode": 0,
-    #     "timeout": "1h"
-    # },
-    protSupportBranchManualCheckpointStage1 = project.newProtocol(
-        ProtManualCheckpoint,
-        objLabel="pwem - manual check point (Stage 1)",
-        timeout="1h",
-    )
-    _registerProt(protSupportBranchManualCheckpointStage1, "CheckPoint")
-
-    # --------- MANUAL CHECKPOINT STAGE 2 ----------------------------------
-    # {
-    #     "object.className": "ProtManualCheckpoint",
-    #     "object.id": "3502",
-    #     "object.label": "pwem - manual check point (Stage 2) ",
-    #     "object.comment": "",
-    #     "_useQueue": false,
-    #     "_prerequisites": "",
-    #     "_queueParams": null,
-    #     "runName": null,
-    #     "runMode": 0,
-    #     "timeout": "1h"
-    # },
-    protSupportBranchManualCheckpointStage2 = project.newProtocol(
-        ProtManualCheckpoint,
-        objLabel="pwem - manual check point (Stage 2)",
-        timeout="1h",
-    )
-    _registerProt(protSupportBranchManualCheckpointStage2, "CheckPoint")
-
-    # --------- MANUAL CHECKPOINT STAGE 3 ----------------------------------
-    # {
-    #     "object.className": "ProtManualCheckpoint",
-    #     "object.id": "3532",
-    #     "object.label": "pwem - manual check point (Stage 3)",
-    #     "object.comment": "",
-    #     "_useQueue": false,
-    #     "_prerequisites": "",
-    #     "_queueParams": null,
-    #     "runName": null,
-    #     "runMode": 1,
-    #     "timeout": "1h"
-    # },
-    protSupportBranchManualCheckpointStage3 = project.newProtocol(
-        ProtManualCheckpoint,
-        objLabel="pwem - manual check point (Stage 3)",
-        timeout="1h",
-    )
-    _registerProt(protSupportBranchManualCheckpointStage3, "CheckPoint")
 
     # ----------- RELION EXTRACT PARTICLES ---------------------------------
     # {
@@ -1244,15 +1250,15 @@ def preprocessWorkflow(configDict):
         streamingBatchSize=1,
         hostName="localhost",
         numberOfMpi=1,
-        boxSize=402,
+        # boxSize=402,
     )
     #  "boxSize": "3155.boxSizeExtraction",
-    # setExtendedInput(
-    #     protSupportBranchRelionExtractParticles.boxSize,
-    #     protSupportBranchBoxSize,
-    #     "boxSizeExtraction",
-    #     pointer = True
-    # )
+    setExtendedInput(
+        protSupportBranchRelionExtractParticles.boxSize,
+        protSupportBranchBoxSize,
+        "boxSizeExtraction",
+        pointer = True
+    )
     #     "ctfRelations": "3052.outputCTF",
     setExtendedInput(
         protSupportBranchRelionExtractParticles.ctfRelations, protCTFs, "outputCTF"
@@ -1289,7 +1295,7 @@ def preprocessWorkflow(configDict):
         XmippProtTriggerData,
         objLabel="xmipp3 - trigger data (send stop signal)",
         triggerWait=False,
-        outputSize=500,
+        outputSize=20000,
         allImages=False,
         splitImages=False,
         triggerSignal=True,

@@ -918,7 +918,7 @@ def preprocessWorkflow(configDict):
         conservPickVar=0.3,
         lowPassFilter=True,
         absCutOffFreq=0.1,
-        numCpus=4,
+        numCpus=16,
         input_size=1024,
         boxSize=0,
         max_box_per_image=600,
@@ -934,7 +934,7 @@ def preprocessWorkflow(configDict):
     )
     setExtendedInput(
         protSupportBranchCryoloPickingAutocompleted.inputMicrographs,
-        protSupportBranchTrigInitPick,
+        protSupportBranchTrigStopSignal,
         "outputMicrographs",
     )
     setExtendedInput(

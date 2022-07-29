@@ -416,7 +416,11 @@ def preprocessWorkflow(configDict):
         protPP2._useQueue.set(True)
         protPP2._queueParams.set(json.dumps(QUEUE_PARAMS_WITHOUT_GPU_16_CPU))
         setBoxSize(protPP2.boxSize)
-        setExtendedInput(protPP2.inputMicrographs, protPreMics, "outputMicrographs")
+        setExtendedInput(
+            protPP2.inputMicrographs,
+            protPreMics,
+            "outputMicrographs"
+        )
         _registerProt(protPP2, "Picking")
 
         pickers.append(protPP2)
@@ -447,12 +451,18 @@ def preprocessWorkflow(configDict):
             numberOfMpi=1,
         )
         setExtendedInput(
-            protExtractNoFlip.inputCoordinates, finalPicker, outputCoordsStr
+            protExtractNoFlip.inputCoordinates,
+            finalPicker,
+            outputCoordsStr
         )
         setExtendedInput(
-            protExtractNoFlip.inputMicrographs, protPreMics, "outputMicrographs"
+            protExtractNoFlip.inputMicrographs,
+            protPreMics,
+            "outputMicrographs"
         )
-        setExtendedInput(protExtractNoFlip.ctfRelations, protCTFs, "outputCTF")
+        setExtendedInput(
+            protExtractNoFlip.ctfRelations,
+            protCTFs, "outputCTF")
         _registerProt(protExtractNoFlip, "Particles")
 
         if configDict["particleElimination"]:
@@ -714,6 +724,41 @@ def preprocessWorkflow(configDict):
     )
     _registerProt(protSupportBranchTrigInitPick, "Micrographs")
 
+    # --------- PREPROCESS MICS ---------------------------
+    protSupportBranchPreMics0 = project.newProtocol(
+        XmippProtPreprocessMicrographs,
+        objLabel="Xmipp - preprocess Mics support branch",
+        doRemoveBadPix=True,
+        doInvert=False,
+    )
+    setExtendedInput(
+        protSupportBranchPreMics0.inputMicrographs,
+        protSupportBranchTrigInitPick,
+        "outputMicrographs"
+    )
+    _registerProt(protSupportBranchPreMics0, "Micrographs")
+
+    # Resizing to a larger sampling rate
+    if doDownSamp2D:
+        downSampPreMics = configDict["sampling2D"] / (
+                configDict["samplingRate"] * configDict["binFactor"]
+        )
+        protSupportBranchPreMics = project.newProtocol(
+            XmippProtPreprocessMicrographs,
+            objLabel="DownSampling to 2D size - support branch",
+            doDownsample=True,
+            downFactor=downSampPreMics,
+        )
+        setExtendedInput(
+            protSupportBranchPreMics.inputMicrographs,
+            protSupportBranchPreMics0,
+            "outputMicrographs"
+        )
+        _registerProt(protSupportBranchPreMics, "Micrographs")
+    else:
+        # downSampPreMics = 1
+        protSupportBranchPreMics = protSupportBranchPreMics0
+
     # --------- CRYOLO PICKING ----------------------------------
     # {
     #     "object.className": "SphireProtCRYOLOPicking",
@@ -767,7 +812,7 @@ def preprocessWorkflow(configDict):
     )
     setExtendedInput(
         protSupportBranchCryoloPicking.inputMicrographs,
-        protSupportBranchTrigInitPick,
+        protSupportBranchPreMics,
         "outputMicrographs",
     )
     _registerProt(protSupportBranchCryoloPicking, "Picking")
@@ -1261,13 +1306,20 @@ def preprocessWorkflow(configDict):
     )
     #     "ctfRelations": "3052.outputCTF",
     setExtendedInput(
-        protSupportBranchRelionExtractParticles.ctfRelations, protCTFs, "outputCTF"
+        protSupportBranchRelionExtractParticles.ctfRelations,
+        protCTFs,
+        "outputCTF"
     )
     #  "inputCoordinates": "3439.consensusCoordinates"
     setExtendedInput(
         protSupportBranchRelionExtractParticles.inputCoordinates,
         protSupportBranchConsensusPicking,
         "consensusCoordinates",
+    )
+    setExtendedInput(
+        protSupportBranchRelionExtractParticles.inputMicrographs,
+        protPreMics,
+        "outputMicrographs"
     )
     _registerProt(protSupportBranchRelionExtractParticles, "Particles")
 

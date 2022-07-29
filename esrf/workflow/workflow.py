@@ -551,7 +551,9 @@ def preprocessWorkflow(configDict):
                 numberOfClasses=getNoClasses(outputSize),
                 numberOfMpi=1,
                 numberOfThreads=15,
-                maskDiameterA=configDict["partSize"],
+                # maskDiameterA=configDict["partSize"],
+                useGradientAlg=False,
+                maskDiameterA=-1,
             )
             protCL2._useQueue.set(True)
             protCL2._queueParams.set(json.dumps(QUEUE_PARAMS_WITH_2_GPU_16_CPU))
@@ -719,45 +721,45 @@ def preprocessWorkflow(configDict):
     )
     setExtendedInput(
         protSupportBranchTrigInitPick.inputImages,
-        protMA,
-        "outputMicrographsDoseWeighted",
+        protPreMics,
+        "outputMicrographs",
     )
     _registerProt(protSupportBranchTrigInitPick, "Micrographs")
 
-    # --------- PREPROCESS MICS ---------------------------
-    protSupportBranchPreMics0 = project.newProtocol(
-        XmippProtPreprocessMicrographs,
-        objLabel="Xmipp - preprocess Mics support branch",
-        doRemoveBadPix=True,
-        doInvert=False,
-    )
-    setExtendedInput(
-        protSupportBranchPreMics0.inputMicrographs,
-        protSupportBranchTrigInitPick,
-        "outputMicrographs"
-    )
-    _registerProt(protSupportBranchPreMics0, "Micrographs")
-
-    # Resizing to a larger sampling rate
-    if doDownSamp2D:
-        downSampPreMics = configDict["sampling2D"] / (
-                configDict["samplingRate"] * configDict["binFactor"]
-        )
-        protSupportBranchPreMics = project.newProtocol(
-            XmippProtPreprocessMicrographs,
-            objLabel="DownSampling to 2D size - support branch",
-            doDownsample=True,
-            downFactor=downSampPreMics,
-        )
-        setExtendedInput(
-            protSupportBranchPreMics.inputMicrographs,
-            protSupportBranchPreMics0,
-            "outputMicrographs"
-        )
-        _registerProt(protSupportBranchPreMics, "Micrographs")
-    else:
-        # downSampPreMics = 1
-        protSupportBranchPreMics = protSupportBranchPreMics0
+    # # --------- PREPROCESS MICS ---------------------------
+    # protSupportBranchPreMics0 = project.newProtocol(
+    #     XmippProtPreprocessMicrographs,
+    #     objLabel="Xmipp - preprocess Mics support branch",
+    #     doRemoveBadPix=True,
+    #     doInvert=False,
+    # )
+    # setExtendedInput(
+    #     protSupportBranchPreMics0.inputMicrographs,
+    #     protSupportBranchTrigInitPick,
+    #     "outputMicrographs"
+    # )
+    # _registerProt(protSupportBranchPreMics0, "Micrographs")
+    #
+    # # Resizing to a larger sampling rate
+    # if doDownSamp2D:
+    #     downSampPreMics = configDict["sampling2D"] / (
+    #             configDict["samplingRate"] * configDict["binFactor"]
+    #     )
+    #     protSupportBranchPreMics = project.newProtocol(
+    #         XmippProtPreprocessMicrographs,
+    #         objLabel="DownSampling to 2D size - support branch",
+    #         doDownsample=True,
+    #         downFactor=downSampPreMics,
+    #     )
+    #     setExtendedInput(
+    #         protSupportBranchPreMics.inputMicrographs,
+    #         protSupportBranchPreMics0,
+    #         "outputMicrographs"
+    #     )
+    #     _registerProt(protSupportBranchPreMics, "Micrographs")
+    # else:
+    #     # downSampPreMics = 1
+    #     protSupportBranchPreMics = protSupportBranchPreMics0
 
     # --------- CRYOLO PICKING ----------------------------------
     # {
@@ -792,27 +794,31 @@ def preprocessWorkflow(configDict):
     protSupportBranchCryoloPicking = project.newProtocol(
         SphireProtCRYOLOPicking,
         objLabel="sphire - cryolo picking",
-        inputModelFrom=0,
-        conservPickVar=0.3,
-        lowPassFilter=True,
-        absCutOffFreq=0.1,
-        numCpus=4,
-        input_size=1024,
-        boxSize=0,
-        max_box_per_image=600,
         useGpu=False,
+        conservPickVar=0.3,
+        numCpus=16,
+        streamingBatchSize=4,
+        # inputModelFrom=0,
+        # conservPickVar=0.3,
+        # lowPassFilter=True,
+        # absCutOffFreq=0.1,
+        # numCpus=4,
+        # input_size=1024,
+        # boxSize=0,
+        # max_box_per_image=600,
+        # useGpu=False,
         # gpuList="2",
-        boxSizeFactor=1.0,
-        hostName="localhost",
-        numberOfThreads=1,
-        numberOfMpi=1,
-        streamingWarning=None,
-        streamingSleepOnWait=0,
-        streamingBatchSize=16,
+        # boxSizeFactor=1.0,
+        # hostName="localhost",
+        # numberOfThreads=1,
+        # numberOfMpi=1,
+        # streamingWarning=None,
+        # streamingSleepOnWait=0,
+        # streamingBatchSize=16,
     )
     setExtendedInput(
         protSupportBranchCryoloPicking.inputMicrographs,
-        protSupportBranchPreMics,
+        protSupportBranchTrigInitPick,
         "outputMicrographs",
     )
     _registerProt(protSupportBranchCryoloPicking, "Picking")
@@ -876,7 +882,7 @@ def preprocessWorkflow(configDict):
     )
     setExtendedInput(
         protSupportBranchBoxSize.inputMicrographs,
-        protSupportBranchPreMics,
+        protSupportBranchTrigInitPick,
         "outputMicrographs",
     )
     setExtendedInput(
@@ -921,7 +927,7 @@ def preprocessWorkflow(configDict):
     # )
     setExtendedInput(
         protSupportBranchTrigStopSignal.inputImages,
-        protCTFs,
+        protPreMics,
         "outputMicrographs"
     )
     _registerProt(protSupportBranchTrigStopSignal, "Micrographs")
@@ -959,27 +965,33 @@ def preprocessWorkflow(configDict):
     protSupportBranchCryoloPickingAutocompleted = project.newProtocol(
         SphireProtCRYOLOPicking,
         objLabel="sphire - cryolo picking (autocompleted)",
-        inputModelFrom=0,
-        conservPickVar=0.3,
-        lowPassFilter=True,
-        absCutOffFreq=0.1,
-        numCpus=16,
-        input_size=1024,
-        boxSize=0,
-        max_box_per_image=600,
         useGpu=False,
-        # gpuList="2",
-        boxSizeFactor=1.0,
-        hostName="localhost",
-        numberOfThreads=1,
-        numberOfMpi=1,
-        streamingWarning=None,
-        streamingSleepOnWait=0,
-        streamingBatchSize=16,
+        conservPickVar=0.3,
+        numCpus=16,
+        streamingBatchSize=4,
+        # inputModelFrom=0,
+        # conservPickVar=0.3,
+        # lowPassFilter=True,
+        # absCutOffFreq=0.1,
+        # numCpus=16,
+        # input_size=1024,
+        # boxSize=0,
+        # max_box_per_image=600,
+        # useGpu=False,
+        # # gpuList="2",
+        # boxSizeFactor=1.0,
+        # hostName="localhost",
+        # numberOfThreads=1,
+        # numberOfMpi=1,
+        # streamingWarning=None,
+        # streamingSleepOnWait=0,
+        # streamingBatchSize=16,
     )
+    protSupportBranchCryoloPickingAutocompleted._useQueue.set(True)
+    protSupportBranchCryoloPickingAutocompleted._queueParams.set(json.dumps(QUEUE_PARAMS_WITHOUT_GPU_16_CPU))
     setExtendedInput(
         protSupportBranchCryoloPickingAutocompleted.inputMicrographs,
-        protSupportBranchTrigStopSignal,
+        protPreMics,
         "outputMicrographs",
     )
     setExtendedInput(
@@ -1032,7 +1044,7 @@ def preprocessWorkflow(configDict):
     )
     setExtendedInput(
         protSupportBranchRelionAutopickLoG.inputMicrographs,
-        protSupportBranchTrigStopSignal,
+        protPreMics,
         "outputMicrographs",
     )
     setExtendedInput(
@@ -1142,11 +1154,12 @@ def preprocessWorkflow(configDict):
         hostName="localhost",
         numberOfThreads=1,
         numberOfMpi=1,
+        minDist=300,
     )
     # inputMicrographs = "3202.outputMicrographs"
     setExtendedInput(
         protSupportBranchGautomatch.inputMicrographs,
-        protSupportBranchTrigStopSignal,
+        protPreMics,
         "outputMicrographs",
     )
     # particleSize = "3155.radiusGautomatch",
@@ -1164,12 +1177,12 @@ def preprocessWorkflow(configDict):
         pointer=True,
     )
     # minDist = "3155.minIntPartDistanceGautomatch",
-    setExtendedInput(
-        protSupportBranchGautomatch.minDist,
-        protSupportBranchBoxSize,
-        "minIntPartDistanceGautomatch",
-        pointer=True,
-    )
+    # setExtendedInput(
+    #     protSupportBranchGautomatch.minDist,
+    #     protSupportBranchBoxSize,
+    #     "minIntPartDistanceGautomatch",
+    #     pointer=True,
+    # )
     # localSigmaDiam = "3155.sigmaDiameterGautomatch",
     setExtendedInput(
         protSupportBranchGautomatch.localSigmaDiam,

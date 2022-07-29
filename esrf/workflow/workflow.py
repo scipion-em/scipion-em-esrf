@@ -876,7 +876,7 @@ def preprocessWorkflow(configDict):
     )
     setExtendedInput(
         protSupportBranchBoxSize.inputMicrographs,
-        protSupportBranchTrigInitPick,
+        protSupportBranchPreMics,
         "outputMicrographs",
     )
     setExtendedInput(

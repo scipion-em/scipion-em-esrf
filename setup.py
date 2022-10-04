@@ -25,33 +25,12 @@
 # **************************************************************************
 
 
-# Always prefer setuptools over distutils
-from setuptools import setup, find_packages
+__authors__ = ["O. Svensson"]
+__license__ = "MIT"
+__date__ = "01/08/2022"
 
-# To use a consistent encoding
-from codecs import open
-from os import path
+import setuptools
 
-here = path.abspath(path.dirname(__file__))
+if __name__ == "__main__":
+    setuptools.setup()
 
-# Get the long description from the README file
-with open(path.join(here, "README.rst"), encoding="utf-8") as f:
-    long_description = f.read()
-
-# Arguments marked as "Required" below must be included for upload to PyPI.
-# Fields marked as "Optional" may be commented out.
-
-setup(
-    name="scipion-em-esrf",  # Required
-    version="1.1.0",  # Required
-    description="Esrf's ISPyB monitor for Scipion",  # Required
-    long_description=long_description,  # Optional
-    url="https://github.com/scipion-em/scipion-em-esrf",
-    author="ESRF",  # Optional
-    author_email="svensson@esrf.fr",  # Optional
-    keywords="scipion ESRF ISPyB upload and ICAT archiving",  # Optional
-    packages=find_packages(),
-    install_requires=["suds-jurko"],
-    entry_points={"pyworkflow.plugin": "esrf = esrf"},
-    package_data={"esrf": ["protocols.conf"],},  # Optional
-)

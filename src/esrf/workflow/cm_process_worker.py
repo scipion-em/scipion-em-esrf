@@ -11,6 +11,7 @@ import logging
 import objgraph
 import tempfile
 import datetime
+import traceback
 
 import pyworkflow
 import motioncorr.constants

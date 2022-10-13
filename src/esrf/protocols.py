@@ -182,6 +182,14 @@ class ProtMonitorISPyB_ESRF(ProtMonitor):
             help="Particle size used for particle picking",
         )
 
+        section2.addParam(
+            "doProcessDir",
+            params.BooleanParam,
+            default=False,
+            label="Enable process dir?",
+            help="Copy of motion corrected micrographs to RAW_DATA dir."
+        )
+
         section3 = form.addSection(label="ISPyB")
 
         section3.addParam(
@@ -258,6 +266,7 @@ class MonitorISPyB_ESRF(Monitor):
         self.gainFilePath = protocol.gainFilePath.get()
         self.defectMapPath = protocol.defectMapPath.get()
         self.particleSize = protocol.particleSize.get()
+        self.doProcessDir = protocol.doProcessDir.get()
         self.positionX = None
         self.positionY = None
         self.collectionDate = None
@@ -388,15 +397,17 @@ class MonitorISPyB_ESRF(Monitor):
             movieNumber = dictFileNameParameters["movieNumber"]
             movieName = dictFileNameParameters["movieName"]
             self.info("Import movies: movieName: {0}".format(movieName))
-            processDir = os.path.join(
-                os.path.dirname(movieFullPath), "process", movieName
-            )
-            if not os.path.exists(processDir):
-                try:
-                    os.makedirs(processDir, 0o755)
-                except OSError:
-                    processDir = None
-
+            if self.doProcessDir:
+                processDir = os.path.join(
+                    os.path.dirname(movieFullPath), "process", movieName
+                )
+                if not os.path.exists(processDir):
+                    try:
+                        os.makedirs(processDir, 0o755)
+                    except OSError:
+                        processDir = None
+            else:
+                processDir = None
             self.movieDirectory = os.path.dirname(movieFullPath)
 
             (
@@ -602,14 +613,17 @@ class MonitorISPyB_ESRF(Monitor):
                 self.info("Movie {0} already uploaded to ISPyB".format(movieName))
             else:
                 self.info("Import movies: movieName: {0}".format(movieName))
-                processDir = os.path.join(
-                    os.path.dirname(movieFullPath), "process", movieName
-                )
-                if not os.path.exists(processDir):
-                    try:
-                        os.makedirs(processDir, 0o755)
-                    except OSError:
-                        processDir = None
+                if self.doProcessDir:
+                    processDir = os.path.join(
+                        os.path.dirname(movieFullPath), "process", movieName
+                    )
+                    if not os.path.exists(processDir):
+                        try:
+                            os.makedirs(processDir, 0o755)
+                        except OSError:
+                            processDir = None
+                else:
+                    processDir = None
 
                 self.movieDirectory = os.path.dirname(movieFullPath)
                 # self.info("movieFullPath: {0}".format(movieFullPath))
@@ -834,14 +848,17 @@ class MonitorISPyB_ESRF(Monitor):
             movieNumber = dictFileNameParameters["movieNumber"]
             movieName = dictFileNameParameters["movieName"]
             self.info("Import movies: movieName: {0}".format(movieName))
-            processDir = os.path.join(
-                os.path.dirname(movieFullPath), "process", movieName
-            )
-            if not os.path.exists(processDir):
-                try:
-                    os.makedirs(processDir, 0o755)
-                except OSError:
-                    processDir = None
+            if self.doProcessDir:
+                processDir = os.path.join(
+                    os.path.dirname(movieFullPath), "process", movieName
+                )
+                if not os.path.exists(processDir):
+                    try:
+                        os.makedirs(processDir, 0o755)
+                    except OSError:
+                        processDir = None
+            else:
+                processDir = None
             self.movieDirectory = os.path.dirname(movieFullPath)
             # Get SerialEM metadata
             mdocFullPath = movieFullPath + ".mdoc"
@@ -1026,8 +1043,8 @@ class MonitorISPyB_ESRF(Monitor):
         self.protocol.info("ESRF ISPyB upload motion corr results")
         for micrograph in self.iter_updated_set(prot.outputMicrographs):
             micrographFullPath = os.path.join(self.currentDir, micrograph.getFileName())
-            # self.info("*"*80)
-            # self.info("Motion corr micrographFullPath: {0}".format(micrographFullPath))
+            self.info("*"*80)
+            self.info("Motion corr micrographFullPath: {0}".format(micrographFullPath))
             if self.dataType == 0:  # "EPU"
                 dictFileNameParameters = (
                     UtilsPath.getMovieFileNameParametersFromMotioncorrPath(
@@ -1048,12 +1065,14 @@ class MonitorISPyB_ESRF(Monitor):
                 )
             else:
                 raise RuntimeError("Unknown data type: {0}".format(self.dataType))
-            movieName = dictFileNameParameters["movieName"]
-            # self.info("Motion corr movie name: {0}".format(movieName))
+            # self.info("dictFileNameParameters: \n{0}".format(pprint.pformat(dictFileNameParameters)))
             if (
-                movieName in self.allParams
-                and "motionCorrectionId" not in self.allParams[movieName]
+                "movieName" in dictFileNameParameters
+                and dictFileNameParameters["movieName"] in self.allParams
+                and "motionCorrectionId" not in self.allParams[dictFileNameParameters["movieName"]]
             ):
+                movieName = dictFileNameParameters["movieName"]
+                # self.info("Motion corr movie name: {0}".format(movieName))
                 self.info(
                     "Align movies: movie {0}".format(
                         os.path.basename(self.allParams[movieName]["movieFullPath"])
@@ -1074,6 +1093,7 @@ class MonitorISPyB_ESRF(Monitor):
                     )
                 else:
                     raise RuntimeError("Unknown data type: {0}".format(self.dataType))
+                # self.info("dictResult: \n{0}".format(pprint.pformat(dictResult)))
                 if "globalShiftPng" in dictResult:
                     driftPlotFullPath = dictResult["globalShiftPng"]
                 else:
@@ -1186,7 +1206,7 @@ class MonitorISPyB_ESRF(Monitor):
                         micrographFullPath
                     )
                 )
-            elif self.dataType == 1:  # "EPU"
+            elif self.dataType == 1:  # "EPU TIFF"
                 dictFileNameParameters = (
                     UtilsPath.getEpuTiffMovieFileNameParametersFromMotioncorrPath(
                         micrographFullPath
@@ -1200,12 +1220,14 @@ class MonitorISPyB_ESRF(Monitor):
                 )
             else:
                 raise RuntimeError("Unknown data type: {0}".format(self.dataType))
-            movieName = dictFileNameParameters["movieName"]
+            # self.info("dictFileNameParameters: \n{0}".format(pprint.pformat(dictFileNameParameters)))
             if (
-                movieName in self.allParams
-                and "motionCorrectionId" in self.allParams[movieName]
-                and "CTFid" not in self.allParams[movieName]
+                "movieName" in dictFileNameParameters
+                and dictFileNameParameters["movieName"] in self.allParams
+                and "motionCorrectionId" in self.allParams[dictFileNameParameters["movieName"]]
+                and "CTFid" not in self.allParams[dictFileNameParameters["movieName"]]
             ):
+                movieName = dictFileNameParameters["movieName"]
                 self.info(
                     "CTF: movie {0}".format(
                         os.path.basename(self.allParams[movieName]["movieFullPath"])
@@ -1225,6 +1247,7 @@ class MonitorISPyB_ESRF(Monitor):
                 estimatedBfactor = None
 
                 dictResults = UtilsPath.getCtfMetaData(workingDir, micrographFullPath)
+                # self.info("dictResults: \n{0}".format(pprint.pformat(dictResults)))
                 spectraImageSnapshotFullPath = dictResults[
                     "spectraImageSnapshotFullPath"
                 ]
@@ -1511,7 +1534,7 @@ class MonitorISPyB_ESRF(Monitor):
 
     def archiveGainAndDefectMap(self):
         directory = None
-        listPathsToBeArchived = []
+        list_paths_to_be_archived = []
         if self.defectMapPath != "" or self.gainFilePath != "":
             if "GainAndDefectMap" not in self.allParams:
                 self.allParams["GainAndDefectMap"] = {}
@@ -1520,46 +1543,47 @@ class MonitorISPyB_ESRF(Monitor):
                 self.info("Archiving gain and defect map files")
                 self.info("Defect map file: {0}".format(self.defectMapPath))
                 self.info("Gain file: {0}".format(self.gainFilePath))
-                if self.defectMapPath != "":
+                if self.defectMapPath != "" and self.defectMapPath is not None:
                     self.allParams["GainAndDefectMap"][
                         "defectMapPath"
                     ] = self.defectMapPath
                     directory = os.path.dirname(self.defectMapPath)
                     self.info("Directory: {0}".format(directory))
-                    listPathsToBeArchived.append(self.defectMapPath)
-                if self.gainFilePath != "":
+                    list_paths_to_be_archived.append(self.defectMapPath)
+                if self.gainFilePath != "" and self.defectMapPath is not None:
                     self.allParams["GainAndDefectMap"][
                         "gainFilePath"
                     ] = self.gainFilePath
                     directory = os.path.dirname(self.gainFilePath)
                     self.info("Directory: {0}".format(directory))
-                    listPathsToBeArchived.append(self.gainFilePath)
-                dictIcatMetaData = {
-                    "EM_directory": directory,
-                    "EM_protein_acronym": self.proteinAcronym,
-                    "EM_voltage": self.voltage,
-                    "EM_magnification": self.magnification,
-                }
-                self.info(pprint.pformat(dictIcatMetaData))
-                dateTimeString = time.strftime(
-                    "[%Y-%m-%d %H:%M:%S]", time.localtime(time.time())
-                )
-                dataSetName = "GainAndDefectMap {0}".format(dateTimeString)
-                listGalleryPath = []
-                try:
-                    errorMessage = UtilsIcat.uploadToIcat(
-                        listPathsToBeArchived,
-                        directory,
-                        self.proposal,
-                        self.sampleAcronym,
-                        dataSetName,
-                        dictIcatMetaData,
-                        listGalleryPath,
+                    list_paths_to_be_archived.append(self.gainFilePath)
+                if len(list_paths_to_be_archived) > 0:
+                    dict_icat_meta_data = {
+                        "EM_directory": directory,
+                        "EM_protein_acronym": self.proteinAcronym,
+                        "EM_voltage": self.voltage,
+                        "EM_magnification": self.magnification,
+                    }
+                    self.info(pprint.pformat(dict_icat_meta_data))
+                    date_time_string = time.strftime(
+                        "[%Y-%m-%d %H:%M:%S]", time.localtime(time.time())
                     )
-                    if errorMessage is not None:
+                    data_set_name = "GainAndDefectMap {0}".format(date_time_string)
+                    list_gallery_path = []
+                    try:
+                        error_message = UtilsIcat.uploadToIcat(
+                            list_paths_to_be_archived,
+                            directory,
+                            self.proposal,
+                            self.sampleAcronym,
+                            data_set_name,
+                            dict_icat_meta_data,
+                            list_gallery_path,
+                        )
+                        if error_message is not None:
+                            self.info("WARNING! Couldn't archive gain and defect map")
+                    except BaseException:
+                        # We give up on uploading gain and defect map files
                         self.info("WARNING! Couldn't archive gain and defect map")
-                except BaseException:
-                    # We give up on uploading gain and defect map files
-                    self.info("WARNING! Couldn't archive gain and defect map")
-                self.allParams["GainAndDefectMap"]["archived"] = True
-                self.updateJsonFile()
+                    self.allParams["GainAndDefectMap"]["archived"] = True
+                    self.updateJsonFile()

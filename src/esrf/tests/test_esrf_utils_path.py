@@ -84,7 +84,8 @@ class Test(unittest.TestCase):
 
     def test_getEpuTiffMovieFileNameParametersFromMotioncorrPath(self):
         # Test 1
-        mrcFullPath1 = "/data/visitor/mx2112/cm01/20210614/PROCESSED_DATA/ApoF-test1/ApoF-test1_20210616-085412/Runs/000064_ProtMotionCorr/extra/GridSquare_10847341_Data_FoilHole_10851620_Data_10853313_10853315_20210611_161457_fractions_aligned_mic.mrc"
+        # mrcFullPath1 = "/data/visitor/mx2112/cm01/20210614/PROCESSED_DATA/ApoF-test1/ApoF-test1_20210616-085412/Runs/000064_ProtMotionCorr/extra/GridSquare_10847341_Data_FoilHole_10851620_Data_10853313_10853315_20210611_161457_fractions_aligned_mic.mrc"
+        mrcFullPath1 = "/gpfs/easy/data/visitor/mx2369/cm01/20220620/PROCESSED_DATA/mx2369_PkV-R_Grid6_EPU/mx2369-PkV-R/Runs/000065_ProtMotionCorr/extra/Images-Disc1_GridSquare_20341956_Data_FoilHole_20233951_Data_20345306_20345308_20220620_164313_fractions_aligned_mic.mrc"
         dictResult1 = UtilsPath.getEpuTiffMovieFileNameParametersFromMotioncorrPath(
             mrcFullPath1
         )
@@ -244,7 +245,7 @@ class Test(unittest.TestCase):
         self.assertEqual(dictRef, dictResult)
 
     def test_getEpuTiffAlignMoviesPngLogFilePath(self):
-        mrcFilePath = "/data/visitor/mx2112/cm01/20210614/PROCESSED_DATA/ApoF-test1/ApoF-test1_20210616-085412/Runs/000064_ProtMotionCorr/extra/GridSquare_10847341_Data_FoilHole_10851620_Data_10853313_10853315_20210611_161457_fractions_aligned_mic.mrc"
+        mrcFilePath = "/data/visitor/mx2112/cm01/20220630/PROCESSED_DATA/ih-ls3403_MTb-56_Blue3/mx2112_test1_g1_20220630-155702/Runs/000065_ProtMotionCorr/extra/Images-Disc1_GridSquare_29820840_Data_FoilHole_30945883_Data_29822705_29822707_20220630_091041_fractions_aligned_mic.mrc"
         dictResult = UtilsPath.getEpuTiffAlignMoviesPngLogFilePath(mrcFilePath)
         pprint.pprint(dictResult)
 
@@ -466,7 +467,7 @@ class Test(unittest.TestCase):
         dataDirectory = (
             "/data/visitor/mx2260/cm01/20210122/RAW_DATA/mx2260_grid5_EXTs_EPU"
         )
-        filesPattern = "Images-Disc1/GridSquare_*/Data/FoilHole_*-*.mrc"
+        filesPattern = "Images-Disc*/GridSquare_*/Data/FoilHole_*-*.mrc"
         listMovies = glob.glob(os.path.join(dataDirectory, filesPattern))
         allParamsJsonFile = "/data/visitor/mx2260/cm01/20210122/PROCESSED_DATA/mx2260_grid5_EXTs_EPU/allParams.json"
         blackList = UtilsPath.getBlacklist(listMovies, allParamsJsonFile)
@@ -478,7 +479,7 @@ class Test(unittest.TestCase):
         dataDirectory = (
             "/data/visitor/mx2261/cm01/20210702/RAW_DATA/mx2261_IgIF_grid4_EPU"
         )
-        filesPattern = "Images-Disc1/GridSquare_*/Data/FoilHole_*_fractions.tiff"
+        filesPattern = "Images-Disc*/GridSquare_*/Data/FoilHole_*_fractions.tiff"
         listMovies = glob.glob(os.path.join(dataDirectory, filesPattern))
         allParamsJsonFile = "/data/visitor/mx2261/cm01/20210702/PROCESSED_DATA/mx2261_IgIF_grid4_EPU/allParams.json"
         blackList = UtilsPath.getBlacklistAllMovies(listMovies, allParamsJsonFile)

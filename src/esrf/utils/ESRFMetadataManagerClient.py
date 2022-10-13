@@ -72,13 +72,13 @@ class MetadataManagerClient(object):
         print("DataRoot: %s" % MetadataManagerClient.metaExperiment.dataRoot)
         print("Proposal: %s" % MetadataManagerClient.metaExperiment.proposal)
         print("Sample: %s" % MetadataManagerClient.metaExperiment.sample)
-        print("Dataset: %s" % MetadataManagerClient.metadataManager.scanName)
+        print("Dataset: %s" % MetadataManagerClient.metadataManager.datasetName)
 
     def getStatus(self):
         status = "DataRoot: %s\n" % MetadataManagerClient.metaExperiment.dataRoot
         status += "Proposal: %s\n" % MetadataManagerClient.metaExperiment.proposal
         status += "Sample: %s\n" % MetadataManagerClient.metaExperiment.sample
-        status += "Dataset: %s\n" % MetadataManagerClient.metadataManager.scanName
+        status += "Dataset: %s\n" % MetadataManagerClient.metadataManager.datasetName
         return status
 
     def _setAttribute(self, proxy, attributeName, newValue):
@@ -129,9 +129,9 @@ class MetadataManagerClient(object):
 
     def start(self, dataRoot, proposal, sampleName, datasetName):
         """ Starts a new dataset """
-        # Check if in state RUNNING, if yes abort scan
+        # Check if in state RUNNING, if yes abort dataset
         if self.getMetadataManagerState() == "RUNNING":
-            MetadataManagerClient.metadataManager.AbortScan()
+            MetadataManagerClient.metadataManager.AbortDataSet()
 
         # setting proposal
         self._setAttribute(MetadataManagerClient.metaExperiment, "proposal", proposal)
@@ -144,17 +144,17 @@ class MetadataManagerClient(object):
 
         # setting datasetName
         self._setAttribute(
-            MetadataManagerClient.metadataManager, "scanName", datasetName
+            MetadataManagerClient.metadataManager, "datasetName", datasetName
         )
 
-        # Start scan
+        # Start dataset
         if (self.getMetadataManagerState() == "ON") and (
             self.getMetaExperimentState() == "ON"
         ):
-            MetadataManagerClient.metadataManager.StartScan()
+            MetadataManagerClient.metadataManager.StartDataset()
         else:
             raise RuntimeError(
-                "Cannot start scan! MetadataManagerState= {0}, MetaExperimentState = {1}".format(
+                "Cannot start dataset! MetadataManagerState= {0}, MetaExperimentState = {1}".format(
                     self.getMetadataManagerState(), self.getMetaExperimentState()
                 )
             )
@@ -164,7 +164,7 @@ class MetadataManagerClient(object):
 
     def end(self):
         try:
-            MetadataManagerClient.metadataManager.endScan()
+            MetadataManagerClient.metadataManager.endDataset()
             # Give the server some time to react
             time.sleep(1)
         except:
@@ -180,8 +180,8 @@ class MetadataManagerClient(object):
     def getMessageList(self):
         return list(MetadataManagerClient.metadataManager.messageList)
 
-    def abortScan(self):
-        MetadataManagerClient.metadataManager.AbortScan()
+    def abortDataset(self):
+        MetadataManagerClient.metadataManager.AbortDataset()
 
 
 if __name__ == "__main__":

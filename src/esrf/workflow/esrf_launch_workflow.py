@@ -68,8 +68,7 @@ shutil._USE_CP_SENDFILE = False
 
 
 def getUpdatedProtocol(protocol):
-    """ Retrieve the updated protocol and close db connections
-        """
+    """Retrieve the updated protocol and close db connections"""
     prot2 = None
     try:
         prot2 = getProtocolFromDb(
@@ -108,7 +107,7 @@ configDict["gainRot"] = motioncorr.constants.NO_ROTATION
 
 if configDict["filesPattern"] is None:
     # No filesPattern, let's assume that we are dealing with EPU data
-    configDict["filesPattern"] = "Images-Disc1/GridSquare_*/Data/FoilHole_*-*.mrc"
+    configDict["filesPattern"] = "Images-Disc*/GridSquare_*/Data/FoilHole_*-*.mrc"
 
 # Check how many movies are present on disk
 listMovies = glob.glob(
@@ -123,7 +122,7 @@ else:
     # Let's now assume that we are dealing with EPU tiff data
     configDict[
         "filesPattern"
-    ] = "Images-Disc1/GridSquare_*/Data/FoilHole_*_fractions.tiff"
+    ] = "Images-Disc*/GridSquare_*/Data/FoilHole_*_fractions.tiff"
     # Check how many movies are present on disk
     listMovies = glob.glob(
         os.path.join(configDict["dataDirectory"], configDict["filesPattern"])
@@ -173,7 +172,7 @@ if configDict["secondGrid"]:
     configDict["gainRot"] = motioncorr.constants.ROTATE_180
     configDict[
         "filesPattern"
-    ] = "Images-Disc1/GridSquare_*/Data/FoilHole_*_fractions.tiff"
+    ] = "Images-Disc*/GridSquare_*/Data/FoilHole_*_fractions.tiff"
 elif noMovies == 0:
     print(
         "ERROR! No movies available in directory {0} with the filesPattern {1}.".format(
@@ -368,7 +367,7 @@ else:
             db = 1
         elif proposal == "mx2112":
             # Use valid data base
-            print("ISPyB production data base used")
+            print("ISPyB valid data base used")
             db = 1
         else:
             # Use productiond data base
@@ -379,19 +378,20 @@ else:
     configDict["db"] = db
 
 # Check slurm jobs
-try:
-    userName = getpass.getuser()
-    if UtilsSlurm.checkIfRunningProcesses(userName):
-        answer = input(
-            "There are running SLURM jobs - are you sure that you want to kill these jobs? (y/n): "
-        )
-        if answer.lower().startswith("y"):
-            UtilsSlurm.killAllProcesses(userName)
-        else:
-            print("Ok, start of cryoemProcess3 aborted.")
-            sys.exit(1)
-except FileNotFoundError as e:
-    print("WARNING! Cannot stop SLURM processes: {0}".format(e))
+if not configDict["no2dClass"] and not configDict["secondGrid"]:
+    try:
+        userName = getpass.getuser()
+        if UtilsSlurm.checkIfRunningProcesses(userName):
+            answer = input(
+                "There are running SLURM jobs - are you sure that you want to kill these jobs? (y/n): "
+            )
+            if answer.lower().startswith("y"):
+                UtilsSlurm.killAllProcesses(userName)
+            else:
+                print("Ok continuing anyway.")
+                # sys.exit(1)
+    except FileNotFoundError as e:
+        print("WARNING! Cannot stop SLURM processes: {0}".format(e))
 
 if configDict["magnification"] is None:
     if configDict["dataType"] in [0, 1]:  # EPU or EPU_TIFF

@@ -64,14 +64,14 @@ def getCommandlineOptions():
         "--filesPattern",
         action="store",
         help="file pattern for finding EM movies, default pattern "
-        + "'Images-Disc1/GridSquare_*/Data/FoilHole_*-*.mrc'",
+        + "'Images-Disc*/GridSquare_*/Data/FoilHole_*-*.mrc'",
         default=None,
     )
-    optional.add_argument(
-        "--scipionProjectName",
-        action="store",
-        help="Scipion project name, is only used internally in Scipion.",
-    )
+    # optional.add_argument(
+    #     "--scipionProjectName",
+    #     action="store",
+    #     help="Scipion project name, is only used internally in Scipion.",
+    # )
     optional.add_argument(
         "--doseInitial", action="store", help="Initial dose, default zero.", default=0.0
     )
@@ -151,12 +151,24 @@ def getCommandlineOptions():
         help="If set: timeout increased to 72 h, GPUs 4-7 used",
         default=False,
     )
+    optional.add_argument(
+        "--doProcessDir",
+        action="store_true",
+        help="If set: copy of micrographs to RAW_DATA",
+        default=False,
+    )
+    optional.add_argument(
+        "--celery_worker",
+        action="store",
+        help="Celery worker (dgx01, cmproc3, None)",
+        default="dgx01",
+    )
     results = parser.parse_args()
 
-    optDict = {
+    opt_dict = {
         "dataDirectory": results.directory,
         "filesPattern": results.filesPattern,
-        "scipionProjectName": results.scipionProjectName,
+        # "scipionProjectName": results.scipionProjectName,
         "proteinAcronym": results.protein,
         "sampleAcronym": results.sample,
         "doseInitial": float(results.doseInitial),
@@ -182,6 +194,8 @@ def getCommandlineOptions():
         "defectMapPath": results.defectMapPath,
         "gainFilePath": results.gainFilePath,
         "secondGrid": results.secondGrid,
+        "doProcessDir": results.doProcessDir,
+        "celery_worker": results.celery_worker,
     }
 
-    return optDict
+    return opt_dict

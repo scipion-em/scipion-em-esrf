@@ -104,7 +104,7 @@ class UtilsIcat(object):
 
     @staticmethod
     def findGridSquaresNotUploaded(
-        allParams, gridSquareNotToArchive=None, timeout=3600
+        allParams, gridSquareNotToArchive=None, timeout=900
     ):
         listGridSquares = []
         for key, entry in allParams.items():

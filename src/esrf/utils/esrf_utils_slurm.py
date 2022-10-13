@@ -1,8 +1,9 @@
+# coding: utf-8
 # **************************************************************************
 # *
-# * Authors:     Yaiza Rancel (yrancel@cnb.csic.es) [1]
+# * Author:     Olof Svensson (svensson@esrf.fr) [1]
 # *
-# * [1] Unidad de  Bioinformatica of Centro Nacional de Biotecnologia , CSIC
+# * [1] European Synchrotron Radiation Facility
 # *
 # * This program is free software; you can redistribute it and/or modify
 # * it under the terms of the GNU General Public License as published by
@@ -24,13 +25,18 @@
 # *
 # **************************************************************************
 
+import subprocess
 
-__authors__ = ["O. Svensson"]
-__license__ = "MIT"
-__date__ = "01/08/2022"
 
-import setuptools
+class UtilsSlurm(object):
+    @staticmethod
+    def checkIfRunningProcesses(userName="opcm01"):
+        stdout = subprocess.check_output("squeue").decode("utf-8")
+        isRunning = userName in stdout and "srun" not in stdout
+        return isRunning
 
-if __name__ == "__main__":
-    setuptools.setup()
-
+    @staticmethod
+    def killAllProcesses(userName="opcm01"):
+        stdout = subprocess.check_output(  # noqa F841
+            ["scancel", "-u", userName]
+        ).decode("utf-8")

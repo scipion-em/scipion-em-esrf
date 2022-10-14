@@ -331,16 +331,16 @@ def run_workflow(config_dict):
         pass
     logger.debug("After gc")
     has_found_project = False
-    for object in gc.get_objects():
-        if isinstance(object, pyworkflow.project.Project):
-            logger.warning("Project found!")
-            has_found_project = True
-            log_dir = os.path.dirname(config_dict["log_path"])
-            scipion_project_name = config_dict["scipionProjectName"]
-            graph_path = os.path.join(log_dir, scipion_project_name + ".png")
-            objgraph.show_backrefs([object], filename=graph_path, max_depth=10)
-    if not has_found_project:
-        logger.debug("Project not found!")
+    # for object in gc.get_objects():
+    #     if isinstance(object, pyworkflow.project.Project):
+    #         logger.warning("Project found!")
+            # has_found_project = True
+            # log_dir = os.path.dirname(config_dict["log_path"])
+            # scipion_project_name = config_dict["scipionProjectName"]
+            # graph_path = os.path.join(log_dir, scipion_project_name + ".png")
+            # objgraph.show_backrefs([object], filename=graph_path, max_depth=10)
+    # if not has_found_project:
+    #     logger.debug("Project not found!")
     time.sleep(2)
 
 

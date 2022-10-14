@@ -455,11 +455,12 @@ def preprocessWorkflow(configDict):
             finalPicker,
             outputCoordsStr
         )
-        setExtendedInput(
-            protExtractNoFlip.inputMicrographs,
-            protPreMics,
-            "outputMicrographs"
-        )
+        protExtractNoFlip.inputMicrographs.set(protPreMics)
+        # setExtendedInput(
+        #     protExtractNoFlip.inputMicrographs,
+        #     protPreMics,
+        #     "outputMicrographs"
+        # )
         setExtendedInput(
             protExtractNoFlip.ctfRelations,
             protCTFs, "outputCTF")
@@ -562,34 +563,36 @@ def preprocessWorkflow(configDict):
             classifiers.append(protCL2)
             ispybUploads.append(protCL2)
             # # Classes -> Averages
-            protCl2Av2 = project.newProtocol(
-                XmippProtEliminateEmptyClasses,
-                objLabel="Classes to averages (relion)",
-                threshold=-1,
-                usePopulation=False,
-            )
-            setExtendedInput(protCl2Av2.inputClasses, protCL2, "outputClasses")
-            _registerProt(protCl2Av2, "2Dclassify")
-            allAvgs.append(protCl2Av2)
-
-            protJOIN = project.newProtocol(
-                ProtUnionSet,
-                objLabel="Scipion - Join all Averages - {0}".format(outputSize),
-            )
-            setExtendedInput(
-                protJOIN.inputSets, allAvgs, ["outputAverages"] * len(allAvgs)
-            )
-            _registerProt(protJOIN, "2Dclassify")
-            allAvgsOut = "outputSet"
-
-            protCLSEL = project.newProtocol(
-                XmippProtEliminateEmptyClasses,
-                objLabel="Xmipp - Auto class selection - {0}".format(outputSize),
-                threshold=-1,
-                usePopulation=False,
-            )
-            setExtendedInput(protCLSEL.inputClasses, protJOIN, allAvgsOut)
-            _registerProt(protCLSEL, "initVol", True)
+            # protCl2Av2 = project.newProtocol(
+            #     XmippProtEliminateEmptyClasses,
+            #     objLabel="Classes to averages (relion)",
+            #     threshold=-1,
+            #     usePopulation=False,
+            # )
+            # protCl2Av2.inputClasses.set(protCL2)
+            # # setExtendedInput(protCl2Av2.inputClasses, protCL2, "outputClasses")
+            # _registerProt(protCl2Av2, "2Dclassify")
+            # allAvgs.append(protCl2Av2)
+            #
+            # protJOIN = project.newProtocol(
+            #     ProtUnionSet,
+            #     objLabel="Scipion - Join all Averages - {0}".format(outputSize),
+            # )
+            # setExtendedInput(
+            #     protJOIN.inputSets, allAvgs, ["outputAverages"] * len(allAvgs)
+            # )
+            # _registerProt(protJOIN, "2Dclassify")
+            # allAvgsOut = "outputSet"
+            #
+            # protCLSEL = project.newProtocol(
+            #     XmippProtEliminateEmptyClasses,
+            #     objLabel="Xmipp - Auto class selection - {0}".format(outputSize),
+            #     threshold=-1,
+            #     usePopulation=False,
+            # )
+            # protCLSEL.inputClasses.set(protJOIN)
+            # # setExtendedInput(protCLSEL.inputClasses, protJOIN, allAvgsOut)
+            # _registerProt(protCLSEL, "initVol", True)
 
     # # --------- SUMMARY MONITOR -----------------------
     # protMonitor = project.newProtocol(
@@ -880,6 +883,7 @@ def preprocessWorkflow(configDict):
         numberOfMpi=1,
         inputMicrographs="2888.outputMicrographs",
     )
+    protSupportBranchBoxSize.addPrerequisites(protSupportBranchCryoloPicking.getObjId())
     setExtendedInput(
         protSupportBranchBoxSize.inputMicrographs,
         protSupportBranchTrigInitPick,
@@ -1360,7 +1364,7 @@ def preprocessWorkflow(configDict):
         XmippProtTriggerData,
         objLabel="xmipp3 - trigger data (send stop signal)",
         triggerWait=False,
-        outputSize=20000,
+        outputSize=5000,
         allImages=False,
         splitImages=False,
         triggerSignal=True,
@@ -1374,11 +1378,12 @@ def preprocessWorkflow(configDict):
     #     pointer=True
     # )
     # "inputImages": "5430.outputParticles"
-    setExtendedInput(
-        protSupportBranchTriggerData.inputImages,
-        protSupportBranchRelionExtractParticles,
-        "outputParticles",
-    )
+    protSupportBranchTriggerData.inputImages.set(protSupportBranchRelionExtractParticles)
+    # setExtendedInput(
+    #     protSupportBranchTriggerData.inputImages,
+    #     protSupportBranchRelionExtractParticles,
+    #     "outputParticles",
+    # )
     _registerProt(protSupportBranchTriggerData, "CheckPoint")
 
     # --------- RELION 2D CLASSIFICATION ----------------------------------

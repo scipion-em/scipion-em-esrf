@@ -361,44 +361,50 @@ class Test(unittest.TestCase):
 
     def test_getPyarchFilePath(self):
         mrcFilePath = "/data/visitor/mx415/cm01/20171108/RAW_DATA/test2/CWAT_ESRF_RawData_K2/170620_TMV_1/Images-Disc1/GridSquare_20174003/Data/FoilHole_20182354_Data_20179605_20179606_20170620_1523-1198.mrc"
-        pyarchFilePath = UtilsPath.getPyarchFilePath(mrcFilePath)
+        pyarch_file_path = UtilsPath.getPyarchFilePath(mrcFilePath)
         self.assertEqual(
             "/data/pyarch/2017/cm01/mx415/20171108/RAW_DATA/test2/CWAT_ESRF_RawData_K2/170620_TMV_1/Images-Disc1/GridSquare_20174003/Data/FoilHole_20182354_Data_20179605_20179606_20170620_1523-1198.mrc",
-            pyarchFilePath,
+            pyarch_file_path,
         )
         mrcFilePath = "/mntdirect/_data_visitor/mx415/cm01/20171108/PROCESSED_DATA/test2/CWAT_ESRF_RawData_K2/170620_TMV_1/Images-Disc1/GridSquare_20174003/Data/GridSquare_20174003_test2/Runs/000056_ProtMotionCorr/extra/FoilHole_20182354_Data_20179605_20179606_20170620_1523-1198_aligned_mic.mrc"
-        pyarchFilePath = UtilsPath.getPyarchFilePath(mrcFilePath)
+        pyarch_file_path = UtilsPath.getPyarchFilePath(mrcFilePath)
         self.assertEqual(
             "/data/pyarch/2017/cm01/mx415/20171108/PROCESSED_DATA/test2/CWAT_ESRF_RawData_K2/170620_TMV_1/Images-Disc1/GridSquare_20174003/Data/GridSquare_20174003_test2/Runs/000056_ProtMotionCorr/extra/FoilHole_20182354_Data_20179605_20179606_20170620_1523-1198_aligned_mic.mrc",
-            pyarchFilePath,
+            pyarch_file_path,
         )
         # ihls2975...
         mrcFilePath = "/mntdirect/_data_cm01_inhouse/Hons/IH-LS-2975/RAW_DATA/grid1/Images-Disc1/GridSquare_20174003/Data/GridSquare_20174003_test2/Runs/000056_ProtMotionCorr/extra/FoilHole_20182354_Data_20179605_20179606_20170620_1523-1198_aligned_mic.mrc"
-        pyarchFilePath = UtilsPath.getPyarchFilePath(mrcFilePath)
+        pyarch_file_path = UtilsPath.getPyarchFilePath(mrcFilePath)
         self.assertEqual(
             "/data/pyarch/2018/cm01/ihls2975/Hons/RAW_DATA/grid1/Images-Disc1/GridSquare_20174003/Data/GridSquare_20174003_test2/Runs/000056_ProtMotionCorr/extra/FoilHole_20182354_Data_20179605_20179606_20170620_1523-1198_aligned_mic.mrc",
-            pyarchFilePath,
+            pyarch_file_path,
         )
         mrcFilePath = (
             "/mntdirect/_data_cm01_inhouse/opcm01/20171108/RAW_DATA/nicetest/Frame.mrc"
         )
-        pyarchFilePath = UtilsPath.getPyarchFilePath(mrcFilePath)
+        pyarch_file_path = UtilsPath.getPyarchFilePath(mrcFilePath)
         self.assertEqual(
-            "/data/pyarch/2021/20171108/opcm01/RAW_DATA/nicetest/Frame.mrc",
-            pyarchFilePath,
+            "/data/pyarch/2022/20171108/opcm01/RAW_DATA/nicetest/Frame.mrc",
+            pyarch_file_path,
         )
         # CRYOEM-25 : New paths for inhouse research...
         mrcFilePath = "/data/cm01/cmihr2/IH-LS3198/20181203/RAW_DATA/EPU_IH_LS3198/Images-Disc1/GridSquare_3087556/Data/FoilHole_4118111_Data_5127341_5127342_20181205_1023.jpg"
-        pyarchFilePath = UtilsPath.getPyarchFilePath(mrcFilePath)
+        pyarch_file_path = UtilsPath.getPyarchFilePath(mrcFilePath)
         self.assertEqual(
             "/data/pyarch/2018/cm01/IH-LS3198/20181203/RAW_DATA/EPU_IH_LS3198/Images-Disc1/GridSquare_3087556/Data/FoilHole_4118111_Data_5127341_5127342_20181205_1023.jpg",
-            pyarchFilePath,
+            pyarch_file_path,
         )
         mrcFilePath = "/mntdirect/_data_cm01_cmihr2/IH-LS3198/20181203/RAW_DATA/EPU_IH_LS3198/Images-Disc1/GridSquare_3087308/GridSquare_20181204_115820.jpg"
-        pyarchFilePath = UtilsPath.getPyarchFilePath(mrcFilePath)
+        pyarch_file_path = UtilsPath.getPyarchFilePath(mrcFilePath)
         self.assertEqual(
-            "/data/pyarch/2021/cm01/IH-LS3198/20181203/RAW_DATA/EPU_IH_LS3198/Images-Disc1/GridSquare_3087308/GridSquare_20181204_115820.jpg",
-            pyarchFilePath,
+            "/data/pyarch/2022/cm01/IH-LS3198/20181203/RAW_DATA/EPU_IH_LS3198/Images-Disc1/GridSquare_3087308/GridSquare_20181204_115820.jpg",
+            pyarch_file_path,
+        )
+        file_path = "/mnt/multipath-shares/data/visitor/mx2112/cm01/20221017/PROCESSED_DATA/mx2440_RESC_Grid_4_EPU/mx2112_RESC_grid4_20221017-140309/Runs/000066_ProtMotionCorr/extra/Images-Disc1_GridSquare_10177155_Data_FoilHole_10275476_Data_10274776_10274778_20221010_180120_fractions_thumbnail.png"
+        pyarch_file_path = UtilsPath.getPyarchFilePath(file_path)
+        self.assertEqual(
+            "/data/pyarch/2022/cm01/mx2112/20221017/PROCESSED_DATA/mx2440_RESC_Grid_4_EPU/mx2112_RESC_grid4_20221017-140309/Runs/000066_ProtMotionCorr/extra/Images-Disc1_GridSquare_10177155_Data_FoilHole_10275476_Data_10274776_10274778_20221010_180120_fractions_thumbnail.png",
+            pyarch_file_path,
         )
 
     def test_getPyarchFilePath_1(self):

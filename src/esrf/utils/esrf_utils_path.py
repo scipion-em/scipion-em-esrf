@@ -654,6 +654,11 @@ class UtilsPath(object):
                 beamline = list_directory[4]
                 listOfRemainingDirectories = list_directory[5:]
 
+            elif topDirectory == "mnt" and secondDirectory == "multipath-shares":
+                proposal = list_directory[5]
+                beamline = list_directory[6]
+                listOfRemainingDirectories = list_directory[7:]
+
             elif topDirectory == "mntdirect" and "_data_cm01_" in secondDirectory:
 
                 if "inhouse" in secondDirectory:

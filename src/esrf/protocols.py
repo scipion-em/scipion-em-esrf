@@ -1365,10 +1365,11 @@ class MonitorISPyB_ESRF(Monitor):
                 pathToModelStarFile = os.path.join(
                     workingDir, "extra", "relion_it025_model.star"
                 )
-                relionDictModel = UtilsPath.parseRelionModelStarFile(
-                    pathToModelStarFile
-                )
-                relionListClass = relionDictModel["classes"]
+                if os.path.exists(pathToModelStarFile):
+                    relionDictModel = UtilsPath.parseRelionModelStarFile(
+                        pathToModelStarFile
+                    )
+                    relionListClass = relionDictModel["classes"]
             for class2d in outputClasses:
                 self.info(dir(class2d))
                 particlesPerClass = class2d.getSize()

@@ -455,12 +455,11 @@ def preprocessWorkflow(configDict):
             finalPicker,
             outputCoordsStr
         )
-        protExtractNoFlip.inputMicrographs.set(protPreMics)
-        # setExtendedInput(
-        #     protExtractNoFlip.inputMicrographs,
-        #     protPreMics,
-        #     "outputMicrographs"
-        # )
+        setExtendedInput(
+            protExtractNoFlip.inputMicrographs,
+            protPreMics,
+            "outputMicrographs"
+        )
         setExtendedInput(
             protExtractNoFlip.ctfRelations,
             protCTFs, "outputCTF")
@@ -632,1279 +631,1279 @@ def preprocessWorkflow(configDict):
         ispybMonitor.inputProtocols.set(ispybUploads)
         _registerProt(ispybMonitor, "ispybMonitor")
 
-    # --------- SUPPORT BRANCH ---------------------------
+    if not configDict["onlyISPyB"] and not configDict["no2dClass"]:
+        # --------- SUPPORT BRANCH ---------------------------
 
-    # --------- MANUAL CHECKPOINT STAGE 1 ----------------------------------
-    # {
-    #     "object.className": "ProtManualCheckpoint",
-    #     "object.id": "3472",
-    #     "object.label": "pwem - manual check point (Stage 1)",
-    #     "object.comment": "",
-    #     "_useQueue": false,
-    #     "_prerequisites": "",
-    #     "_queueParams": null,
-    #     "runName": null,
-    #     "runMode": 0,
-    #     "timeout": "1h"
-    # },
-    protSupportBranchManualCheckpointStage1 = project.newProtocol(
-        ProtManualCheckpoint,
-        objLabel="pwem - manual check point (Stage 1)",
-        timeout="1h",
-    )
-    _registerProt(protSupportBranchManualCheckpointStage1, "CheckPoint")
+        # --------- MANUAL CHECKPOINT STAGE 1 ----------------------------------
+        # {
+        #     "object.className": "ProtManualCheckpoint",
+        #     "object.id": "3472",
+        #     "object.label": "pwem - manual check point (Stage 1)",
+        #     "object.comment": "",
+        #     "_useQueue": false,
+        #     "_prerequisites": "",
+        #     "_queueParams": null,
+        #     "runName": null,
+        #     "runMode": 0,
+        #     "timeout": "1h"
+        # },
+        protSupportBranchManualCheckpointStage1 = project.newProtocol(
+            ProtManualCheckpoint,
+            objLabel="pwem - manual check point (Stage 1)",
+            timeout="1h",
+        )
+        _registerProt(protSupportBranchManualCheckpointStage1, "CheckPoint")
 
-    # --------- MANUAL CHECKPOINT STAGE 2 ----------------------------------
-    # {
-    #     "object.className": "ProtManualCheckpoint",
-    #     "object.id": "3502",
-    #     "object.label": "pwem - manual check point (Stage 2) ",
-    #     "object.comment": "",
-    #     "_useQueue": false,
-    #     "_prerequisites": "",
-    #     "_queueParams": null,
-    #     "runName": null,
-    #     "runMode": 0,
-    #     "timeout": "1h"
-    # },
-    protSupportBranchManualCheckpointStage2 = project.newProtocol(
-        ProtManualCheckpoint,
-        objLabel="pwem - manual check point (Stage 2)",
-        timeout="1h",
-    )
-    _registerProt(protSupportBranchManualCheckpointStage2, "CheckPoint")
+        # --------- MANUAL CHECKPOINT STAGE 2 ----------------------------------
+        # {
+        #     "object.className": "ProtManualCheckpoint",
+        #     "object.id": "3502",
+        #     "object.label": "pwem - manual check point (Stage 2) ",
+        #     "object.comment": "",
+        #     "_useQueue": false,
+        #     "_prerequisites": "",
+        #     "_queueParams": null,
+        #     "runName": null,
+        #     "runMode": 0,
+        #     "timeout": "1h"
+        # },
+        protSupportBranchManualCheckpointStage2 = project.newProtocol(
+            ProtManualCheckpoint,
+            objLabel="pwem - manual check point (Stage 2)",
+            timeout="1h",
+        )
+        _registerProt(protSupportBranchManualCheckpointStage2, "CheckPoint")
 
-    # --------- MANUAL CHECKPOINT STAGE 3 ----------------------------------
-    # {
-    #     "object.className": "ProtManualCheckpoint",
-    #     "object.id": "3532",
-    #     "object.label": "pwem - manual check point (Stage 3)",
-    #     "object.comment": "",
-    #     "_useQueue": false,
-    #     "_prerequisites": "",
-    #     "_queueParams": null,
-    #     "runName": null,
-    #     "runMode": 1,
-    #     "timeout": "1h"
-    # },
-    protSupportBranchManualCheckpointStage3 = project.newProtocol(
-        ProtManualCheckpoint,
-        objLabel="pwem - manual check point (Stage 3)",
-        timeout="1h",
-    )
-    _registerProt(protSupportBranchManualCheckpointStage3, "CheckPoint")
+        # --------- MANUAL CHECKPOINT STAGE 3 ----------------------------------
+        # {
+        #     "object.className": "ProtManualCheckpoint",
+        #     "object.id": "3532",
+        #     "object.label": "pwem - manual check point (Stage 3)",
+        #     "object.comment": "",
+        #     "_useQueue": false,
+        #     "_prerequisites": "",
+        #     "_queueParams": null,
+        #     "runName": null,
+        #     "runMode": 1,
+        #     "timeout": "1h"
+        # },
+        protSupportBranchManualCheckpointStage3 = project.newProtocol(
+            ProtManualCheckpoint,
+            objLabel="pwem - manual check point (Stage 3)",
+            timeout="1h",
+        )
+        _registerProt(protSupportBranchManualCheckpointStage3, "CheckPoint")
 
-    # --------- TRIGGER 1 ----------------------------------
-    # {
-    #     "object.className": "XmippProtTriggerData",
-    #     "object.id": "2888",
-    #     "object.label": "xmipp3 - trigger data (initial picking)",
-    #     "object.comment": "",
-    #     "_useQueue": false,
-    #     "_prerequisites": "",
-    #     "_queueParams": null,
-    #     "runName": null,
-    #     "runMode": 0,
-    #     "triggerWait": false,
-    #     "outputSize": 10,
-    #     "allImages": false,
-    #     "splitImages": false,
-    #     "triggerSignal": false,
-    #     "delay": 5,
-    #     "inputImages": "2854.outputMicrographsDoseWeighted"
-    # },
-    protSupportBranchTrigInitPick = project.newProtocol(
-        XmippProtTriggerData,
-        objLabel="xmipp3 - trigger data (initial picking)",
-        outputSize=10,
-        delay=5,
-        allImages=False,
-        splitImages=False,
-        triggerSignal=False,
-    )
-    setExtendedInput(
-        protSupportBranchTrigInitPick.inputImages,
-        protPreMics,
-        "outputMicrographs",
-    )
-    _registerProt(protSupportBranchTrigInitPick, "Micrographs")
+        # --------- TRIGGER 1 ----------------------------------
+        # {
+        #     "object.className": "XmippProtTriggerData",
+        #     "object.id": "2888",
+        #     "object.label": "xmipp3 - trigger data (initial picking)",
+        #     "object.comment": "",
+        #     "_useQueue": false,
+        #     "_prerequisites": "",
+        #     "_queueParams": null,
+        #     "runName": null,
+        #     "runMode": 0,
+        #     "triggerWait": false,
+        #     "outputSize": 10,
+        #     "allImages": false,
+        #     "splitImages": false,
+        #     "triggerSignal": false,
+        #     "delay": 5,
+        #     "inputImages": "2854.outputMicrographsDoseWeighted"
+        # },
+        protSupportBranchTrigInitPick = project.newProtocol(
+            XmippProtTriggerData,
+            objLabel="xmipp3 - trigger data (initial picking)",
+            outputSize=10,
+            delay=5,
+            allImages=False,
+            splitImages=False,
+            triggerSignal=False,
+        )
+        setExtendedInput(
+            protSupportBranchTrigInitPick.inputImages,
+            protPreMics,
+            "outputMicrographs",
+        )
+        _registerProt(protSupportBranchTrigInitPick, "Micrographs")
 
-    # # --------- PREPROCESS MICS ---------------------------
-    # protSupportBranchPreMics0 = project.newProtocol(
-    #     XmippProtPreprocessMicrographs,
-    #     objLabel="Xmipp - preprocess Mics support branch",
-    #     doRemoveBadPix=True,
-    #     doInvert=False,
-    # )
-    # setExtendedInput(
-    #     protSupportBranchPreMics0.inputMicrographs,
-    #     protSupportBranchTrigInitPick,
-    #     "outputMicrographs"
-    # )
-    # _registerProt(protSupportBranchPreMics0, "Micrographs")
-    #
-    # # Resizing to a larger sampling rate
-    # if doDownSamp2D:
-    #     downSampPreMics = configDict["sampling2D"] / (
-    #             configDict["samplingRate"] * configDict["binFactor"]
-    #     )
-    #     protSupportBranchPreMics = project.newProtocol(
-    #         XmippProtPreprocessMicrographs,
-    #         objLabel="DownSampling to 2D size - support branch",
-    #         doDownsample=True,
-    #         downFactor=downSampPreMics,
-    #     )
-    #     setExtendedInput(
-    #         protSupportBranchPreMics.inputMicrographs,
-    #         protSupportBranchPreMics0,
-    #         "outputMicrographs"
-    #     )
-    #     _registerProt(protSupportBranchPreMics, "Micrographs")
-    # else:
-    #     # downSampPreMics = 1
-    #     protSupportBranchPreMics = protSupportBranchPreMics0
+        # # --------- PREPROCESS MICS ---------------------------
+        # protSupportBranchPreMics0 = project.newProtocol(
+        #     XmippProtPreprocessMicrographs,
+        #     objLabel="Xmipp - preprocess Mics support branch",
+        #     doRemoveBadPix=True,
+        #     doInvert=False,
+        # )
+        # setExtendedInput(
+        #     protSupportBranchPreMics0.inputMicrographs,
+        #     protSupportBranchTrigInitPick,
+        #     "outputMicrographs"
+        # )
+        # _registerProt(protSupportBranchPreMics0, "Micrographs")
+        #
+        # # Resizing to a larger sampling rate
+        # if doDownSamp2D:
+        #     downSampPreMics = configDict["sampling2D"] / (
+        #             configDict["samplingRate"] * configDict["binFactor"]
+        #     )
+        #     protSupportBranchPreMics = project.newProtocol(
+        #         XmippProtPreprocessMicrographs,
+        #         objLabel="DownSampling to 2D size - support branch",
+        #         doDownsample=True,
+        #         downFactor=downSampPreMics,
+        #     )
+        #     setExtendedInput(
+        #         protSupportBranchPreMics.inputMicrographs,
+        #         protSupportBranchPreMics0,
+        #         "outputMicrographs"
+        #     )
+        #     _registerProt(protSupportBranchPreMics, "Micrographs")
+        # else:
+        #     # downSampPreMics = 1
+        #     protSupportBranchPreMics = protSupportBranchPreMics0
 
-    # --------- CRYOLO PICKING ----------------------------------
-    # {
-    #     "object.className": "SphireProtCRYOLOPicking",
-    #     "object.id": "3108",
-    #     "object.label": "sphire - cryolo picking",
-    #     "object.comment": "",
-    #     "_useQueue": false,
-    #     "_prerequisites": "",
-    #     "_queueParams": null,
-    #     "runName": null,
-    #     "runMode": 0,
-    #     "inputModelFrom": 0,
-    #     "conservPickVar": 0.3,
-    #     "lowPassFilter": true,
-    #     "absCutOffFreq": 0.1,
-    #     "numCpus": 4,
-    #     "input_size": 1024,
-    #     "boxSize": 0,
-    #     "max_box_per_image": 600,
-    #     "useGpu": true,
-    #     "gpuList": "2",
-    #     "boxSizeFactor": 1.0,
-    #     "hostName": "localhost",
-    #     "numberOfThreads": 1,
-    #     "numberOfMpi": 1,
-    #     "streamingWarning": null,
-    #     "streamingSleepOnWait": 0,
-    #     "streamingBatchSize": 16,
-    #     "inputMicrographs": "2888.outputMicrographs"
-    # },
-    protSupportBranchCryoloPicking = project.newProtocol(
-        SphireProtCRYOLOPicking,
-        objLabel="sphire - cryolo picking",
-        useGpu=False,
-        conservPickVar=0.3,
-        numCpus=16,
-        streamingBatchSize=4,
-        # inputModelFrom=0,
-        # conservPickVar=0.3,
-        # lowPassFilter=True,
-        # absCutOffFreq=0.1,
-        # numCpus=4,
-        # input_size=1024,
-        # boxSize=0,
-        # max_box_per_image=600,
-        # useGpu=False,
-        # gpuList="2",
-        # boxSizeFactor=1.0,
-        # hostName="localhost",
-        # numberOfThreads=1,
-        # numberOfMpi=1,
-        # streamingWarning=None,
-        # streamingSleepOnWait=0,
-        # streamingBatchSize=16,
-    )
-    setExtendedInput(
-        protSupportBranchCryoloPicking.inputMicrographs,
-        protSupportBranchTrigInitPick,
-        "outputMicrographs",
-    )
-    _registerProt(protSupportBranchCryoloPicking, "Picking")
+        # --------- CRYOLO PICKING ----------------------------------
+        # {
+        #     "object.className": "SphireProtCRYOLOPicking",
+        #     "object.id": "3108",
+        #     "object.label": "sphire - cryolo picking",
+        #     "object.comment": "",
+        #     "_useQueue": false,
+        #     "_prerequisites": "",
+        #     "_queueParams": null,
+        #     "runName": null,
+        #     "runMode": 0,
+        #     "inputModelFrom": 0,
+        #     "conservPickVar": 0.3,
+        #     "lowPassFilter": true,
+        #     "absCutOffFreq": 0.1,
+        #     "numCpus": 4,
+        #     "input_size": 1024,
+        #     "boxSize": 0,
+        #     "max_box_per_image": 600,
+        #     "useGpu": true,
+        #     "gpuList": "2",
+        #     "boxSizeFactor": 1.0,
+        #     "hostName": "localhost",
+        #     "numberOfThreads": 1,
+        #     "numberOfMpi": 1,
+        #     "streamingWarning": null,
+        #     "streamingSleepOnWait": 0,
+        #     "streamingBatchSize": 16,
+        #     "inputMicrographs": "2888.outputMicrographs"
+        # },
+        protSupportBranchCryoloPicking = project.newProtocol(
+            SphireProtCRYOLOPicking,
+            objLabel="sphire - cryolo picking",
+            useGpu=False,
+            conservPickVar=0.3,
+            numCpus=16,
+            streamingBatchSize=4,
+            # inputModelFrom=0,
+            # conservPickVar=0.3,
+            # lowPassFilter=True,
+            # absCutOffFreq=0.1,
+            # numCpus=4,
+            # input_size=1024,
+            # boxSize=0,
+            # max_box_per_image=600,
+            # useGpu=False,
+            # gpuList="2",
+            # boxSizeFactor=1.0,
+            # hostName="localhost",
+            # numberOfThreads=1,
+            # numberOfMpi=1,
+            # streamingWarning=None,
+            # streamingSleepOnWait=0,
+            # streamingBatchSize=16,
+        )
+        setExtendedInput(
+            protSupportBranchCryoloPicking.inputMicrographs,
+            protSupportBranchTrigInitPick,
+            "outputMicrographs",
+        )
+        _registerProt(protSupportBranchCryoloPicking, "Picking")
 
-    # --------- BOX SIZE PARAMETERS ----------------------------------
-    # {
-    #     "object.className": "ProtBoxSizeParameters",
-    #     "object.id": "3155",
-    #     "object.label": "pwem - box size related parameters",
-    #     "object.comment": "",
-    #     "_useQueue": false,
-    #     "_prerequisites": "",
-    #     "_queueParams": null,
-    #     "runName": null,
-    #     "runMode": 0,
-    #     "boxSize": "3108.boxsize",
-    #     "boolExtractPartBx": true,
-    #     "factorExtractPartBx": 1.5,
-    #     "boolGautomatchParams": true,
-    #     "factorGautRadius": 0.75,
-    #     "factorGautMinInterPartDist": 0.9,
-    #     "factorGautSigmaDiameter": 1.2,
-    #     "factorGautAvgDiameter": 1.5,
-    #     "boolRelionParams": true,
-    #     "factorMinLoGFilter": 0.95,
-    #     "factorMaxLoGFilter": 1.05,
-    #     "boolTopazParams": true,
-    #     "factorTopazRadius": 0.45,
-    #     "numPartPerImg": 300,
-    #     "boolConsensusParams": true,
-    #     "factorConsensusRadius": 0.9,
-    #     "hostName": "localhost",
-    #     "numberOfThreads": 1,
-    #     "numberOfMpi": 1,
-    #     "inputMicrographs": "2888.outputMicrographs"
-    # },
-    protSupportBranchBoxSize = project.newProtocol(
-        ProtBoxSizeParameters,
-        objLabel="pwem - box size related parameters",
-        runName=None,
-        runMode=0,
-        boolExtractPartBx=True,
-        factorExtractPartBx=1.5,
-        boolGautomatchParams=True,
-        factorGautRadius=0.75,
-        factorGautMinInterPartDist=0.9,
-        factorGautSigmaDiameter=1.2,
-        factorGautAvgDiameter=1.5,
-        boolRelionParams=True,
-        factorMinLoGFilter=0.95,
-        factorMaxLoGFilter=1.05,
-        boolTopazParams=True,
-        factorTopazRadius=0.45,
-        numPartPerImg=300,
-        boolConsensusParams=True,
-        factorConsensusRadius=0.9,
-        hostName="localhost",
-        numberOfThreads=1,
-        numberOfMpi=1,
-        inputMicrographs="2888.outputMicrographs",
-    )
-    protSupportBranchBoxSize.addPrerequisites(protSupportBranchCryoloPicking.getObjId())
-    setExtendedInput(
-        protSupportBranchBoxSize.inputMicrographs,
-        protSupportBranchTrigInitPick,
-        "outputMicrographs",
-    )
-    setExtendedInput(
-        protSupportBranchBoxSize.boxSize,
-        protSupportBranchCryoloPicking,
-        "boxsize",
-        pointer=True,
-    )
-    _registerProt(protSupportBranchBoxSize, "Box Size")
+        # --------- BOX SIZE PARAMETERS ----------------------------------
+        # {
+        #     "object.className": "ProtBoxSizeParameters",
+        #     "object.id": "3155",
+        #     "object.label": "pwem - box size related parameters",
+        #     "object.comment": "",
+        #     "_useQueue": false,
+        #     "_prerequisites": "",
+        #     "_queueParams": null,
+        #     "runName": null,
+        #     "runMode": 0,
+        #     "boxSize": "3108.boxsize",
+        #     "boolExtractPartBx": true,
+        #     "factorExtractPartBx": 1.5,
+        #     "boolGautomatchParams": true,
+        #     "factorGautRadius": 0.75,
+        #     "factorGautMinInterPartDist": 0.9,
+        #     "factorGautSigmaDiameter": 1.2,
+        #     "factorGautAvgDiameter": 1.5,
+        #     "boolRelionParams": true,
+        #     "factorMinLoGFilter": 0.95,
+        #     "factorMaxLoGFilter": 1.05,
+        #     "boolTopazParams": true,
+        #     "factorTopazRadius": 0.45,
+        #     "numPartPerImg": 300,
+        #     "boolConsensusParams": true,
+        #     "factorConsensusRadius": 0.9,
+        #     "hostName": "localhost",
+        #     "numberOfThreads": 1,
+        #     "numberOfMpi": 1,
+        #     "inputMicrographs": "2888.outputMicrographs"
+        # },
+        protSupportBranchBoxSize = project.newProtocol(
+            ProtBoxSizeParameters,
+            objLabel="pwem - box size related parameters",
+            runName=None,
+            runMode=0,
+            boolExtractPartBx=True,
+            factorExtractPartBx=1.5,
+            boolGautomatchParams=True,
+            factorGautRadius=0.75,
+            factorGautMinInterPartDist=0.9,
+            factorGautSigmaDiameter=1.2,
+            factorGautAvgDiameter=1.5,
+            boolRelionParams=True,
+            factorMinLoGFilter=0.95,
+            factorMaxLoGFilter=1.05,
+            boolTopazParams=True,
+            factorTopazRadius=0.45,
+            numPartPerImg=300,
+            boolConsensusParams=True,
+            factorConsensusRadius=0.9,
+            hostName="localhost",
+            numberOfThreads=1,
+            numberOfMpi=1,
+            inputMicrographs="2888.outputMicrographs",
+        )
+        protSupportBranchBoxSize.addPrerequisites(protSupportBranchCryoloPicking.getObjId())
+        setExtendedInput(
+            protSupportBranchBoxSize.inputMicrographs,
+            protSupportBranchTrigInitPick,
+            "outputMicrographs",
+        )
+        setExtendedInput(
+            protSupportBranchBoxSize.boxSize,
+            protSupportBranchCryoloPicking,
+            "boxsize",
+            pointer=True,
+        )
+        _registerProt(protSupportBranchBoxSize, "Box Size")
 
-    # --------- TRIGGER 2 ----------------------------------
-    # {
-    #     "object.className": "XmippProtTriggerData",
-    #     "object.id": "3202",
-    #     "object.label": "xmipp3 - trigger data (receive stop signal)",
-    #     "object.comment": "",
-    #     "_useQueue": false,
-    #     "_prerequisites": "3472",
-    #     "_queueParams": null,
-    #     "runName": null,
-    #     "runMode": 0,
-    #     "triggerWait": true,
-    #     "outputSize": 1,
-    #     "allImages": true,
-    #     "splitImages": false,
-    #     "triggerSignal": false,
-    #     "delay": 4,
-    #     "inputImages": "3052.outputMicrographs"
-    # },
-    protSupportBranchTrigStopSignal = project.newProtocol(
-        XmippProtTriggerData,
-        objLabel="xmipp3 - trigger data (receive stop signal)",
-        triggerWait=True,
-        outputSize=1,
-        allImages=True,
-        splitImages=False,
-        triggerSignal=False,
-        delay=4,
-    )
-    # protSupportBranchTrigStopSignal._prerequisites.set(
-    #     [protSupportBranchManualCheckpointStage1]
-    # )
-    setExtendedInput(
-        protSupportBranchTrigStopSignal.inputImages,
-        protPreMics,
-        "outputMicrographs"
-    )
-    _registerProt(protSupportBranchTrigStopSignal, "Micrographs")
+        # --------- TRIGGER 2 ----------------------------------
+        # {
+        #     "object.className": "XmippProtTriggerData",
+        #     "object.id": "3202",
+        #     "object.label": "xmipp3 - trigger data (receive stop signal)",
+        #     "object.comment": "",
+        #     "_useQueue": false,
+        #     "_prerequisites": "3472",
+        #     "_queueParams": null,
+        #     "runName": null,
+        #     "runMode": 0,
+        #     "triggerWait": true,
+        #     "outputSize": 1,
+        #     "allImages": true,
+        #     "splitImages": false,
+        #     "triggerSignal": false,
+        #     "delay": 4,
+        #     "inputImages": "3052.outputMicrographs"
+        # },
+        protSupportBranchTrigStopSignal = project.newProtocol(
+            XmippProtTriggerData,
+            objLabel="xmipp3 - trigger data (receive stop signal)",
+            triggerWait=True,
+            outputSize=1,
+            allImages=True,
+            splitImages=False,
+            triggerSignal=False,
+            delay=4,
+        )
+        # protSupportBranchTrigStopSignal._prerequisites.set(
+        #     [protSupportBranchManualCheckpointStage1]
+        # )
+        setExtendedInput(
+            protSupportBranchTrigStopSignal.inputImages,
+            protPreMics,
+            "outputMicrographs"
+        )
+        _registerProt(protSupportBranchTrigStopSignal, "Micrographs")
 
-    # --------- CRYOLO PICKING AUTOCOMPLETED ----------------------------------
-    # {
-    #     "object.className": "SphireProtCRYOLOPicking",
-    #     "object.id": "3241",
-    #     "object.label": "sphire - cryolo picking (autocompleted)",
-    #     "object.comment": "",
-    #     "_useQueue": false,
-    #     "_prerequisites": "3155",
-    #     "_queueParams": null,
-    #     "runName": null,
-    #     "runMode": 0,
-    #     "inputModelFrom": 0,
-    #     "conservPickVar": 0.3,
-    #     "lowPassFilter": true,
-    #     "absCutOffFreq": 0.1,
-    #     "numCpus": 4,
-    #     "input_size": 1024,
-    #     "boxSize": "3155.boxSizeEven",
-    #     "max_box_per_image": 600,
-    #     "useGpu": true,
-    #     "gpuList": "2",
-    #     "boxSizeFactor": 1.0,
-    #     "hostName": "localhost",
-    #     "numberOfThreads": 1,
-    #     "numberOfMpi": 1,
-    #     "streamingWarning": null,
-    #     "streamingSleepOnWait": 0,
-    #     "streamingBatchSize": 16,
-    #     "inputMicrographs": "3202.outputMicrographs"
-    # },
-    protSupportBranchCryoloPickingAutocompleted = project.newProtocol(
-        SphireProtCRYOLOPicking,
-        objLabel="sphire - cryolo picking (autocompleted)",
-        useGpu=False,
-        conservPickVar=0.3,
-        numCpus=16,
-        streamingBatchSize=4,
-        # inputModelFrom=0,
-        # conservPickVar=0.3,
-        # lowPassFilter=True,
-        # absCutOffFreq=0.1,
-        # numCpus=16,
-        # input_size=1024,
-        # boxSize=0,
-        # max_box_per_image=600,
-        # useGpu=False,
-        # # gpuList="2",
-        # boxSizeFactor=1.0,
-        # hostName="localhost",
-        # numberOfThreads=1,
-        # numberOfMpi=1,
-        # streamingWarning=None,
-        # streamingSleepOnWait=0,
-        # streamingBatchSize=16,
-    )
-    protSupportBranchCryoloPickingAutocompleted._useQueue.set(True)
-    protSupportBranchCryoloPickingAutocompleted._queueParams.set(json.dumps(QUEUE_PARAMS_WITHOUT_GPU_16_CPU))
-    setExtendedInput(
-        protSupportBranchCryoloPickingAutocompleted.inputMicrographs,
-        protPreMics,
-        "outputMicrographs",
-    )
-    setExtendedInput(
-        protSupportBranchCryoloPickingAutocompleted.boxSize,
-        protSupportBranchBoxSize,
-        "boxSizeEven",
-        pointer=True,
-    )
-    _registerProt(protSupportBranchCryoloPickingAutocompleted, "Picking")
+        # --------- CRYOLO PICKING AUTOCOMPLETED ----------------------------------
+        # {
+        #     "object.className": "SphireProtCRYOLOPicking",
+        #     "object.id": "3241",
+        #     "object.label": "sphire - cryolo picking (autocompleted)",
+        #     "object.comment": "",
+        #     "_useQueue": false,
+        #     "_prerequisites": "3155",
+        #     "_queueParams": null,
+        #     "runName": null,
+        #     "runMode": 0,
+        #     "inputModelFrom": 0,
+        #     "conservPickVar": 0.3,
+        #     "lowPassFilter": true,
+        #     "absCutOffFreq": 0.1,
+        #     "numCpus": 4,
+        #     "input_size": 1024,
+        #     "boxSize": "3155.boxSizeEven",
+        #     "max_box_per_image": 600,
+        #     "useGpu": true,
+        #     "gpuList": "2",
+        #     "boxSizeFactor": 1.0,
+        #     "hostName": "localhost",
+        #     "numberOfThreads": 1,
+        #     "numberOfMpi": 1,
+        #     "streamingWarning": null,
+        #     "streamingSleepOnWait": 0,
+        #     "streamingBatchSize": 16,
+        #     "inputMicrographs": "3202.outputMicrographs"
+        # },
+        protSupportBranchCryoloPickingAutocompleted = project.newProtocol(
+            SphireProtCRYOLOPicking,
+            objLabel="sphire - cryolo picking (autocompleted)",
+            useGpu=False,
+            conservPickVar=0.3,
+            numCpus=16,
+            streamingBatchSize=4,
+            # inputModelFrom=0,
+            # conservPickVar=0.3,
+            # lowPassFilter=True,
+            # absCutOffFreq=0.1,
+            # numCpus=16,
+            # input_size=1024,
+            # boxSize=0,
+            # max_box_per_image=600,
+            # useGpu=False,
+            # # gpuList="2",
+            # boxSizeFactor=1.0,
+            # hostName="localhost",
+            # numberOfThreads=1,
+            # numberOfMpi=1,
+            # streamingWarning=None,
+            # streamingSleepOnWait=0,
+            # streamingBatchSize=16,
+        )
+        protSupportBranchCryoloPickingAutocompleted._useQueue.set(True)
+        protSupportBranchCryoloPickingAutocompleted._queueParams.set(json.dumps(QUEUE_PARAMS_WITHOUT_GPU_16_CPU))
+        setExtendedInput(
+            protSupportBranchCryoloPickingAutocompleted.inputMicrographs,
+            protPreMics,
+            "outputMicrographs",
+        )
+        setExtendedInput(
+            protSupportBranchCryoloPickingAutocompleted.boxSize,
+            protSupportBranchBoxSize,
+            "boxSizeEven",
+            pointer=True,
+        )
+        _registerProt(protSupportBranchCryoloPickingAutocompleted, "Picking")
 
-    # --------- RELION AUTO PICK LOG ----------------------------------
-    # {
-    #     "object.className": "ProtRelionAutopickLoG",
-    #     "object.id": "3288",
-    #     "object.label": "relion - auto-picking LoG (autocompleted)",
-    #     "object.comment": "",
-    #     "_useQueue": false,
-    #     "_prerequisites": "3155",
-    #     "_queueParams": null,
-    #     "runName": null,
-    #     "runMode": 0,
-    #     "boxSize": "3155.boxSizeEven",
-    #     "minDiameter": "3155.minLoGFilterRelion",
-    #     "maxDiameter": "3155.maxLoGFilterRelion",
-    #     "areParticlesWhite": false,
-    #     "maxResolution": 20.0,
-    #     "threshold": 0.0,
-    #     "threshold2": 999.0,
-    #     "extraParams": "",
-    #     "streamingWarning": null,
-    #     "streamingSleepOnWait": 0,
-    #     "streamingBatchSize": 1,
-    #     "hostName": "localhost",
-    #     "numberOfMpi": 4,
-    #     "inputMicrographs": "3202.outputMicrographs"
-    # },
-    protSupportBranchRelionAutopickLoG = project.newProtocol(
-        ProtRelionAutopickLoG,
-        objLabel="relion - auto-picking LoG (autocompleted",
-        areParticlesWhite=False,
-        maxResolution=20.0,
-        threshold=0.0,
-        threshold2=999.0,
-        extraParams="",
-        streamingWarning=None,
-        streamingSleepOnWait=0,
-        streamingBatchSize=1,
-        hostName="localhost",
-        numberOfMpi=4,
-    )
-    setExtendedInput(
-        protSupportBranchRelionAutopickLoG.inputMicrographs,
-        protPreMics,
-        "outputMicrographs",
-    )
-    setExtendedInput(
-        protSupportBranchRelionAutopickLoG.boxSize,
-        protSupportBranchBoxSize,
-        "boxSizeEven",
-        pointer=True,
-    )
-    setExtendedInput(
-        protSupportBranchRelionAutopickLoG.minDiameter,
-        protSupportBranchBoxSize,
-        "minLoGFilterRelion",
-        pointer=True,
-    )
-    setExtendedInput(
-        protSupportBranchRelionAutopickLoG.maxDiameter,
-        protSupportBranchBoxSize,
-        "maxLoGFilterRelion",
-        pointer=True,
-    )
-    _registerProt(protSupportBranchRelionAutopickLoG, "Picking")
+        # --------- RELION AUTO PICK LOG ----------------------------------
+        # {
+        #     "object.className": "ProtRelionAutopickLoG",
+        #     "object.id": "3288",
+        #     "object.label": "relion - auto-picking LoG (autocompleted)",
+        #     "object.comment": "",
+        #     "_useQueue": false,
+        #     "_prerequisites": "3155",
+        #     "_queueParams": null,
+        #     "runName": null,
+        #     "runMode": 0,
+        #     "boxSize": "3155.boxSizeEven",
+        #     "minDiameter": "3155.minLoGFilterRelion",
+        #     "maxDiameter": "3155.maxLoGFilterRelion",
+        #     "areParticlesWhite": false,
+        #     "maxResolution": 20.0,
+        #     "threshold": 0.0,
+        #     "threshold2": 999.0,
+        #     "extraParams": "",
+        #     "streamingWarning": null,
+        #     "streamingSleepOnWait": 0,
+        #     "streamingBatchSize": 1,
+        #     "hostName": "localhost",
+        #     "numberOfMpi": 4,
+        #     "inputMicrographs": "3202.outputMicrographs"
+        # },
+        protSupportBranchRelionAutopickLoG = project.newProtocol(
+            ProtRelionAutopickLoG,
+            objLabel="relion - auto-picking LoG (autocompleted",
+            areParticlesWhite=False,
+            maxResolution=20.0,
+            threshold=0.0,
+            threshold2=999.0,
+            extraParams="",
+            streamingWarning=None,
+            streamingSleepOnWait=0,
+            streamingBatchSize=1,
+            hostName="localhost",
+            numberOfMpi=4,
+        )
+        setExtendedInput(
+            protSupportBranchRelionAutopickLoG.inputMicrographs,
+            protPreMics,
+            "outputMicrographs",
+        )
+        setExtendedInput(
+            protSupportBranchRelionAutopickLoG.boxSize,
+            protSupportBranchBoxSize,
+            "boxSizeEven",
+            pointer=True,
+        )
+        setExtendedInput(
+            protSupportBranchRelionAutopickLoG.minDiameter,
+            protSupportBranchBoxSize,
+            "minLoGFilterRelion",
+            pointer=True,
+        )
+        setExtendedInput(
+            protSupportBranchRelionAutopickLoG.maxDiameter,
+            protSupportBranchBoxSize,
+            "maxLoGFilterRelion",
+            pointer=True,
+        )
+        _registerProt(protSupportBranchRelionAutopickLoG, "Picking")
 
-    # --------- GAUTOMATCH ----------------------------------
-    # {
-    #     "object.className": "ProtGautomatch",
-    #     "object.id": "3330",
-    #     "object.label": "gautomatch - auto-picking (autocompleted)",
-    #     "object.comment": "",
-    #     "_useQueue": false,
-    #     "_prerequisites": "3155",
-    #     "_queueParams": null,
-    #     "runName": null,
-    #     "runMode": 0,
-    #     "invertTemplatesContrast": true,
-    #     "angStep": 5,
-    #     "micrographsSelection": 0,
-    #     "micrographsNumber": 10,
-    #     "threshold": 0.05,
-    #     "particleSize": "3155.radiusGautomatch",
-    #     "gpuList": "3",
-    #     "advanced": false,
-    #     "boxSize": "3155.boxSizeEven",
-    #     "minDist": "3155.minIntPartDistanceGautomatch",
-    #     "speed": 2,
-    #     "advLabel": null,
-    #     "localSigmaCutoff": 1.2,
-    #     "localSigmaDiam": "3155.sigmaDiameterGautomatch",
-    #     "localAvgMin": -1.0,
-    #     "localAvgMax": 1.0,
-    #     "localAvgDiam": "3155.averageDiameterGautomatch",
-    #     "lowPass": 30,
-    #     "highPass": 1000,
-    #     "preFilt": false,
-    #     "prelowPass": 8,
-    #     "prehighPass": 1000,
-    #     "detectIce": true,
-    #     "templateNorm": 1,
-    #     "doBandpass": true,
-    #     "exclusive": false,
-    #     "writeCC": false,
-    #     "writeFilt": false,
-    #     "writeBg": false,
-    #     "writeBgSub": false,
-    #     "writeSigma": false,
-    #     "writeMsk": false,
-    #     "streamingWarning": null,
-    #     "streamingSleepOnWait": 0,
-    #     "streamingBatchSize": 1,
-    #     "hostName": "localhost",
-    #     "numberOfThreads": 1,
-    #     "numberOfMpi": 1,
-    #     "inputMicrographs": "3202.outputMicrographs"
-    # },
-    protSupportBranchGautomatch = project.newProtocol(
-        ProtGautomatch,
-        objLabel="gautomatch - auto-picking (autocompleted)",
-        invertTemplatesContrast=True,
-        angStep=5,
-        micrographsSelection=0,
-        micrographsNumber=10,
-        threshold=0.05,
-        gpuList="0",
-        advanced=False,
-        speed=2,
-        advLabel=None,
-        localSigmaCutoff=1.2,
-        localAvgMin=-1.0,
-        localAvgMax=1.0,
-        lowPass=30,
-        highPass=1000,
-        preFilt=False,
-        prelowPass=8,
-        prehighPass=1000,
-        detectIce=True,
-        templateNorm=1,
-        doBandpass=True,
-        exclusive=False,
-        writeCC=False,
-        writeFilt=False,
-        writeBg=False,
-        writeBgSub=False,
-        writeSigma=False,
-        writeMsk=False,
-        streamingWarning=None,
-        streamingSleepOnWait=0,
-        streamingBatchSize=1,
-        hostName="localhost",
-        numberOfThreads=1,
-        numberOfMpi=1,
-        minDist=300,
-    )
-    # inputMicrographs = "3202.outputMicrographs"
-    setExtendedInput(
-        protSupportBranchGautomatch.inputMicrographs,
-        protPreMics,
-        "outputMicrographs",
-    )
-    # particleSize = "3155.radiusGautomatch",
-    setExtendedInput(
-        protSupportBranchGautomatch.particleSize,
-        protSupportBranchBoxSize,
-        "radiusGautomatch",
-        pointer=True,
-    )
-    # boxSize = "3155.boxSizeEven",
-    setExtendedInput(
-        protSupportBranchGautomatch.boxSize,
-        protSupportBranchBoxSize,
-        "boxSizeEven",
-        pointer=True,
-    )
-    # minDist = "3155.minIntPartDistanceGautomatch",
-    # setExtendedInput(
-    #     protSupportBranchGautomatch.minDist,
-    #     protSupportBranchBoxSize,
-    #     "minIntPartDistanceGautomatch",
-    #     pointer=True,
-    # )
-    # localSigmaDiam = "3155.sigmaDiameterGautomatch",
-    setExtendedInput(
-        protSupportBranchGautomatch.localSigmaDiam,
-        protSupportBranchBoxSize,
-        "sigmaDiameterGautomatch",
-        pointer=True,
-    )
-    # localAvgDiam = "3155.averageDiameterGautomatch",
-    setExtendedInput(
-        protSupportBranchGautomatch.localAvgDiam,
-        protSupportBranchBoxSize,
-        "averageDiameterGautomatch",
-        pointer=True,
-    )
-    _registerProt(protSupportBranchGautomatch, "Picking")
+        # --------- GAUTOMATCH ----------------------------------
+        # {
+        #     "object.className": "ProtGautomatch",
+        #     "object.id": "3330",
+        #     "object.label": "gautomatch - auto-picking (autocompleted)",
+        #     "object.comment": "",
+        #     "_useQueue": false,
+        #     "_prerequisites": "3155",
+        #     "_queueParams": null,
+        #     "runName": null,
+        #     "runMode": 0,
+        #     "invertTemplatesContrast": true,
+        #     "angStep": 5,
+        #     "micrographsSelection": 0,
+        #     "micrographsNumber": 10,
+        #     "threshold": 0.05,
+        #     "particleSize": "3155.radiusGautomatch",
+        #     "gpuList": "3",
+        #     "advanced": false,
+        #     "boxSize": "3155.boxSizeEven",
+        #     "minDist": "3155.minIntPartDistanceGautomatch",
+        #     "speed": 2,
+        #     "advLabel": null,
+        #     "localSigmaCutoff": 1.2,
+        #     "localSigmaDiam": "3155.sigmaDiameterGautomatch",
+        #     "localAvgMin": -1.0,
+        #     "localAvgMax": 1.0,
+        #     "localAvgDiam": "3155.averageDiameterGautomatch",
+        #     "lowPass": 30,
+        #     "highPass": 1000,
+        #     "preFilt": false,
+        #     "prelowPass": 8,
+        #     "prehighPass": 1000,
+        #     "detectIce": true,
+        #     "templateNorm": 1,
+        #     "doBandpass": true,
+        #     "exclusive": false,
+        #     "writeCC": false,
+        #     "writeFilt": false,
+        #     "writeBg": false,
+        #     "writeBgSub": false,
+        #     "writeSigma": false,
+        #     "writeMsk": false,
+        #     "streamingWarning": null,
+        #     "streamingSleepOnWait": 0,
+        #     "streamingBatchSize": 1,
+        #     "hostName": "localhost",
+        #     "numberOfThreads": 1,
+        #     "numberOfMpi": 1,
+        #     "inputMicrographs": "3202.outputMicrographs"
+        # },
+        protSupportBranchGautomatch = project.newProtocol(
+            ProtGautomatch,
+            objLabel="gautomatch - auto-picking (autocompleted)",
+            invertTemplatesContrast=True,
+            angStep=5,
+            micrographsSelection=0,
+            micrographsNumber=10,
+            threshold=0.05,
+            gpuList="0",
+            advanced=False,
+            speed=2,
+            advLabel=None,
+            localSigmaCutoff=1.2,
+            localAvgMin=-1.0,
+            localAvgMax=1.0,
+            lowPass=30,
+            highPass=1000,
+            preFilt=False,
+            prelowPass=8,
+            prehighPass=1000,
+            detectIce=True,
+            templateNorm=1,
+            doBandpass=True,
+            exclusive=False,
+            writeCC=False,
+            writeFilt=False,
+            writeBg=False,
+            writeBgSub=False,
+            writeSigma=False,
+            writeMsk=False,
+            streamingWarning=None,
+            streamingSleepOnWait=0,
+            streamingBatchSize=1,
+            hostName="localhost",
+            numberOfThreads=1,
+            numberOfMpi=1,
+            minDist=300,
+        )
+        # inputMicrographs = "3202.outputMicrographs"
+        setExtendedInput(
+            protSupportBranchGautomatch.inputMicrographs,
+            protPreMics,
+            "outputMicrographs",
+        )
+        # particleSize = "3155.radiusGautomatch",
+        setExtendedInput(
+            protSupportBranchGautomatch.particleSize,
+            protSupportBranchBoxSize,
+            "radiusGautomatch",
+            pointer=True,
+        )
+        # boxSize = "3155.boxSizeEven",
+        setExtendedInput(
+            protSupportBranchGautomatch.boxSize,
+            protSupportBranchBoxSize,
+            "boxSizeEven",
+            pointer=True,
+        )
+        # minDist = "3155.minIntPartDistanceGautomatch",
+        # setExtendedInput(
+        #     protSupportBranchGautomatch.minDist,
+        #     protSupportBranchBoxSize,
+        #     "minIntPartDistanceGautomatch",
+        #     pointer=True,
+        # )
+        # localSigmaDiam = "3155.sigmaDiameterGautomatch",
+        setExtendedInput(
+            protSupportBranchGautomatch.localSigmaDiam,
+            protSupportBranchBoxSize,
+            "sigmaDiameterGautomatch",
+            pointer=True,
+        )
+        # localAvgDiam = "3155.averageDiameterGautomatch",
+        setExtendedInput(
+            protSupportBranchGautomatch.localAvgDiam,
+            protSupportBranchBoxSize,
+            "averageDiameterGautomatch",
+            pointer=True,
+        )
+        _registerProt(protSupportBranchGautomatch, "Picking")
 
-    # --------- CRYO EM WORKFLOW VIEWER DEPOSITOR ----------------------------------
-    # {
-    #     "object.className": "CryoEMWorkflowViewerDepositor",
-    #     "object.id": "3404",
-    #     "object.label": "datamanager - CryoEM Workflow Viewer deposition",
-    #     "object.comment": "",
-    #     "_useQueue": false,
-    #     "_prerequisites": "",
-    #     "_queueParams": null,
-    #     "runName": null,
-    #     "runMode": 0,
-    #     "apitoken": "c67548969b4036f8f57f926281338ba3a7d8de3e",
-    #     "update": false,
-    #     "entryid": null,
-    #     "entrytitle": "Biennal Conference",
-    #     "public": false
-    # },
+        # --------- CRYO EM WORKFLOW VIEWER DEPOSITOR ----------------------------------
+        # {
+        #     "object.className": "CryoEMWorkflowViewerDepositor",
+        #     "object.id": "3404",
+        #     "object.label": "datamanager - CryoEM Workflow Viewer deposition",
+        #     "object.comment": "",
+        #     "_useQueue": false,
+        #     "_prerequisites": "",
+        #     "_queueParams": null,
+        #     "runName": null,
+        #     "runMode": 0,
+        #     "apitoken": "c67548969b4036f8f57f926281338ba3a7d8de3e",
+        #     "update": false,
+        #     "entryid": null,
+        #     "entrytitle": "Biennal Conference",
+        #     "public": false
+        # },
 
-    # --------- CONSENSUS PICKING ----------------------------------
-    # {
-    #     "object.className": "XmippProtConsensusPicking",
-    #     "object.id": "3439",
-    #     "object.label": "xmipp3 - picking consensus (n=2, autocompleted)",
-    #     "object.comment": "",
-    #     "_useQueue": false,
-    #     "_prerequisites": "",
-    #     "_queueParams": null,
-    #     "runName": null,
-    #     "runMode": 0,
-    #     "inputCoordinates": [
-    #         "3288.outputCoordinates",
-    #         "3330.outputCoordinates",
-    #         "3241.outputCoordinates"
-    #     ],
-    #     "consensusRadius": "3155.radiusConsensus",
-    #     "consensus": 2,
-    #     "mode": 0
-    # },
-    protSupportBranchConsensusPicking = project.newProtocol(
-        XmippProtConsensusPicking,
-        objLabel="xmipp3 - picking consensus (n=2, autocompleted)",
-        runName=None,
-        runMode=0,
-        consensus=2,
-        mode=0,
-    )
-    setExtendedInput(
-        protSupportBranchConsensusPicking.inputCoordinates,
-        [
-            protSupportBranchRelionAutopickLoG,
-            protSupportBranchGautomatch,
-            protSupportBranchCryoloPickingAutocompleted,
-        ],
-        ["outputCoordinates", "outputCoordinates", "outputCoordinates"],
-    )
-    setExtendedInput(
-        protSupportBranchConsensusPicking.consensusRadius,
-        protSupportBranchBoxSize,
-        "radiusConsensus",
-        pointer=True,
-    )
-    _registerProt(protSupportBranchConsensusPicking, "Picking")
+        # --------- CONSENSUS PICKING ----------------------------------
+        # {
+        #     "object.className": "XmippProtConsensusPicking",
+        #     "object.id": "3439",
+        #     "object.label": "xmipp3 - picking consensus (n=2, autocompleted)",
+        #     "object.comment": "",
+        #     "_useQueue": false,
+        #     "_prerequisites": "",
+        #     "_queueParams": null,
+        #     "runName": null,
+        #     "runMode": 0,
+        #     "inputCoordinates": [
+        #         "3288.outputCoordinates",
+        #         "3330.outputCoordinates",
+        #         "3241.outputCoordinates"
+        #     ],
+        #     "consensusRadius": "3155.radiusConsensus",
+        #     "consensus": 2,
+        #     "mode": 0
+        # },
+        protSupportBranchConsensusPicking = project.newProtocol(
+            XmippProtConsensusPicking,
+            objLabel="xmipp3 - picking consensus (n=2, autocompleted)",
+            runName=None,
+            runMode=0,
+            consensus=2,
+            mode=0,
+        )
+        setExtendedInput(
+            protSupportBranchConsensusPicking.inputCoordinates,
+            [
+                protSupportBranchRelionAutopickLoG,
+                protSupportBranchGautomatch,
+                protSupportBranchCryoloPickingAutocompleted,
+            ],
+            ["outputCoordinates", "outputCoordinates", "outputCoordinates"],
+        )
+        setExtendedInput(
+            protSupportBranchConsensusPicking.consensusRadius,
+            protSupportBranchBoxSize,
+            "radiusConsensus",
+            pointer=True,
+        )
+        _registerProt(protSupportBranchConsensusPicking, "Picking")
 
 
-    # ----------- RELION EXTRACT PARTICLES ---------------------------------
-    # {
-    #     "object.className": "ProtRelionExtractParticles",
-    #     "object.id": "5430",
-    #     "object.label": "relion - particles extraction (autocompletion)",
-    #     "object.comment": "",
-    #     "_useQueue": false,
-    #     "_prerequisites": "",
-    #     "_queueParams": null,
-    #     "runName": null,
-    #     "runMode": 0,
-    #     "downsampleType": 0,
-    #     "boxSize": "3155.boxSizeExtraction",
-    #     "doRescale": false,
-    #     "rescaledSize": 128,
-    #     "saveFloat16": false,
-    #     "doInvert": true,
-    #     "doNormalize": true,
-    #     "backDiameter": -1,
-    #     "stddevWhiteDust": -1.0,
-    #     "stddevBlackDust": -1.0,
-    #     "streamingWarning": null,
-    #     "streamingSleepOnWait": 0,
-    #     "streamingBatchSize": 0,
-    #     "hostName": "localhost",
-    #     "numberOfMpi": 4,
-    #     "inputCoordinates": "3439.consensusCoordinates"
-    # }
-    protSupportBranchRelionExtractParticles = project.newProtocol(
-        ProtRelionExtractParticles,
-        objLabel="relion - particles extraction (autocompletion)",
-        downsampleType=0,
-        doRescale=False,
-        rescaledSize=128,
-        saveFloat16=False,
-        doInvert=True,
-        doNormalize=True,
-        backDiameter=-1,
-        stddevWhiteDust=-1.0,
-        stddevBlackDust=-1.0,
-        streamingWarning=None,
-        streamingSleepOnWait=10,
-        streamingBatchSize=1,
-        hostName="localhost",
-        numberOfMpi=1,
-        # boxSize=402,
-    )
-    #  "boxSize": "3155.boxSizeExtraction",
-    setExtendedInput(
-        protSupportBranchRelionExtractParticles.boxSize,
-        protSupportBranchBoxSize,
-        "boxSizeExtraction",
-        pointer = True
-    )
-    #     "ctfRelations": "3052.outputCTF",
-    setExtendedInput(
-        protSupportBranchRelionExtractParticles.ctfRelations,
-        protCTFs,
-        "outputCTF"
-    )
-    #  "inputCoordinates": "3439.consensusCoordinates"
-    setExtendedInput(
-        protSupportBranchRelionExtractParticles.inputCoordinates,
-        protSupportBranchConsensusPicking,
-        "consensusCoordinates",
-    )
-    setExtendedInput(
-        protSupportBranchRelionExtractParticles.inputMicrographs,
-        protPreMics,
-        "outputMicrographs"
-    )
-    _registerProt(protSupportBranchRelionExtractParticles, "Particles")
+        # ----------- RELION EXTRACT PARTICLES ---------------------------------
+        # {
+        #     "object.className": "ProtRelionExtractParticles",
+        #     "object.id": "5430",
+        #     "object.label": "relion - particles extraction (autocompletion)",
+        #     "object.comment": "",
+        #     "_useQueue": false,
+        #     "_prerequisites": "",
+        #     "_queueParams": null,
+        #     "runName": null,
+        #     "runMode": 0,
+        #     "downsampleType": 0,
+        #     "boxSize": "3155.boxSizeExtraction",
+        #     "doRescale": false,
+        #     "rescaledSize": 128,
+        #     "saveFloat16": false,
+        #     "doInvert": true,
+        #     "doNormalize": true,
+        #     "backDiameter": -1,
+        #     "stddevWhiteDust": -1.0,
+        #     "stddevBlackDust": -1.0,
+        #     "streamingWarning": null,
+        #     "streamingSleepOnWait": 0,
+        #     "streamingBatchSize": 0,
+        #     "hostName": "localhost",
+        #     "numberOfMpi": 4,
+        #     "inputCoordinates": "3439.consensusCoordinates"
+        # }
+        protSupportBranchRelionExtractParticles = project.newProtocol(
+            ProtRelionExtractParticles,
+            objLabel="relion - particles extraction (autocompletion)",
+            downsampleType=0,
+            doRescale=False,
+            rescaledSize=128,
+            saveFloat16=False,
+            doInvert=True,
+            doNormalize=True,
+            backDiameter=-1,
+            stddevWhiteDust=-1.0,
+            stddevBlackDust=-1.0,
+            streamingWarning=None,
+            streamingSleepOnWait=10,
+            streamingBatchSize=1,
+            hostName="localhost",
+            numberOfMpi=1,
+            # boxSize=402,
+        )
+        #  "boxSize": "3155.boxSizeExtraction",
+        setExtendedInput(
+            protSupportBranchRelionExtractParticles.boxSize,
+            protSupportBranchBoxSize,
+            "boxSizeExtraction",
+            pointer = True
+        )
+        #     "ctfRelations": "3052.outputCTF",
+        setExtendedInput(
+            protSupportBranchRelionExtractParticles.ctfRelations,
+            protCTFs,
+            "outputCTF"
+        )
+        #  "inputCoordinates": "3439.consensusCoordinates"
+        setExtendedInput(
+            protSupportBranchRelionExtractParticles.inputCoordinates,
+            protSupportBranchConsensusPicking,
+            "consensusCoordinates",
+        )
+        setExtendedInput(
+            protSupportBranchRelionExtractParticles.inputMicrographs,
+            protPreMics,
+            "outputMicrographs"
+        )
+        _registerProt(protSupportBranchRelionExtractParticles, "Particles")
 
-    # --------- TRIGGER DATA - SEND SIGNAL ----------------------------------
-    # {
-    #     "object.className": "XmippProtTriggerData",
-    #     "object.id": "3610",
-    #     "object.label": "xmipp3 - trigger data (send stop signal) ",
-    #     "object.comment": "",
-    #     "_useQueue": false,
-    #     "_prerequisites": "",
-    #     "_queueParams": null,
-    #     "runName": null,
-    #     "runMode": 0,
-    #     "triggerWait": false,
-    #     "outputSize": 10000,
-    #     "allImages": false,
-    #     "splitImages": false,
-    #     "triggerSignal": true,
-    #     "delay": 4,
-    #     "triggerProt": "3202.",
-    #     "inputImages": "5430.outputParticles"
-    # },
-    protSupportBranchTriggerData = project.newProtocol(
-        XmippProtTriggerData,
-        objLabel="xmipp3 - trigger data (send stop signal)",
-        triggerWait=False,
-        outputSize=5000,
-        allImages=False,
-        splitImages=False,
-        triggerSignal=True,
-        delay=4,
-    )
-    #     "triggerProt": "3202.",
-    # setExtendedInput(
-    #     protSupportBranchTriggerData,
-    #     protSupportBranchTrigStopSignal,
-    #     "triggerProt",
-    #     pointer=True
-    # )
-    # "inputImages": "5430.outputParticles"
-    protSupportBranchTriggerData.inputImages.set(protSupportBranchRelionExtractParticles)
-    # setExtendedInput(
-    #     protSupportBranchTriggerData.inputImages,
-    #     protSupportBranchRelionExtractParticles,
-    #     "outputParticles",
-    # )
-    _registerProt(protSupportBranchTriggerData, "CheckPoint")
+        # --------- TRIGGER DATA - SEND SIGNAL ----------------------------------
+        # {
+        #     "object.className": "XmippProtTriggerData",
+        #     "object.id": "3610",
+        #     "object.label": "xmipp3 - trigger data (send stop signal) ",
+        #     "object.comment": "",
+        #     "_useQueue": false,
+        #     "_prerequisites": "",
+        #     "_queueParams": null,
+        #     "runName": null,
+        #     "runMode": 0,
+        #     "triggerWait": false,
+        #     "outputSize": 10000,
+        #     "allImages": false,
+        #     "splitImages": false,
+        #     "triggerSignal": true,
+        #     "delay": 4,
+        #     "triggerProt": "3202.",
+        #     "inputImages": "5430.outputParticles"
+        # },
+        protSupportBranchTriggerData = project.newProtocol(
+            XmippProtTriggerData,
+            objLabel="xmipp3 - trigger data (send stop signal)",
+            triggerWait=False,
+            outputSize=5000,
+            allImages=False,
+            splitImages=False,
+            triggerSignal=True,
+            delay=4,
+        )
+        #     "triggerProt": "3202.",
+        # setExtendedInput(
+        #     protSupportBranchTriggerData,
+        #     protSupportBranchTrigStopSignal,
+        #     "triggerProt",
+        #     pointer=True
+        # )
+        # "inputImages": "5430.outputParticles"
+        setExtendedInput(
+            protSupportBranchTriggerData.inputImages,
+            protSupportBranchRelionExtractParticles,
+            "outputParticles",
+        )
+        _registerProt(protSupportBranchTriggerData, "CheckPoint")
 
-    # --------- RELION 2D CLASSIFICATION ----------------------------------
-    # {
-    #     "object.className": "ProtRelionClassify2D",
-    #     "object.id": "3649",
-    #     "object.label": "relion - 2D classification ",
-    #     "object.comment": "",
-    #     "_useQueue": false,
-    #     "_prerequisites": "",
-    #     "_queueParams": null,
-    #     "runName": null,
-    #     "runMode": 0,
-    #     "isClassify": true,
-    #     "is2D": true,
-    #     "doContinue": false,
-    #     "copyAlignment": false,
-    #     "alignmentAsPriors": false,
-    #     "fillRandomSubset": true,
-    #     "maskDiameterA": -1,
-    #     "maskZero": 0,
-    #     "continueIter": "last",
-    #     "continueMsg": "True",
-    #     "doCTF": true,
-    #     "haveDataBeenPhaseFlipped": null,
-    #     "ignoreCTFUntilFirstPeak": false,
-    #     "doCtfManualGroups": false,
-    #     "defocusRange": 1000.0,
-    #     "numParticles": 10.0,
-    #     "numberOfClasses": 50,
-    #     "regularisationParamT": 2.0,
-    #     "useGradientAlg": false,
-    #     "numberOfVDAMBatches": 200,
-    #     "centerAvg": true,
-    #     "numberOfIterations": 25,
-    #     "limitResolEStep": -1.0,
-    #     "doImageAlignment": true,
-    #     "inplaneAngularSamplingDeg": 6.0,
-    #     "offsetSearchRangePix": 5.0,
-    #     "offsetSearchStepPix": 1.0,
-    #     "allowCoarserSampling": false,
-    #     "useParallelDisk": true,
-    #     "pooledParticles": 3,
-    #     "allParticlesRam": false,
-    #     "scratchDir": null,
-    #     "combineItersDisc": false,
-    #     "doGpu": true,
-    #     "gpusToUse": "",
-    #     "oversampling": 1,
-    #     "extraParams": "",
-    #     "hostName": "localhost",
-    #     "numberOfThreads": 1,
-    #     "numberOfMpi": 3,
-    #     "inputParticles": "3610.outputParticles"
-    # },
-    protSupportBranchRelionClassify2D = project.newProtocol(
-        ProtRelionClassify2D,
-        objLabel="relion - 2D classification ",
-        isClassify=True,
-        is2D=True,
-        doContinue=False,
-        copyAlignment=False,
-        alignmentAsPriors=False,
-        fillRandomSubset=True,
-        maskDiameterA=-1,
-        maskZero=0,
-        continueIter="last",
-        continueMsg="True",
-        doCTF=True,
-        haveDataBeenPhaseFlipped=None,
-        ignoreCTFUntilFirstPeak=False,
-        doCtfManualGroups=False,
-        defocusRange=1000.0,
-        numParticles=10.0,
-        numberOfClasses=50,
-        regularisationParamT=2.0,
-        useGradientAlg=False,
-        numberOfVDAMBatches=200,
-        centerAvg=True,
-        numberOfIterations=25,
-        limitResolEStep=-1.0,
-        doImageAlignment=True,
-        inplaneAngularSamplingDeg=6.0,
-        offsetSearchRangePix=5.0,
-        offsetSearchStepPix=1.0,
-        allowCoarserSampling=False,
-        useParallelDisk=True,
-        pooledParticles=3,
-        allParticlesRam=False,
-        scratchDir=None,
-        combineItersDisc=False,
-        doGpu=True,
-        gpusToUse=configDict["relionGpu"],
-        oversampling=1,
-        extraParams="",
-        hostName="localhost",
-        numberOfThreads=15,
-        numberOfMpi=1,
-        inputParticles="3610.outputParticles",
-    )
-    #     "inputParticles": "3610.outputParticles"
-    setExtendedInput(
-        protSupportBranchRelionClassify2D.inputParticles,
-        protSupportBranchTriggerData,
-        "outputParticles",
-    )
-    _registerProt(protSupportBranchRelionClassify2D, "Classify2D")
+        # --------- RELION 2D CLASSIFICATION ----------------------------------
+        # {
+        #     "object.className": "ProtRelionClassify2D",
+        #     "object.id": "3649",
+        #     "object.label": "relion - 2D classification ",
+        #     "object.comment": "",
+        #     "_useQueue": false,
+        #     "_prerequisites": "",
+        #     "_queueParams": null,
+        #     "runName": null,
+        #     "runMode": 0,
+        #     "isClassify": true,
+        #     "is2D": true,
+        #     "doContinue": false,
+        #     "copyAlignment": false,
+        #     "alignmentAsPriors": false,
+        #     "fillRandomSubset": true,
+        #     "maskDiameterA": -1,
+        #     "maskZero": 0,
+        #     "continueIter": "last",
+        #     "continueMsg": "True",
+        #     "doCTF": true,
+        #     "haveDataBeenPhaseFlipped": null,
+        #     "ignoreCTFUntilFirstPeak": false,
+        #     "doCtfManualGroups": false,
+        #     "defocusRange": 1000.0,
+        #     "numParticles": 10.0,
+        #     "numberOfClasses": 50,
+        #     "regularisationParamT": 2.0,
+        #     "useGradientAlg": false,
+        #     "numberOfVDAMBatches": 200,
+        #     "centerAvg": true,
+        #     "numberOfIterations": 25,
+        #     "limitResolEStep": -1.0,
+        #     "doImageAlignment": true,
+        #     "inplaneAngularSamplingDeg": 6.0,
+        #     "offsetSearchRangePix": 5.0,
+        #     "offsetSearchStepPix": 1.0,
+        #     "allowCoarserSampling": false,
+        #     "useParallelDisk": true,
+        #     "pooledParticles": 3,
+        #     "allParticlesRam": false,
+        #     "scratchDir": null,
+        #     "combineItersDisc": false,
+        #     "doGpu": true,
+        #     "gpusToUse": "",
+        #     "oversampling": 1,
+        #     "extraParams": "",
+        #     "hostName": "localhost",
+        #     "numberOfThreads": 1,
+        #     "numberOfMpi": 3,
+        #     "inputParticles": "3610.outputParticles"
+        # },
+        protSupportBranchRelionClassify2D = project.newProtocol(
+            ProtRelionClassify2D,
+            objLabel="relion - 2D classification ",
+            isClassify=True,
+            is2D=True,
+            doContinue=False,
+            copyAlignment=False,
+            alignmentAsPriors=False,
+            fillRandomSubset=True,
+            maskDiameterA=-1,
+            maskZero=0,
+            continueIter="last",
+            continueMsg="True",
+            doCTF=True,
+            haveDataBeenPhaseFlipped=None,
+            ignoreCTFUntilFirstPeak=False,
+            doCtfManualGroups=False,
+            defocusRange=1000.0,
+            numParticles=10.0,
+            numberOfClasses=50,
+            regularisationParamT=2.0,
+            useGradientAlg=False,
+            numberOfVDAMBatches=200,
+            centerAvg=True,
+            numberOfIterations=25,
+            limitResolEStep=-1.0,
+            doImageAlignment=True,
+            inplaneAngularSamplingDeg=6.0,
+            offsetSearchRangePix=5.0,
+            offsetSearchStepPix=1.0,
+            allowCoarserSampling=False,
+            useParallelDisk=True,
+            pooledParticles=3,
+            allParticlesRam=False,
+            scratchDir=None,
+            combineItersDisc=False,
+            doGpu=True,
+            gpusToUse=configDict["relionGpu"],
+            oversampling=1,
+            extraParams="",
+            hostName="localhost",
+            numberOfThreads=15,
+            numberOfMpi=1,
+            inputParticles="3610.outputParticles",
+        )
+        #     "inputParticles": "3610.outputParticles"
+        setExtendedInput(
+            protSupportBranchRelionClassify2D.inputParticles,
+            protSupportBranchTriggerData,
+            "outputParticles",
+        )
+        _registerProt(protSupportBranchRelionClassify2D, "Classify2D")
 
-    # --------- RELION 2D CLASS RANKER ----------------------------------
-    # {
-    #     "object.className": "ProtRelionSelectClasses2D",
-    #     "object.id": "3723",
-    #     "object.label": "relion - 2D class ranker",
-    #     "object.comment": "",
-    #     "_useQueue": false,
-    #     "_prerequisites": "3649",
-    #     "_queueParams": null,
-    #     "runName": null,
-    #     "runMode": 1,
-    #     "minThreshold": 0.5,
-    #     "minParts": -1,
-    #     "minCls": -1,
-    #     "inputProtocol": "3649."
-    # },
+        # --------- RELION 2D CLASS RANKER ----------------------------------
+        # {
+        #     "object.className": "ProtRelionSelectClasses2D",
+        #     "object.id": "3723",
+        #     "object.label": "relion - 2D class ranker",
+        #     "object.comment": "",
+        #     "_useQueue": false,
+        #     "_prerequisites": "3649",
+        #     "_queueParams": null,
+        #     "runName": null,
+        #     "runMode": 1,
+        #     "minThreshold": 0.5,
+        #     "minParts": -1,
+        #     "minCls": -1,
+        #     "inputProtocol": "3649."
+        # },
 
-    protSupportBranchRelionSelectClasses2D = project.newProtocol(
-        ProtRelionSelectClasses2D,
-        objLabel="relion - 2D class ranker",
-        minThreshold=0.5,
-        minParts=-1,
-        minCls=-1,
-    )
-    #     "inputProtocol": "3649."
-    setExtendedInput(
-        protSupportBranchRelionSelectClasses2D.inputProtocol,
-        protSupportBranchRelionClassify2D,
-        "outputClasses",
-    )
-    _registerProt(protSupportBranchRelionSelectClasses2D, "CheckPoint")
+        protSupportBranchRelionSelectClasses2D = project.newProtocol(
+            ProtRelionSelectClasses2D,
+            objLabel="relion - 2D class ranker",
+            minThreshold=0.5,
+            minParts=-1,
+            minCls=-1,
+        )
+        #     "inputProtocol": "3649."
+        setExtendedInput(
+            protSupportBranchRelionSelectClasses2D.inputProtocol,
+            protSupportBranchRelionClassify2D,
+            "outputClasses",
+        )
+        _registerProt(protSupportBranchRelionSelectClasses2D, "CheckPoint")
 
-    # --------- XMIPP CENTER PARTICLES ----------------------------------
-    # {
-    #     "object.className": "XmippProtCenterParticles",
-    #     "object.id": "3757",
-    #     "object.label": "xmipp3 - center particles",
-    #     "object.comment": "",
-    #     "_useQueue": false,
-    #     "_prerequisites": "",
-    #     "_queueParams": null,
-    #     "runName": null,
-    #     "runMode": 1,
-    #     "hostName": "localhost",
-    #     "inputMics": "3202.outputMicrographs",
-    #     "inputClasses": "3723.outputClasses"
-    # },
-    protSupportBranchCenterParticles = project.newProtocol(
-        XmippProtCenterParticles,
-        objLabel="xmipp3 - center particles",
-        hostName="localhost",
-        minParts=-1,
-        minCls=-1,
-    )
-    #     "inputMics": "3202.outputMicrographs",
-    setExtendedInput(
-        protSupportBranchCenterParticles.inputMics,
-        protSupportBranchTrigStopSignal,
-        "outputMicrographs",
-    )
-    #     "inputClasses": "3723.outputClasses"
-    setExtendedInput(
-        protSupportBranchCenterParticles.inputClasses,
-        protSupportBranchRelionSelectClasses2D,
-        "outputClasses",
-    )
-    _registerProt(protSupportBranchCenterParticles, "Particle")
+        # --------- XMIPP CENTER PARTICLES ----------------------------------
+        # {
+        #     "object.className": "XmippProtCenterParticles",
+        #     "object.id": "3757",
+        #     "object.label": "xmipp3 - center particles",
+        #     "object.comment": "",
+        #     "_useQueue": false,
+        #     "_prerequisites": "",
+        #     "_queueParams": null,
+        #     "runName": null,
+        #     "runMode": 1,
+        #     "hostName": "localhost",
+        #     "inputMics": "3202.outputMicrographs",
+        #     "inputClasses": "3723.outputClasses"
+        # },
+        protSupportBranchCenterParticles = project.newProtocol(
+            XmippProtCenterParticles,
+            objLabel="xmipp3 - center particles",
+            hostName="localhost",
+            minParts=-1,
+            minCls=-1,
+        )
+        #     "inputMics": "3202.outputMicrographs",
+        setExtendedInput(
+            protSupportBranchCenterParticles.inputMics,
+            protSupportBranchTrigStopSignal,
+            "outputMicrographs",
+        )
+        #     "inputClasses": "3723.outputClasses"
+        setExtendedInput(
+            protSupportBranchCenterParticles.inputClasses,
+            protSupportBranchRelionSelectClasses2D,
+            "outputClasses",
+        )
+        _registerProt(protSupportBranchCenterParticles, "Particle")
 
-    # --------- PWEM EXTRACR COORDINATES COPY 2 ----------------------------------
-    # {
-    #     "object.className": "ProtExtractCoords",
-    #     "object.id": "3790",
-    #     "object.label": "pwem - extract coordinates (copy 2)",
-    #     "object.comment": "",
-    #     "_useQueue": false,
-    #     "_prerequisites": "",
-    #     "_queueParams": null,
-    #     "runName": null,
-    #     "runMode": 1,
-    #     "applyShifts": false,
-    #     "hostName": "localhost",
-    #     "inputMicrographs": "3202.outputMicrographs",
-    #     "inputParticles": "3757.outputParticles"
-    # },
-    protSupportBranchExtractCoords = project.newProtocol(
-        ProtExtractCoords,
-        objLabel="pwem - extract coordinates (copy 2)",
-        applyShifts=False,
-        hostName="localhost",
-    )
-    #     "inputMicrographs": "3202.outputMicrographs",
-    setExtendedInput(
-        protSupportBranchExtractCoords.inputMicrographs,
-        protSupportBranchTrigStopSignal,
-        "outputMicrographs",
-    )
-    #     "inputParticles": "3757.outputParticles"
-    setExtendedInput(
-        protSupportBranchExtractCoords.inputParticles,
-        protSupportBranchCenterParticles,
-        "outputParticles",
-    )
-    _registerProt(protSupportBranchExtractCoords, "Particle")
+        # --------- PWEM EXTRACR COORDINATES COPY 2 ----------------------------------
+        # {
+        #     "object.className": "ProtExtractCoords",
+        #     "object.id": "3790",
+        #     "object.label": "pwem - extract coordinates (copy 2)",
+        #     "object.comment": "",
+        #     "_useQueue": false,
+        #     "_prerequisites": "",
+        #     "_queueParams": null,
+        #     "runName": null,
+        #     "runMode": 1,
+        #     "applyShifts": false,
+        #     "hostName": "localhost",
+        #     "inputMicrographs": "3202.outputMicrographs",
+        #     "inputParticles": "3757.outputParticles"
+        # },
+        protSupportBranchExtractCoords = project.newProtocol(
+            ProtExtractCoords,
+            objLabel="pwem - extract coordinates (copy 2)",
+            applyShifts=False,
+            hostName="localhost",
+        )
+        #     "inputMicrographs": "3202.outputMicrographs",
+        setExtendedInput(
+            protSupportBranchExtractCoords.inputMicrographs,
+            protSupportBranchTrigStopSignal,
+            "outputMicrographs",
+        )
+        #     "inputParticles": "3757.outputParticles"
+        setExtendedInput(
+            protSupportBranchExtractCoords.inputParticles,
+            protSupportBranchCenterParticles,
+            "outputParticles",
+        )
+        _registerProt(protSupportBranchExtractCoords, "Particle")
 
-    # --------- CRYOLO TRAINING ----------------------------------
-    # {
-    #     "object.className": "SphireProtCRYOLOTraining",
-    #     "object.id": "3824",
-    #     "object.label": "sphire - cryolo training ",
-    #     "object.comment": "",
-    #     "_useQueue": false,
-    #     "_prerequisites": "",
-    #     "_queueParams": null,
-    #     "runName": null,
-    #     "runMode": 1,
-    #     "input_size": 1024,
-    #     "boxSize": "3155.boxSizeEven",
-    #     "doFineTune": true,
-    #     "inputModelFrom": 0,
-    #     "numCpus": 4,
-    #     "eFlagParam": 10,
-    #     "max_box_per_image": 600,
-    #     "nb_epochVal": 50,
-    #     "learning_rates": 0.0001,
-    #     "lowPassFilter": true,
-    #     "absCutOffFreq": 0.1,
-    #     "batchSize": 4,
-    #     "gpuList": "2",
-    #     "hostName": "localhost",
-    #     "numberOfThreads": 1,
-    #     "numberOfMpi": 1,
-    #     "inputMicrographs": "3202.outputMicrographs",
-    #     "inputCoordinates": "3790.outputCoordinates"
-    # },
-    protSupportBranchCRYOLOTraining = project.newProtocol(
-        SphireProtCRYOLOTraining,
-        objLabel="sphire - cryolo training ",
-        input_size=1024,
-        doFineTune=True,
-        inputModelFrom=0,
-        numCpus=4,
-        eFlagParam=10,
-        max_box_per_image=600,
-        nb_epochVal=50,
-        learning_rates=0.0001,
-        lowPassFilter=True,
-        absCutOffFreq=0.1,
-        batchSize=4,
-        gpuList="2",
-        hostName="localhost",
-        numberOfThreads=1,
-        numberOfMpi=1,
-    )
-    #     "inputMicrographs": "3202.outputMicrographs",
-    setExtendedInput(
-        protSupportBranchCRYOLOTraining.inputMicrographs,
-        protSupportBranchTrigStopSignal,
-        "outputMicrographs",
-    )
-    #     "boxSize": "3155.boxSizeEven",
-    setExtendedInput(
-        protSupportBranchCRYOLOTraining.boxSize,
-        protSupportBranchBoxSize,
-        "boxSizeEven",
-        pointer=True,
-    )
-    #     "inputCoordinates": "3790.outputCoordinates"
-    setExtendedInput(
-        protSupportBranchCRYOLOTraining.inputCoordinates,
-        protSupportBranchExtractCoords,
-        "outputCoordinates",
-    )
-    _registerProt(protSupportBranchCRYOLOTraining, "Particle")
+        # --------- CRYOLO TRAINING ----------------------------------
+        # {
+        #     "object.className": "SphireProtCRYOLOTraining",
+        #     "object.id": "3824",
+        #     "object.label": "sphire - cryolo training ",
+        #     "object.comment": "",
+        #     "_useQueue": false,
+        #     "_prerequisites": "",
+        #     "_queueParams": null,
+        #     "runName": null,
+        #     "runMode": 1,
+        #     "input_size": 1024,
+        #     "boxSize": "3155.boxSizeEven",
+        #     "doFineTune": true,
+        #     "inputModelFrom": 0,
+        #     "numCpus": 4,
+        #     "eFlagParam": 10,
+        #     "max_box_per_image": 600,
+        #     "nb_epochVal": 50,
+        #     "learning_rates": 0.0001,
+        #     "lowPassFilter": true,
+        #     "absCutOffFreq": 0.1,
+        #     "batchSize": 4,
+        #     "gpuList": "2",
+        #     "hostName": "localhost",
+        #     "numberOfThreads": 1,
+        #     "numberOfMpi": 1,
+        #     "inputMicrographs": "3202.outputMicrographs",
+        #     "inputCoordinates": "3790.outputCoordinates"
+        # },
+        protSupportBranchCRYOLOTraining = project.newProtocol(
+            SphireProtCRYOLOTraining,
+            objLabel="sphire - cryolo training ",
+            input_size=1024,
+            doFineTune=True,
+            inputModelFrom=0,
+            numCpus=4,
+            eFlagParam=10,
+            max_box_per_image=600,
+            nb_epochVal=50,
+            learning_rates=0.0001,
+            lowPassFilter=True,
+            absCutOffFreq=0.1,
+            batchSize=4,
+            gpuList="2",
+            hostName="localhost",
+            numberOfThreads=1,
+            numberOfMpi=1,
+        )
+        #     "inputMicrographs": "3202.outputMicrographs",
+        setExtendedInput(
+            protSupportBranchCRYOLOTraining.inputMicrographs,
+            protSupportBranchTrigStopSignal,
+            "outputMicrographs",
+        )
+        #     "boxSize": "3155.boxSizeEven",
+        setExtendedInput(
+            protSupportBranchCRYOLOTraining.boxSize,
+            protSupportBranchBoxSize,
+            "boxSizeEven",
+            pointer=True,
+        )
+        #     "inputCoordinates": "3790.outputCoordinates"
+        setExtendedInput(
+            protSupportBranchCRYOLOTraining.inputCoordinates,
+            protSupportBranchExtractCoords,
+            "outputCoordinates",
+        )
+        _registerProt(protSupportBranchCRYOLOTraining, "Particle")
 
-    # --------- CRYOLO PICKING ----------------------------------
-    # {
-    #     "object.className": "SphireProtCRYOLOPicking",
-    #     "object.id": "3872",
-    #     "object.label": "sphire - cryolo picking (trained model) ",
-    #     "object.comment": "",
-    #     "_useQueue": false,
-    #     "_prerequisites": "3502",
-    #     "_queueParams": null,
-    #     "runName": null,
-    #     "runMode": 1,
-    #     "inputModelFrom": 2,
-    #     "conservPickVar": 0.3,
-    #     "lowPassFilter": true,
-    #     "absCutOffFreq": 0.1,
-    #     "numCpus": 4,
-    #     "input_size": 1024,
-    #     "boxSize": "3155.boxSizeEven",
-    #     "max_box_per_image": 600,
-    #     "useGpu": true,
-    #     "gpuList": "3",
-    #     "boxSizeFactor": 1.0,
-    #     "hostName": "localhost",
-    #     "numberOfThreads": 1,
-    #     "numberOfMpi": 1,
-    #     "streamingWarning": null,
-    #     "streamingSleepOnWait": 0,
-    #     "streamingBatchSize": 16,
-    #     "inputMicrographs": "3052.outputMicrographs",
-    #     "inputModel": "3824.outputModel"
-    # },
-    protSupportBranchCRYOLOPicking = project.newProtocol(
-        SphireProtCRYOLOPicking,
-        objLabel="sphire - cryolo picking (trained model) ",
-        inputModelFrom=2,
-        conservPickVar=0.3,
-        lowPassFilter=True,
-        absCutOffFreq=0.1,
-        numCpus=4,
-        input_size=1024,
-        max_box_per_image=600,
-        useGpu=True,
-        gpuList="3",
-        boxSizeFactor=1.0,
-        hostName="localhost",
-        numberOfThreads=1,
-        numberOfMpi=1,
-        streamingWarning=None,
-        streamingSleepOnWait=0,
-        streamingBatchSize=16,
-    )
-    #     "inputMicrographs": "3052.outputMicrographs",
-    setExtendedInput(
-        protSupportBranchCRYOLOPicking.inputMicrographs, protCTFs, "outputMicrographs"
-    )
-    #     "boxSize": "3155.boxSizeEven",
-    setExtendedInput(
-        protSupportBranchCRYOLOPicking.boxSize,
-        protSupportBranchBoxSize,
-        "boxSizeEven",
-        pointer=True,
-    )
-    #     "inputModel": "3824.outputModel"
-    setExtendedInput(
-        protSupportBranchCRYOLOPicking.inputModel,
-        protSupportBranchCRYOLOTraining,
-        "outputModel",
-    )
-    _registerProt(protSupportBranchCRYOLOPicking, "Particle")
+        # --------- CRYOLO PICKING ----------------------------------
+        # {
+        #     "object.className": "SphireProtCRYOLOPicking",
+        #     "object.id": "3872",
+        #     "object.label": "sphire - cryolo picking (trained model) ",
+        #     "object.comment": "",
+        #     "_useQueue": false,
+        #     "_prerequisites": "3502",
+        #     "_queueParams": null,
+        #     "runName": null,
+        #     "runMode": 1,
+        #     "inputModelFrom": 2,
+        #     "conservPickVar": 0.3,
+        #     "lowPassFilter": true,
+        #     "absCutOffFreq": 0.1,
+        #     "numCpus": 4,
+        #     "input_size": 1024,
+        #     "boxSize": "3155.boxSizeEven",
+        #     "max_box_per_image": 600,
+        #     "useGpu": true,
+        #     "gpuList": "3",
+        #     "boxSizeFactor": 1.0,
+        #     "hostName": "localhost",
+        #     "numberOfThreads": 1,
+        #     "numberOfMpi": 1,
+        #     "streamingWarning": null,
+        #     "streamingSleepOnWait": 0,
+        #     "streamingBatchSize": 16,
+        #     "inputMicrographs": "3052.outputMicrographs",
+        #     "inputModel": "3824.outputModel"
+        # },
+        protSupportBranchCRYOLOPicking = project.newProtocol(
+            SphireProtCRYOLOPicking,
+            objLabel="sphire - cryolo picking (trained model) ",
+            inputModelFrom=2,
+            conservPickVar=0.3,
+            lowPassFilter=True,
+            absCutOffFreq=0.1,
+            numCpus=4,
+            input_size=1024,
+            max_box_per_image=600,
+            useGpu=True,
+            gpuList="3",
+            boxSizeFactor=1.0,
+            hostName="localhost",
+            numberOfThreads=1,
+            numberOfMpi=1,
+            streamingWarning=None,
+            streamingSleepOnWait=0,
+            streamingBatchSize=16,
+        )
+        #     "inputMicrographs": "3052.outputMicrographs",
+        setExtendedInput(
+            protSupportBranchCRYOLOPicking.inputMicrographs, protCTFs, "outputMicrographs"
+        )
+        #     "boxSize": "3155.boxSizeEven",
+        setExtendedInput(
+            protSupportBranchCRYOLOPicking.boxSize,
+            protSupportBranchBoxSize,
+            "boxSizeEven",
+            pointer=True,
+        )
+        #     "inputModel": "3824.outputModel"
+        setExtendedInput(
+            protSupportBranchCRYOLOPicking.inputModel,
+            protSupportBranchCRYOLOTraining,
+            "outputModel",
+        )
+        _registerProt(protSupportBranchCRYOLOPicking, "Particle")
 
-    # --------- RELION EXTRACT PARTICLES ----------------------------------
-    # {
-    #     "object.className": "ProtRelionExtractParticles",
-    #     "object.id": "3919",
-    #     "object.label": "relion - particles extraction",
-    #     "object.comment": "",
-    #     "_useQueue": false,
-    #     "_prerequisites": "",
-    #     "_queueParams": null,
-    #     "runName": null,
-    #     "runMode": 1,
-    #     "downsampleType": 0,
-    #     "boxSize": "3155.boxSizeExtraction",
-    #     "doRescale": false,
-    #     "rescaledSize": 128,
-    #     "saveFloat16": false,
-    #     "doInvert": false,
-    #     "doNormalize": true,
-    #     "backDiameter": -1,
-    #     "stddevWhiteDust": -1.0,
-    #     "stddevBlackDust": -1.0,
-    #     "streamingWarning": null,
-    #     "streamingSleepOnWait": 0,
-    #     "streamingBatchSize": 0,
-    #     "hostName": "localhost",
-    #     "numberOfMpi": 4,
-    #     "ctfRelations": "3052.outputCTF",
-    #     "inputCoordinates": "3872.outputCoordinates"
-    # },
-    protSupportBranchRelionExtractParticles2 = project.newProtocol(
-        ProtRelionExtractParticles,
-        objLabel="relion - particles extraction",
-        downsampleType=0,
-        doRescale=False,
-        rescaledSize=128,
-        saveFloat16=False,
-        doInvert=True,
-        doNormalize=True,
-        backDiameter=-1,
-        stddevWhiteDust=-1.0,
-        stddevBlackDust=-1.0,
-        streamingWarning=None,
-        streamingSleepOnWait=0,
-        streamingBatchSize=0,
-        hostName="localhost",
-        numberOfMpi=4,
-    )
-    #     "boxSize": "3155.boxSizeExtraction",
-    setExtendedInput(
-        protSupportBranchRelionExtractParticles2.boxSize,
-        protSupportBranchBoxSize,
-        "boxSizeExtraction",
-        pointer=True,
-    )
-    #     "ctfRelations": "3052.outputCTF",
-    setExtendedInput(
-        protSupportBranchRelionExtractParticles2.ctfRelations, protCTFs, "outputCTF"
-    )
-    #     "inputCoordinates": "3872.outputCoordinates"
-    setExtendedInput(
-        protSupportBranchRelionExtractParticles2.inputCoordinates,
-        protSupportBranchCRYOLOPicking,
-        "outputCoordinates",
-    )
-    _registerProt(protSupportBranchRelionExtractParticles2, "Particles")
+        # --------- RELION EXTRACT PARTICLES ----------------------------------
+        # {
+        #     "object.className": "ProtRelionExtractParticles",
+        #     "object.id": "3919",
+        #     "object.label": "relion - particles extraction",
+        #     "object.comment": "",
+        #     "_useQueue": false,
+        #     "_prerequisites": "",
+        #     "_queueParams": null,
+        #     "runName": null,
+        #     "runMode": 1,
+        #     "downsampleType": 0,
+        #     "boxSize": "3155.boxSizeExtraction",
+        #     "doRescale": false,
+        #     "rescaledSize": 128,
+        #     "saveFloat16": false,
+        #     "doInvert": false,
+        #     "doNormalize": true,
+        #     "backDiameter": -1,
+        #     "stddevWhiteDust": -1.0,
+        #     "stddevBlackDust": -1.0,
+        #     "streamingWarning": null,
+        #     "streamingSleepOnWait": 0,
+        #     "streamingBatchSize": 0,
+        #     "hostName": "localhost",
+        #     "numberOfMpi": 4,
+        #     "ctfRelations": "3052.outputCTF",
+        #     "inputCoordinates": "3872.outputCoordinates"
+        # },
+        protSupportBranchRelionExtractParticles2 = project.newProtocol(
+            ProtRelionExtractParticles,
+            objLabel="relion - particles extraction",
+            downsampleType=0,
+            doRescale=False,
+            rescaledSize=128,
+            saveFloat16=False,
+            doInvert=True,
+            doNormalize=True,
+            backDiameter=-1,
+            stddevWhiteDust=-1.0,
+            stddevBlackDust=-1.0,
+            streamingWarning=None,
+            streamingSleepOnWait=0,
+            streamingBatchSize=0,
+            hostName="localhost",
+            numberOfMpi=4,
+        )
+        #     "boxSize": "3155.boxSizeExtraction",
+        setExtendedInput(
+            protSupportBranchRelionExtractParticles2.boxSize,
+            protSupportBranchBoxSize,
+            "boxSizeExtraction",
+            pointer=True,
+        )
+        #     "ctfRelations": "3052.outputCTF",
+        setExtendedInput(
+            protSupportBranchRelionExtractParticles2.ctfRelations, protCTFs, "outputCTF"
+        )
+        #     "inputCoordinates": "3872.outputCoordinates"
+        setExtendedInput(
+            protSupportBranchRelionExtractParticles2.inputCoordinates,
+            protSupportBranchCRYOLOPicking,
+            "outputCoordinates",
+        )
+        _registerProt(protSupportBranchRelionExtractParticles2, "Particles")
 
-    # --------- CLASSES SELECTOR ----------------------------------
-    # {
-    #     "object.className": "ProtClassesSelector",
-    #     "object.id": "3967",
-    #     "object.label": "pwem - numeric classes extractor (SetAverages) ",
-    #     "object.comment": "",
-    #     "_useQueue": false,
-    #     "_prerequisites": "",
-    #     "_queueParams": null,
-    #     "runName": null,
-    #     "runMode": 1,
-    #     "extractRepresentative": true,
-    #     "firstNElements": 100,
-    #     "inputClasses": "3649.outputClasses"
-    # },
-    protSupportBranchClassesSelector = project.newProtocol(
-        ProtClassesSelector,
-        objLabel="pwem - numeric classes extractor (SetAverages) ",
-        extractRepresentative=True,
-        firstNElements=100,
-    )
-    #     "inputClasses": "3649.outputClasses"
-    setExtendedInput(
-        protSupportBranchClassesSelector.inputClasses,
-        protSupportBranchRelionClassify2D,
-        "outputClasses",
-    )
-    _registerProt(protSupportBranchClassesSelector, "Classes")
+        # --------- CLASSES SELECTOR ----------------------------------
+        # {
+        #     "object.className": "ProtClassesSelector",
+        #     "object.id": "3967",
+        #     "object.label": "pwem - numeric classes extractor (SetAverages) ",
+        #     "object.comment": "",
+        #     "_useQueue": false,
+        #     "_prerequisites": "",
+        #     "_queueParams": null,
+        #     "runName": null,
+        #     "runMode": 1,
+        #     "extractRepresentative": true,
+        #     "firstNElements": 100,
+        #     "inputClasses": "3649.outputClasses"
+        # },
+        protSupportBranchClassesSelector = project.newProtocol(
+            ProtClassesSelector,
+            objLabel="pwem - numeric classes extractor (SetAverages) ",
+            extractRepresentative=True,
+            firstNElements=100,
+        )
+        #     "inputClasses": "3649.outputClasses"
+        setExtendedInput(
+            protSupportBranchClassesSelector.inputClasses,
+            protSupportBranchRelionClassify2D,
+            "outputClasses",
+        )
+        _registerProt(protSupportBranchClassesSelector, "Classes")
 
-    # --------- XMIPP GPU CRR SIMPLE ----------------------------------
-    # {
-    #     "object.className": "XmippProtStrGpuCrrSimple",
-    #     "object.id": "4000",
-    #     "object.label": "xmipp3 - gl2d static",
-    #     "object.comment": "",
-    #     "_useQueue": false,
-    #     "_prerequisites": "",
-    #     "_queueParams": null,
-    #     "runName": null,
-    #     "runMode": 1,
-    #     "gpuList": "2",
-    #     "maxShift": 10,
-    #     "keepBest": 1,
-    #     "inputParticles": "3919.outputParticles",
-    #     "inputRefs": "3967.output"
-    # },
-    protSupportBranchStrGpuCrrSimple = project.newProtocol(
-        XmippProtStrGpuCrrSimple,
-        objLabel="xmipp3 - gl2d static",
-        gpuList="2",
-        maxShift=10,
-        keepBest=1,
-    )
-    #     "inputParticles": "3919.outputParticles",
-    setExtendedInput(
-        protSupportBranchStrGpuCrrSimple.inputParticles,
-        protSupportBranchRelionExtractParticles2,
-        "outputClasses",
-    )
-    #     "inputRefs": "3967.output"
-    setExtendedInput(
-        protSupportBranchStrGpuCrrSimple.inputRefs,
-        protSupportBranchClassesSelector,
-        "output",
-    )
-    _registerProt(protSupportBranchStrGpuCrrSimple, "Classes")
+        # --------- XMIPP GPU CRR SIMPLE ----------------------------------
+        # {
+        #     "object.className": "XmippProtStrGpuCrrSimple",
+        #     "object.id": "4000",
+        #     "object.label": "xmipp3 - gl2d static",
+        #     "object.comment": "",
+        #     "_useQueue": false,
+        #     "_prerequisites": "",
+        #     "_queueParams": null,
+        #     "runName": null,
+        #     "runMode": 1,
+        #     "gpuList": "2",
+        #     "maxShift": 10,
+        #     "keepBest": 1,
+        #     "inputParticles": "3919.outputParticles",
+        #     "inputRefs": "3967.output"
+        # },
+        protSupportBranchStrGpuCrrSimple = project.newProtocol(
+            XmippProtStrGpuCrrSimple,
+            objLabel="xmipp3 - gl2d static",
+            gpuList="2",
+            maxShift=10,
+            keepBest=1,
+        )
+        #     "inputParticles": "3919.outputParticles",
+        setExtendedInput(
+            protSupportBranchStrGpuCrrSimple.inputParticles,
+            protSupportBranchRelionExtractParticles2,
+            "outputClasses",
+        )
+        #     "inputRefs": "3967.output"
+        setExtendedInput(
+            protSupportBranchStrGpuCrrSimple.inputRefs,
+            protSupportBranchClassesSelector,
+            "output",
+        )
+        _registerProt(protSupportBranchStrGpuCrrSimple, "Classes")
 
-    # --------- SUMMARY ----------------------------------
-    # {
-    #     "object.className": "ProtMonitorSummary",
-    #     "object.id": "4366",
-    #     "object.label": "emfacilities - monitor summary ",
-    #     "object.comment": "",
-    #     "_useQueue": false,
-    #     "_prerequisites": "",
-    #     "_queueParams": null,
-    #     "runName": null,
-    #     "runMode": 0,
-    #     "inputProtocols": [
-    #         "2699",
-    #         "2854",
-    #         "2927"
-    #     ],
-    #     "samplingInterval": 60,
-    #     "stddevValue": 0.04,
-    #     "ratio1Value": 1.15,
-    #     "ratio2Value": 4.5,
-    #     "maxDefocus": 40000.0,
-    #     "minDefocus": 1000.0,
-    #     "astigmatism": 1000.0,
-    #     "monitorTime": 30000.0,
-    #     "cpuAlert": 101.0,
-    #     "memAlert": 101.0,
-    #     "swapAlert": 101.0,
-    #     "doGpu": false,
-    #     "gpusToUse": "0",
-    #     "doNetwork": false,
-    #     "netInterfaces": 1,
-    #     "doDiskIO": false,
-    #     "doMail": false,
-    #     "emailFrom": "from@from.fakeadress.com",
-    #     "emailTo": "to@to.fakeadress.com",
-    #     "smtp": "smtp.fakeadress.com",
-    #     "doInflux": false,
-    #     "publishCmd": ""
-    # },
+        # --------- SUMMARY ----------------------------------
+        # {
+        #     "object.className": "ProtMonitorSummary",
+        #     "object.id": "4366",
+        #     "object.label": "emfacilities - monitor summary ",
+        #     "object.comment": "",
+        #     "_useQueue": false,
+        #     "_prerequisites": "",
+        #     "_queueParams": null,
+        #     "runName": null,
+        #     "runMode": 0,
+        #     "inputProtocols": [
+        #         "2699",
+        #         "2854",
+        #         "2927"
+        #     ],
+        #     "samplingInterval": 60,
+        #     "stddevValue": 0.04,
+        #     "ratio1Value": 1.15,
+        #     "ratio2Value": 4.5,
+        #     "maxDefocus": 40000.0,
+        #     "minDefocus": 1000.0,
+        #     "astigmatism": 1000.0,
+        #     "monitorTime": 30000.0,
+        #     "cpuAlert": 101.0,
+        #     "memAlert": 101.0,
+        #     "swapAlert": 101.0,
+        #     "doGpu": false,
+        #     "gpusToUse": "0",
+        #     "doNetwork": false,
+        #     "netInterfaces": 1,
+        #     "doDiskIO": false,
+        #     "doMail": false,
+        #     "emailFrom": "from@from.fakeadress.com",
+        #     "emailTo": "to@to.fakeadress.com",
+        #     "smtp": "smtp.fakeadress.com",
+        #     "doInflux": false,
+        #     "publishCmd": ""
+        # },

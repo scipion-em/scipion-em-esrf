@@ -21,6 +21,10 @@ export CONDA_ACTIVATION_CMD=". $SCIPION_INSTALL_DIR/miniconda3/etc/profile.d/con
 conda update -n base conda -y
 conda config --set channel_priority flexible
 
+# Install better fonts:
+
+conda remove tk --force
+conda install /opt/pxsoft/scipion/tk-8.6.10-h14c3975_1005.tar.bz2
 
 # Create scipion3 virtual environment:
 

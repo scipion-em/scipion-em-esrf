@@ -185,7 +185,7 @@ class MetadataManagerClient(object):
 
 
 if __name__ == "__main__":
-    os.environ["TANGO_HOST"] = "l-cryoem-2.esrf.fr:20000"
+    os.environ["TANGO_HOST"] = "l-cryoem-1.esrf.fr:20000"
     dataDir = (
         "/data/visitor/mx2005/cm01/20171209/RAW_DATA/baseplate-epu-grid2/"
         + "Images-Disc1/GridSquare_7259648/Data/"

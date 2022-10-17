@@ -53,7 +53,7 @@ class UtilsIcat(object):
     ):
         errorMessage = None
         try:
-            os.environ["TANGO_HOST"] = "l-cryoem-2.esrf.fr:20000"
+            os.environ["TANGO_HOST"] = "l-cryoem-1.esrf.fr:20000"
             metadataManagerName = "cm01/metadata/ingest"
             metaExperimentName = "cm01/metadata/experiment"
             client = MetadataManagerClient(metadataManagerName, metaExperimentName)

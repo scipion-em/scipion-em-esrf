@@ -91,7 +91,7 @@ class Test(unittest.TestCase):
     def tes_getOutOfStandbyState(self):
         metadataManagerName = "cm01_test/metadata/ingest"
         metaExperimentName = "cm01_test/metadata/experiment"
-        os.environ["TANGO_HOST"] = "l-cryoem-2.esrf.fr:20000"
+        os.environ["TANGO_HOST"] = "l-cryoem-1.esrf.fr:20000"
         from ESRFMetadataManagerClient import MetadataManagerClient
 
         proposal = "id000001"

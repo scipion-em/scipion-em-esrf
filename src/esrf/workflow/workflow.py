@@ -1516,11 +1516,12 @@ def preprocessWorkflow(configDict):
             minCls=-1,
         )
         #     "inputProtocol": "3649."
-        setExtendedInput(
-            protSupportBranchRelionSelectClasses2D.inputProtocol,
-            protSupportBranchRelionClassify2D,
-            "outputClasses",
-        )
+        protSupportBranchRelionSelectClasses2D.inputProtocol.set(protSupportBranchRelionClassify2D)
+        # setExtendedInput(
+        #     protSupportBranchRelionSelectClasses2D.inputProtocol,
+        #     protSupportBranchRelionClassify2D,
+        #     "outputClasses",
+        # )
         _registerProt(protSupportBranchRelionSelectClasses2D, "CheckPoint")
 
         # --------- XMIPP CENTER PARTICLES ----------------------------------

@@ -1475,6 +1475,7 @@ class MonitorISPyB_ESRF(Monitor):
             dictIcatMetaData["EM_position_x"] = meanPositionX
             dictIcatMetaData["EM_position_y"] = meanPositionY
             directory = dictIcatMetaData["EM_directory"]
+            del dictIcatMetaData["EM_directory"]
             if (
                 gridSquareToBeArchived in self.allParams
                 and "listGalleryPath" in self.allParams[gridSquareToBeArchived]

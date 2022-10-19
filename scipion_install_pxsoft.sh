@@ -21,11 +21,6 @@ export CONDA_ACTIVATION_CMD=". $SCIPION_INSTALL_DIR/miniconda3/etc/profile.d/con
 conda update -n base conda -y
 conda config --set channel_priority flexible
 
-# Install better fonts:
-
-conda remove tk --force
-conda install /opt/pxsoft/scipion/tk-8.6.10-h14c3975_1005.tar.bz2
-
 # Create scipion3 virtual environment:
 
 conda create -n scipion_install python=3.9 -y
@@ -40,6 +35,16 @@ $SCIPION_INSTALL_DIR/scipion3 config --overwrite --unattended
 
 cp /opt/pxsoft/scipion/config/scipion.conf $SCIPION_INSTALL_DIR/config
 cp /opt/pxsoft/scipion/config/hosts.conf $SCIPION_INSTALL_DIR/config
+
+# Install boost (needed by TANGO)
+
+$SCIPION_INSTALL_DIR/scipion3 run conda install boost=1.71.0 -y
+
+# Install better fonts:
+
+$SCIPION_INSTALL_DIR/scipion3 run conda remove tk --force -y
+wget https://anaconda.org/scipion/tk/8.6.10/download/linux-64/tk-8.6.10-h14c3975_1005.tar.bz2
+$SCIPION_INSTALL_DIR/scipion3 run conda install tk-8.6.10-h14c3975_1005.tar.bz2 -y
 
 # Install plugins
 

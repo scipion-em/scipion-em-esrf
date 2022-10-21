@@ -169,6 +169,12 @@ def getCommandlineOptions():
         help="Celery worker (dgx01, cmproc3, None)",
         default="dgx01",
     )
+    optional.add_argument(
+        "--debug",
+        action="store_true",
+        help="If set: only do 5000 and 20000 particle triggers for 2D class",
+        default=False,
+    )
     results = parser.parse_args()
 
     opt_dict = {
@@ -203,6 +209,7 @@ def getCommandlineOptions():
         "thirdGrid": results.thirdGrid,
         "doProcessDir": results.doProcessDir,
         "celery_worker": results.celery_worker,
+        "debug": results.debug,
     }
 
     return opt_dict

@@ -315,17 +315,18 @@ def run_workflow(config_dict):
     try:
         run_workflow_main(config_dict, logger)
     except BaseException:
-        (exc_type, exc_value, exc_traceback) = sys.exc_info()
-        errorMessage = "{0} {1}".format(exc_type, exc_value)
-        listTrace = traceback.extract_tb(exc_traceback)
-        for listLine in listTrace:
-            errorMessage += '  File "%s", line %d, in %s%s' % (
-                listLine[0],
-                listLine[1],
-                listLine[2],
-                os.linesep,
-            )
-        logger.error(errorMessage)
+        pass
+        # (exc_type, exc_value, exc_traceback) = sys.exc_info()
+        # errorMessage = "{0} {1}".format(exc_type, exc_value)
+        # listTrace = traceback.extract_tb(exc_traceback)
+        # for listLine in listTrace:
+        #     errorMessage += '  File "%s", line %d, in %s%s' % (
+        #         listLine[0],
+        #         listLine[1],
+        #         listLine[2],
+        #         os.linesep,
+        #     )
+        # logger.error(errorMessage)
     logger.debug("Before gc")
     while gc.collect():
         pass
@@ -342,6 +343,10 @@ def run_workflow(config_dict):
     # if not has_found_project:
     #     logger.debug("Project not found!")
     time.sleep(2)
+
+def run_workflow_commandline(config_dict):
+    logger = init_logging(config_dict)
+    run_workflow_main(config_dict, logger)
 
 
 def run_workflow_main(config_dict, logger):

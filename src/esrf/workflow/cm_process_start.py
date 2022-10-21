@@ -13,7 +13,7 @@ import motioncorr.constants
 from esrf.utils.esrf_utils_path import UtilsPath
 from esrf.utils.esrf_utils_ispyb import UtilsISPyB
 from esrf.workflow.command_line_parser import getCommandlineOptions
-from esrf.workflow.cm_process_worker import run_workflow
+from esrf.workflow.cm_process_worker import run_workflow_commandline
 
 # print(getCommandlineOptions.__module__)
 config_dict = getCommandlineOptions()
@@ -214,7 +214,7 @@ log_file_name = "{0}.log".format(config_dict["scipionProjectName"])
 config_dict["log_path"] = os.path.join(log_dir, log_file_name)
 
 if config_dict["celery_worker"] == "None":
-    run_workflow(config_dict)
+    run_workflow_commandline(config_dict)
 else:
 
     celery_worker = config_dict["celery_worker"]
@@ -251,36 +251,27 @@ else:
         print("Launching processing on worker '{0}' with the following parameters:".format(worker_name))
         for arg_key, arg_value in config_dict.items():
             print("{0:25s}= {1}".format(arg_key, arg_value))
-        answer = input("Are you sure? (yes/no): ")
-        if answer.lower().startswith("y"):
-            app = celery.Celery()
-            app.config_from_object("esrf.workflow.celeryconfig")
-            future = app.send_task(
-                "esrf.workflow.cm_process_worker.run_workflow",
-                args=(config_dict,),
-                queue=worker_name,
-            )
-            task_id = future.task_id
-            # Check that the job actually started
-            print("Processing started, please wait for check if running...")
-            time.sleep(5)
-            active_workers = celery.current_app.control.inspect().active()
-            is_running = False
-            for worker_key, worker_value in active_workers.items():
-                if worker_name == worker_key and len(worker_value) > 0:
-                    is_running = True
-            if is_running:
-                print("Worker started, celery task_id = {0}".format(task_id))
-            else:
-                print("Error! Worker didn't start! Please check log files in this directory:")
-                print(log_dir)
-                sys.exit(1)
-
-            # answer = input("Revoke (yes/no)? ")
-            # if answer == "yes":
-            #     time.sleep(1)
-            #     # app.control.revoke(celery_id)
-            #     future.revoke(terminate=True)
-            #     print("Revoked!")
+        app = celery.Celery()
+        app.config_from_object("esrf.workflow.celeryconfig")
+        future = app.send_task(
+            "esrf.workflow.cm_process_worker.run_workflow",
+            args=(config_dict,),
+            queue=worker_name,
+        )
+        task_id = future.task_id
+        # Check that the job actually started
+        print("Processing started, please wait for check if running...")
+        time.sleep(5)
+        active_workers = celery.current_app.control.inspect().active()
+        is_running = False
+        for worker_key, worker_value in active_workers.items():
+            if worker_name == worker_key and len(worker_value) > 0:
+                is_running = True
+        if is_running:
+            print("Worker started, celery task_id = {0}".format(task_id))
+        else:
+            print("Error! Worker didn't start! Please check log files in this directory:")
+            print(log_dir)
+            sys.exit(1)
     else:
         print("No worker found!")

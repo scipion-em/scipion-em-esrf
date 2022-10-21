@@ -130,9 +130,9 @@ def getNewScipionProjectName(scipionProjectName, index):
     return "{0}_{1}".format(scipionProjectName, index)
 
 
-def preprocessWorkflow(configDict):
-    scipionProjectName = configDict["scipionProjectName"]
-    location = configDict["location"]
+def preprocessWorkflow(config_dict):
+    scipionProjectName = config_dict["scipionProjectName"]
+    location = config_dict["location"]
 
     # Create a new project
     manager = Manager()
@@ -210,7 +210,7 @@ def preprocessWorkflow(configDict):
     summaryList = []
     ispybUploads = []
 
-    if configDict["secondGrid"] or configDict["thirdGrid"]:
+    if config_dict["secondGrid"] or config_dict["thirdGrid"]:
         timeout = 295200  # 72 hours
     else:
         timeout = 43200  # 12 hours
@@ -219,19 +219,19 @@ def preprocessWorkflow(configDict):
         ProtImportMovies,
         objLabel="Import movies",
         importFrom=ProtImportMovies.IMPORT_FROM_FILES,
-        filesPath=configDict["dataDirectory"],
-        filesPattern=configDict["filesPattern"],
+        filesPath=config_dict["dataDirectory"],
+        filesPattern=config_dict["filesPattern"],
         amplitudeContrast=0.1,
-        sphericalAberration=configDict["sphericalAberration"],
-        voltage=configDict["voltage"] / 1000.0,
-        samplingRate=configDict["samplingRate"],
-        doseInitial=configDict["doseInitial"],
-        dosePerFrame=configDict["dosePerFrame"],
-        magnification=configDict["magnification"],
-        dataStreaming=configDict["dataStreaming"],
-        blacklistFile=configDict["blacklistFile"],
+        sphericalAberration=config_dict["sphericalAberration"],
+        voltage=config_dict["voltage"] / 1000.0,
+        samplingRate=config_dict["samplingRate"],
+        doseInitial=config_dict["doseInitial"],
+        dosePerFrame=config_dict["dosePerFrame"],
+        magnification=config_dict["magnification"],
+        dataStreaming=config_dict["dataStreaming"],
+        blacklistFile=config_dict["blacklistFile"],
         useRegexps=False,
-        gainFile=configDict["gainFilePath"],
+        gainFile=config_dict["gainFilePath"],
         fileTimeout=30,
         timeout=timeout,
     )
@@ -239,7 +239,7 @@ def preprocessWorkflow(configDict):
     ispybUploads.append(protImport)
 
     # Stop here if --onlyISPyB
-    if not configDict["onlyISPyB"]:
+    if not config_dict["onlyISPyB"]:
         # ----------- Movie Gain ----------------------------
         # protMG = project.newProtocol(
         #     XmippProtMovieGain,
@@ -262,8 +262,8 @@ def preprocessWorkflow(configDict):
         protMA = project.newProtocol(
             ProtMotionCorr,
             objLabel="MotionCor2 - movie align.",
-            gpuList=configDict["motioncor2Gpu"],
-            numberOfThreads=configDict["motioncor2Cpu"],
+            gpuList=config_dict["motioncor2Gpu"],
+            numberOfThreads=config_dict["motioncor2Cpu"],
             numberOfMpi=1,
             doApplyDoseFilter=True,
             doSaveUnweightedMic=True,
@@ -274,12 +274,12 @@ def preprocessWorkflow(configDict):
             patchX=5,
             patchY=5,
             useEst=True,
-            gainFlip=configDict["gainFlip"],
-            gainRot=configDict["gainRot"],
-            alignFrame0=configDict["alignFrame0"],
-            alignFrameN=configDict["alignFrameN"],
-            binFactor=configDict["binFactor"],
-            extraParams2=configDict["extraParams2"],
+            gainFlip=config_dict["gainFlip"],
+            gainRot=config_dict["gainRot"],
+            alignFrame0=config_dict["alignFrame0"],
+            alignFrameN=config_dict["alignFrameN"],
+            binFactor=config_dict["binFactor"],
+            extraParams2=config_dict["extraParams2"],
         )
         setExtendedInput(protMA.inputMovies, protImport, "outputMovies")
         _registerProt(protMA, "MotionCorr")
@@ -300,21 +300,21 @@ def preprocessWorkflow(configDict):
         protCTF2 = project.newProtocol(
             ProtGctf,
             objLabel="gCTF estimation",
-            gpuList=configDict["gctfGpu"],
-            lowRes=configDict["lowRes"],
+            gpuList=config_dict["gctfGpu"],
+            lowRes=config_dict["lowRes"],
             plotResRing=True,
             doEPA=False,
             doHighRes=True,
-            convsize=configDict["convsize"],
-            highRes=configDict["highRes"],
-            minDefocus=configDict["minDefocus"],
-            maxDefocus=configDict["maxDefocus"],
-            astigmatism=configDict["astigmatism"],
-            doPhShEst=configDict["doPhShEst"],
-            phaseShiftL=configDict["phaseShiftL"],
-            phaseShiftH=configDict["phaseShiftH"],
-            phaseShiftS=configDict["phaseShiftS"],
-            phaseShiftT=configDict["phaseShiftT"],
+            convsize=config_dict["convsize"],
+            highRes=config_dict["highRes"],
+            minDefocus=config_dict["minDefocus"],
+            maxDefocus=config_dict["maxDefocus"],
+            astigmatism=config_dict["astigmatism"],
+            doPhShEst=config_dict["doPhShEst"],
+            phaseShiftL=config_dict["phaseShiftL"],
+            phaseShiftH=config_dict["phaseShiftH"],
+            phaseShiftS=config_dict["phaseShiftS"],
+            phaseShiftT=config_dict["phaseShiftT"],
         )
         setExtendedInput(
             protCTF2.inputMicrographs, protMA, "outputMicrographsDoseWeighted"
@@ -323,23 +323,23 @@ def preprocessWorkflow(configDict):
         ispybUploads.append(protCTF2)
 
     # Only do the rest if not --onlyISPyB and not --no2dClass
-    if not configDict["onlyISPyB"] and not configDict["no2dClass"]:
+    if not config_dict["onlyISPyB"] and not config_dict["no2dClass"]:
         #
         # # --------- CTF ESTIMATION 1 ---------------------------
         protCTF1 = project.newProtocol(
             CistemProtCTFFind,
             objLabel="Cistem - CTFfind",
-            numberOfThreads=configDict["numCpus"],
-            lowRes=configDict["lowRes"],
-            highRes=configDict["highRes"],
-            minDefocus=configDict["minDefocus"],
-            maxDefocus=configDict["maxDefocus"],
-            astigmatism=configDict["astigmatism"],
-            doPhShEst=configDict["doPhShEst"],
-            phaseShiftL=configDict["phaseShiftL"],
-            phaseShiftH=configDict["phaseShiftH"],
-            phaseShiftS=configDict["phaseShiftS"],
-            phaseShiftT=configDict["phaseShiftT"],
+            numberOfThreads=config_dict["numCpus"],
+            lowRes=config_dict["lowRes"],
+            highRes=config_dict["highRes"],
+            minDefocus=config_dict["minDefocus"],
+            maxDefocus=config_dict["maxDefocus"],
+            astigmatism=config_dict["astigmatism"],
+            doPhShEst=config_dict["doPhShEst"],
+            phaseShiftL=config_dict["phaseShiftL"],
+            phaseShiftH=config_dict["phaseShiftH"],
+            phaseShiftS=config_dict["phaseShiftS"],
+            phaseShiftT=config_dict["phaseShiftT"],
         )
         setExtendedInput(
             protCTF1.inputMicrographs, protMA, "outputMicrographsDoseWeighted"
@@ -379,13 +379,13 @@ def preprocessWorkflow(configDict):
         _registerProt(protPreMics0, "Micrographs")
 
         # # Resizing to a larger sampling rate
-        doDownSamp2D = 0 < configDict["sampling2D"] > configDict["samplingRate"]
+        doDownSamp2D = 0 < config_dict["sampling2D"] > config_dict["samplingRate"]
         samp2D = (
-            configDict["sampling2D"] if doDownSamp2D else configDict["samplingRate"]
+            config_dict["sampling2D"] if doDownSamp2D else config_dict["samplingRate"]
         )
         if doDownSamp2D:
-            downSampPreMics = configDict["sampling2D"] / (
-                configDict["samplingRate"] * configDict["binFactor"]
+            downSampPreMics = config_dict["sampling2D"] / (
+                    config_dict["samplingRate"] * config_dict["binFactor"]
             )
             protPreMics = project.newProtocol(
                 XmippProtPreprocessMicrographs,
@@ -403,7 +403,7 @@ def preprocessWorkflow(configDict):
 
         # # -------- XMIPP AUTO-BOXSIZE -------------------------
         protPrePick = None
-        bxSize = getEvenPartSize(configDict["partSize"] / samp2D)
+        bxSize = getEvenPartSize(config_dict["partSize"] / samp2D)
 
         protPP2 = project.newProtocol(
             SphireProtCRYOLOPicking,
@@ -465,7 +465,7 @@ def preprocessWorkflow(configDict):
             protCTFs, "outputCTF")
         _registerProt(protExtractNoFlip, "Particles")
 
-        if configDict["particleElimination"]:
+        if config_dict["particleElimination"]:
             # ***********   CLEAN PARTICLES   ************************************
 
             protEEPandNoFlip = project.newProtocol(
@@ -519,8 +519,12 @@ def preprocessWorkflow(configDict):
             no_classes = 50
             return no_classes
 
-        for outputSize in [5000, 20000]:
-            # for outputSize in [1000, 4000]:
+        if config_dict["debug"]:
+            list_trigger_particles = [5000, 20000]
+        else:
+            list_trigger_particles = [5000, 20000, 50000, 100000, 200000]
+
+        for outputSize in list_trigger_particles:
             allAvgs = []
             classifiers = []
             # --------- TRIGGER PARTS ---------------------------
@@ -532,7 +536,7 @@ def preprocessWorkflow(configDict):
                 delay=30,
                 allImages=False,
             )
-            if configDict["particleElimination"]:
+            if config_dict["particleElimination"]:
                 setExtendedInput(
                     protTRIG2NoFlip.inputImages, protSCRandNoFlip, "outputParticles"
                 )
@@ -547,7 +551,7 @@ def preprocessWorkflow(configDict):
                 ProtRelionClassify2D,
                 objLabel="Relion - 2D classifying",
                 doGpu=True,
-                gpusToUse=configDict["relionGpu"],
+                gpusToUse=config_dict["relionGpu"],
                 numberOfClasses=getNoClasses(outputSize),
                 numberOfMpi=1,
                 numberOfThreads=15,
@@ -604,34 +608,34 @@ def preprocessWorkflow(configDict):
     # _registerProt(protMonitor, 'monitor')
 
     # --------- ISPyB MONITOR -----------------------
-    if not configDict["noISPyB"]:
+    if not config_dict["noISPyB"]:
         ispybMonitor = project.newProtocol(
             ProtMonitorISPyB_ESRF,
             objLabel="ISPyB monitor",
             samplingInterval=10,
-            proposal=configDict["proposal"],
-            proteinAcronym=configDict["proteinAcronym"],
-            sampleAcronym=configDict["sampleAcronym"],
-            db=configDict["db"],
-            allParamsJsonFile=configDict["allParamsJsonFile"],
-            samplingRate=configDict["samplingRate"],
-            doseInitial=configDict["doseInitial"],
-            dosePerFrame=configDict["dosePerFrame"],
-            dataType=configDict["dataType"],
-            voltage=configDict["voltage"],
-            imagesCount=configDict["imagesCount"],
-            magnification=configDict["magnification"],
-            alignFrame0=configDict["alignFrame0"],
-            alignFrameN=configDict["alignFrameN"],
-            defectMapPath=configDict["defectMapPath"],
-            gainFilePath=configDict["gainFilePath"],
-            particleSize=configDict["partSize"],
-            doProcessDir=configDict["doProcessDir"],
+            proposal=config_dict["proposal"],
+            proteinAcronym=config_dict["proteinAcronym"],
+            sampleAcronym=config_dict["sampleAcronym"],
+            db=config_dict["db"],
+            allParamsJsonFile=config_dict["allParamsJsonFile"],
+            samplingRate=config_dict["samplingRate"],
+            doseInitial=config_dict["doseInitial"],
+            dosePerFrame=config_dict["dosePerFrame"],
+            dataType=config_dict["dataType"],
+            voltage=config_dict["voltage"],
+            imagesCount=config_dict["imagesCount"],
+            magnification=config_dict["magnification"],
+            alignFrame0=config_dict["alignFrame0"],
+            alignFrameN=config_dict["alignFrameN"],
+            defectMapPath=config_dict["defectMapPath"],
+            gainFilePath=config_dict["gainFilePath"],
+            particleSize=config_dict["partSize"],
+            doProcessDir=config_dict["doProcessDir"],
         )
         ispybMonitor.inputProtocols.set(ispybUploads)
         _registerProt(ispybMonitor, "ispybMonitor")
 
-    if not configDict["onlyISPyB"] and not configDict["no2dClass"]:
+    if not config_dict["onlyISPyB"] and not config_dict["no2dClass"]:
         # --------- SUPPORT BRANCH ---------------------------
 
         # --------- MANUAL CHECKPOINT STAGE 1 ----------------------------------
@@ -1360,11 +1364,15 @@ def preprocessWorkflow(configDict):
         #     "triggerProt": "3202.",
         #     "inputImages": "5430.outputParticles"
         # },
+        if config_dict["debug"]:
+            output_size = 5000
+        else:
+            output_size = 20000
         protSupportBranchTriggerData = project.newProtocol(
             XmippProtTriggerData,
             objLabel="xmipp3 - trigger data (send stop signal)",
             triggerWait=False,
-            outputSize=5000,
+            outputSize=output_size,
             allImages=False,
             splitImages=False,
             triggerSignal=True,
@@ -1475,7 +1483,7 @@ def preprocessWorkflow(configDict):
             scratchDir=None,
             combineItersDisc=False,
             doGpu=True,
-            gpusToUse=configDict["relionGpu"],
+            gpusToUse=config_dict["relionGpu"],
             oversampling=1,
             extraParams="",
             hostName="localhost",

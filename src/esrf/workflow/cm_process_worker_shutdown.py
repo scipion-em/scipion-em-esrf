@@ -18,7 +18,7 @@ except subprocess.CalledProcessError as e:
     pass
 
 if len(worker_pid_list) > 0:
-    yesno = input("Are you sure you want to shut down server {0}? (yes/no)".format(queue_name))
+    yesno = input("Are you sure you want to shut down server {0}? (yes/no): ".format(queue_name))
     if yesno.lower() == "yes":
         for pid in worker_pid_list:
             os.system("kill {0}".format(pid))

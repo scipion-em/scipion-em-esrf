@@ -2,7 +2,11 @@ import pprint
 import sys
 import celery
 
-from cm_process_status import print_worker_status
+
+from esrf.workflow.cm_process_status import print_worker_status
+
+app = celery.Celery()
+app.config_from_object("esrf.workflow.celeryconfig")
 
 active_workers = celery.current_app.control.inspect().active()
 list_processing = print_worker_status(active_workers)

@@ -21,7 +21,9 @@ def print_worker_status(active_workers):
                         dict_worker["time_start"]
                     )
                     date_time_str = time_start.strftime("%Y-%m-%d %H:%M:%S")
-                    print("Start time: {0}".format(date_time_str))
+                    print(f"Start time: {date_time_str}")
+                    celery_id = dict_worker["id"]
+                    print(f"Celery id: {celery_id}")
                     list_args = dict_worker["args"]
                     for dict_args in list_args:
                         for arg_key, arg_value in dict_args.items():

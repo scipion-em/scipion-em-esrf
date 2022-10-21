@@ -520,7 +520,7 @@ def preprocessWorkflow(config_dict):
             return no_classes
 
         if config_dict["debug"]:
-            list_trigger_particles = [5000, 20000]
+            list_trigger_particles = [1000, 10000]
         else:
             list_trigger_particles = [5000, 20000, 50000, 100000, 200000]
 
@@ -1365,7 +1365,7 @@ def preprocessWorkflow(config_dict):
         #     "inputImages": "5430.outputParticles"
         # },
         if config_dict["debug"]:
-            output_size = 5000
+            output_size = 1000
         else:
             output_size = 20000
         protSupportBranchTriggerData = project.newProtocol(
@@ -1446,6 +1446,10 @@ def preprocessWorkflow(config_dict):
         #     "numberOfMpi": 3,
         #     "inputParticles": "3610.outputParticles"
         # },
+        if config_dict["debug"]:
+            numberOfIterations = 10
+        else:
+            numberOfIterations = 25
         protSupportBranchRelionClassify2D = project.newProtocol(
             ProtRelionClassify2D,
             objLabel="relion - 2D classification ",
@@ -1470,7 +1474,7 @@ def preprocessWorkflow(config_dict):
             useGradientAlg=False,
             numberOfVDAMBatches=200,
             centerAvg=True,
-            numberOfIterations=25,
+            numberOfIterations=numberOfIterations,
             limitResolEStep=-1.0,
             doImageAlignment=True,
             inplaneAngularSamplingDeg=6.0,

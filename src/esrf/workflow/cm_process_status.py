@@ -8,12 +8,15 @@ def print_worker_status(active_workers):
         print("No active workers!!!")
     else:
         for worker_key, worker_value in active_workers.items():
+            print("")
             if len(worker_value) == 0:
                 print("Worker: {0:20s} Status: Idle".format(worker_key))
             else:
                 print("Worker: {0:20s} Status: Processing".format(worker_key))
                 list_processing.append(worker_key)
                 for dict_worker in worker_value:
+                    print("")
+                    print("")
                     time_start = datetime.datetime.fromtimestamp(
                         dict_worker["time_start"]
                     )

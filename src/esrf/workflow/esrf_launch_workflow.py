@@ -157,14 +157,16 @@ else:
                 configDict["dataType"] = 2  # "SERIALEM"
                 print("********** SerialEM data **********")
 
-if configDict["secondGrid"]:
+if configDict["secondGrid"] or configDict["thirdGrid"]:
+    if configDict["secondGrid"] and configDict["thirdGrid"]:
+        raise RuntimeError("--secondGrid and --thirdGrid cannot be used at the same time!")
     if noMovies > 0:
-        raise RuntimeError("--secondGrid used and images already exists on disk!")
+        raise RuntimeError("--secondGrid or --thirdGrid used and images already exists on disk!")
     # Check that we have voltage, imagesCount and magnification:
     for key in ["voltage", "magnification", "imagesCount"]:
         if key not in configDict or configDict[key] is None:
             raise RuntimeError(
-                "--secondGrid used, missing command line argument '--{0}'!".format(key)
+                "--secondGrid or --thirdGrid used, missing command line argument '--{0}'!".format(key)
             )
     # Assume EPU TIFF data
     configDict["dataType"] = 1  # "EPU_TIFF"

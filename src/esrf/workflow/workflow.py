@@ -210,7 +210,7 @@ def preprocessWorkflow(configDict):
     summaryList = []
     ispybUploads = []
 
-    if configDict["secondGrid"]:
+    if configDict["secondGrid"] or configDict["thirdGrid"]:
         timeout = 295200  # 72 hours
     else:
         timeout = 43200  # 12 hours

@@ -65,46 +65,82 @@ listMovies = glob.glob(
     os.path.join(config_dict["dataDirectory"], config_dict["filesPattern"])
 )
 noMovies = len(listMovies)
-if noMovies == 0 and not config_dict["secondGrid"]:
-    # We have EPU tiff data!
-    print("ERROR - no files in direcory {0}".format(config_dict["dataDirectory"]))
-    print("found with the pattern '{0}'".format(config_dict["filesPattern"]))
+if config_dict["secondGrid"] or config_dict["thirdGrid"]:
+    if config_dict["secondGrid"] and config_dict["thirdGrid"]:
+        raise RuntimeError("--secondGrid and --thirdGrid cannot be used at the same time!")
+    if noMovies > 0:
+        raise RuntimeError("--secondGrid or --thirdGrid used and images already exists on disk!")
+    # Check that we have voltage, imagesCount and magnification:
+    for key in ["voltage", "magnification", "imagesCount"]:
+        if key not in config_dict or config_dict[key] is None:
+            raise RuntimeError(
+                "--secondGrid or --thirdGrid used, missing command line argument '--{0}'!".format(key)
+            )
+    # Assume EPU TIFF data
+    config_dict["dataType"] = 1  # "EPU_TIFF"
+    config_dict["gainFlip"] = motioncorr.constants.FLIP_LEFTRIGHT
+    config_dict["gainRot"] = motioncorr.constants.ROTATE_180
+    config_dict[
+        "filesPattern"
+    ] = "Images-Disc*/GridSquare_*/Data/FoilHole_*_fractions.tiff"
+elif noMovies == 0:
+    print(
+        "ERROR! No movies available in directory {0} with the filesPattern {1}.".format(
+            config_dict["dataDirectory"], config_dict["filesPattern"]
+        )
+    )
     sys.exit(1)
-firstMovieFullPath = listMovies[0]
+else:
+    print("Number of movies available on disk: {0}".format(noMovies))
+    firstMovieFullPath = listMovies[0]
+    print("First movie full path file: {0}".format(firstMovieFullPath))
+
+
+if noMovies == 0:
+    if config_dict["secondGrid"] or config_dict["thirdGrid"]:
+        print("Will wait for images from second or third grid.")
+        firstMovieFullPath = None
+    else:
+        print("ERROR - no files in direcory {0}".format(config_dict["dataDirectory"]))
+        print("found with the pattern '{0}'".format(config_dict["filesPattern"]))
+        sys.exit(1)
+else:
+    firstMovieFullPath = listMovies[0]
 
 jpeg = None
 xml = None
 mrc = None
 
-if firstMovieFullPath.endswith("tiff"):
-    print("********** EPU tiff data **********")
-    config_dict["dataType"] = 1  # "EPU_TIFF"
-    config_dict["gainFlip"] = motioncorr.constants.FLIP_LEFTRIGHT
-    config_dict["gainRot"] = motioncorr.constants.ROTATE_180
+if not config_dict["secondGrid"] and not config_dict["thirdGrid"]:
+    if firstMovieFullPath.endswith("tiff"):
+        print("********** EPU tiff data **********")
+        config_dict["dataType"] = 1  # "EPU_TIFF"
+        config_dict["gainFlip"] = motioncorr.constants.FLIP_LEFTRIGHT
+        config_dict["gainRot"] = motioncorr.constants.ROTATE_180
 
-    jpeg, mrc, xml, gridSquareThumbNail = UtilsPath.getEpuTiffMovieJpegMrcXml(
-        firstMovieFullPath
-    )
-    if xml is None:
-        print("*" * 80)
-        print("*" * 80)
-        print("*" * 80)
-        print(
-            "Error! Cannot find metadata files in the directory which contains the following movie:"
+        jpeg, mrc, xml, gridSquareThumbNail = UtilsPath.getEpuTiffMovieJpegMrcXml(
+            firstMovieFullPath
         )
-        print(firstMovieFullPath)
-        print("*" * 80)
-        print("*" * 80)
-        print("*" * 80)
-        sys.exit(1)
-    dictResults = UtilsPath.getXmlMetaData(xml)
-    config_dict["doPhaseShiftEstimation"] = dictResults["phasePlateUsed"]
-    config_dict["magnification"] = int(dictResults["magnification"])
-    config_dict["voltage"] = int(dictResults["accelerationVoltage"])
-    config_dict["imagesCount"] = int(dictResults["numberOffractions"])
-elif firstMovieFullPath.endswith("eer"):
-    print("********** EER data **********")
-    config_dict["dataType"] = 3  # "EER"
+        if xml is None:
+            print("*" * 80)
+            print("*" * 80)
+            print("*" * 80)
+            print(
+                "Error! Cannot find metadata files in the directory which contains the following movie:"
+            )
+            print(firstMovieFullPath)
+            print("*" * 80)
+            print("*" * 80)
+            print("*" * 80)
+            sys.exit(1)
+        dictResults = UtilsPath.getXmlMetaData(xml)
+        config_dict["doPhaseShiftEstimation"] = dictResults["phasePlateUsed"]
+        config_dict["magnification"] = int(dictResults["magnification"])
+        config_dict["voltage"] = int(dictResults["accelerationVoltage"])
+        config_dict["imagesCount"] = int(dictResults["numberOffractions"])
+    elif firstMovieFullPath.endswith("eer"):
+        print("********** EER data **********")
+        config_dict["dataType"] = 3  # "EER"
 
 proposal = UtilsISPyB.getProposal(config_dict["dataDirectory"])
 
@@ -199,9 +235,17 @@ else:
                 if len(worker_value) == 0:
                     found_worker = True
                     break
+                elif config_dict["secondGrid"]:
+                    print("Scheduling second grid job.")
+                    found_worker = True
+                    break
+                elif config_dict["thirdGrid"]:
+                    print("Scheduling second grid job.")
+                    found_worker = True
+                    break
                 else:
-                    print("Worker is busy, cannot start job!")
-                    sys.exit(1)
+                    found_worker = True
+                    break
 
     if found_worker:
         print("Launching processing on worker '{0}' with the following parameters:".format(worker_name))

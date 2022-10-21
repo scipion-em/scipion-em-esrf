@@ -152,6 +152,12 @@ def getCommandlineOptions():
         default=False,
     )
     optional.add_argument(
+        "--thirdGrid",
+        action="store_true",
+        help="If set: timeout increased to 72 h, GPUs 0-3 used",
+        default=False,
+    )
+    optional.add_argument(
         "--doProcessDir",
         action="store_true",
         help="If set: copy of micrographs to RAW_DATA",
@@ -194,6 +200,7 @@ def getCommandlineOptions():
         "defectMapPath": results.defectMapPath,
         "gainFilePath": results.gainFilePath,
         "secondGrid": results.secondGrid,
+        "thirdGrid": results.thirdGrid,
         "doProcessDir": results.doProcessDir,
         "celery_worker": results.celery_worker,
     }

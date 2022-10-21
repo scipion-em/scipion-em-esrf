@@ -48,24 +48,27 @@ $SCIPION_INSTALL_DIR/scipion3 run conda install tk-8.6.10-h14c3975_1005.tar.bz2 
 
 # Install plugins
 
-$SCIPION_INSTALL_DIR/scipion3 installp -p scipion-em-xmipp -j 8 | tee -a install.log
+$SCIPION_INSTALL_DIR/scipion3 installp -p scipion-em-xmipp -j 16 | tee -a install.log
 
-$SCIPION_INSTALL_DIR/scipion3 installp -p scipion-em-relion -j 8 | tee -a install.log
+# Give time to clear cache etc.
+sleep 10
+
+./scipion3 installp -p scipion-em-bsoft -j 16
+
+./scipion3 installp -p scipion-em-cistem -j 16
+
+$SCIPION_INSTALL_DIR/scipion3 installp -p scipion-em-relion -j 16 | tee -a install.log
 cd $SCIPION_INSTALL_DIR/software/em/relion-4.0
 mkdir build
 cd build
 cmake .. -DCMAKE_C_COMPILER=gcc-8 -DCMAKE_CXX_COMPILER=g++-8
 cd ..
-make -j 8
+make -j 16
 cd $SCIPION_INSTALL_DIR
 
 ./scipion3 installb relion_python
 
-./scipion3 installp -p scipion-em-bsoft -j 12
-
-./scipion3 installp -p scipion-em-cistem -j 12
-
-./scipion3 installp -p scipion-em-eman2 -j 12
+./scipion3 installp -p scipion-em-eman2 -j 16
 
 ./scipion3 installp -p scipion-em-facilities
 

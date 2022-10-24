@@ -438,14 +438,26 @@ def run_workflow_main(config_dict, logger):
         logger.info("Killing all scipion processes")
         runs = project.getRuns()
         for prot in runs:
-            if prot.isActive():
-                try:
-                    logger.info("Trying to stop protocol '{0}'".format(prot))
-                    project.stopProtocol(prot)
-                except Exception:
-                    logger.info("Couldn't stop protocol {0}".format(prot))
+            try:
+                logger.info("Trying to stop protocol '{0}'".format(prot))
+                project.stopProtocol(prot)
+            except Exception:
+                logger.info("Couldn't stop protocol {0}".format(prot))
 
 
+@app.task()
+def kill_workflow(config_dict):
+    logger = init_logging(config_dict)
+    logger.warning("Killing remaining processes")
+    data_directory = config_dict["dataDirectory"]
+    scipion_project_name = config_dict["scipionProjectName"]
+    processed_data_directory = data_directory.replace("RAW_DATA", "PROCESSED_DATA")
+    scipion_project_path = os.path.join(processed_data_directory, scipion_project_name)
+    out = os.popen(f"pgrep -f {scipion_project_path}").read().strip()
+    processes = list(map(int, out.splitlines()))
+    for process in processes:
+        logger.warning(f"Killing process {process}")
+        os.kill(process, 9)
 
 
 # if __name__ == "__main__":

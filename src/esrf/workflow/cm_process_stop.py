@@ -1,5 +1,7 @@
 import pprint
 import sys
+import time
+
 import celery
 
 
@@ -27,11 +29,22 @@ for dict_worker in worker_value:
     for dict_args in list_args:
         for arg_key, arg_value in dict_args.items():
             if arg_key == "dataDirectory":
-                directory = arg_value
+                config_dict = dict_args
                 break
+    directory = config_dict["dataDirectory"]
     are_sure = input(f"Are you sure you want to abort job in {directory}? ")
     if are_sure.lower() != "yes":
         print("Not aborting worker.")
     else:
+        print("Revoking celery job...")
         celery.current_app.control.revoke(celery_id, terminate=True)
+        # Sleep a couple of seconds
+        time.sleep(10)
+        # Kill the remaining processes
+        print("Killing remaining processes.")
+        future = app.send_task(
+            "esrf.workflow.cm_process_worker.kill_workflow",
+            args=(config_dict,),
+            queue=worker_to_abort,
+        )
         print(f"Job with celery id {celery_id} aborted.")

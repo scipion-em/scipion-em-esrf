@@ -720,7 +720,7 @@ def preprocessWorkflow(config_dict):
         protSupportBranchTrigInitPick = project.newProtocol(
             XmippProtTriggerData,
             objLabel="xmipp3 - trigger data (initial picking)",
-            outputSize=10,
+            outputSize=100,
             delay=5,
             allImages=False,
             splitImages=False,

@@ -1045,6 +1045,8 @@ def preprocessWorkflow(config_dict):
             hostName="localhost",
             numberOfMpi=4,
         )
+        protSupportBranchRelionAutopickLoG._useQueue.set(True)
+        protSupportBranchRelionAutopickLoG._queueParams.set(json.dumps(QUEUE_PARAMS_WITHOUT_GPU_16_CPU))
         setExtendedInput(
             protSupportBranchRelionAutopickLoG.inputMicrographs,
             protPreMics,
@@ -1490,6 +1492,8 @@ def preprocessWorkflow(config_dict):
             numberOfMpi=1,
             inputParticles="3610.outputParticles",
         )
+        protSupportBranchRelionClassify2D._useQueue.set(True)
+        protSupportBranchRelionClassify2D._queueParams.set(json.dumps(QUEUE_PARAMS_WITH_2_GPU_16_CPU))
         #     "inputParticles": "3610.outputParticles"
         setExtendedInput(
             protSupportBranchRelionClassify2D.inputParticles,

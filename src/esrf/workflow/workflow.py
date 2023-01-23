@@ -84,7 +84,7 @@ from esrf.protocols import ProtMonitorISPyB_ESRF
 QUEUE_PARAMS_WITH_1_GPU_4_CPU = (
     "gpu",
     {
-        "JOB_TIME": "150",  # in hours
+        "JOB_TIME": "24",  # in hours
         "JOB_MEMORY": "100000",  # in Mb
         "QUEUE_FOR_JOBS": "N",
         "JOB_GPU": "--gres=gpu:1",
@@ -95,7 +95,7 @@ QUEUE_PARAMS_WITH_1_GPU_4_CPU = (
 QUEUE_PARAMS_WITH_1_GPU_15_CPU = (
     "gpu",
     {
-        "JOB_TIME": "150",  # in hours
+        "JOB_TIME": "24",  # in hours
         "JOB_MEMORY": "100000",  # in Mb
         "QUEUE_FOR_JOBS": "N",
         "JOB_GPU": "--gres=gpu:1",
@@ -106,7 +106,7 @@ QUEUE_PARAMS_WITH_1_GPU_15_CPU = (
 QUEUE_PARAMS_WITH_2_GPU_16_CPU = (
     "gpu",
     {
-        "JOB_TIME": "150",  # in hours
+        "JOB_TIME": "24",  # in hours
         "JOB_MEMORY": "100000",  # in Mb
         "QUEUE_FOR_JOBS": "N",
         "JOB_GPU": "--gres=gpu:2",
@@ -117,7 +117,7 @@ QUEUE_PARAMS_WITH_2_GPU_16_CPU = (
 QUEUE_PARAMS_WITHOUT_GPU_16_CPU = (
     "gpu",
     {
-        "JOB_TIME": "150",  # in hours
+        "JOB_TIME": "24",  # in hours
         "JOB_MEMORY": "100000",  # in Mb
         "QUEUE_FOR_JOBS": "N",
         "JOB_GPU": "",

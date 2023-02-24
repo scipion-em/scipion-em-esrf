@@ -163,7 +163,7 @@ if configDict["secondGrid"] or configDict["thirdGrid"]:
     if noMovies > 0:
         raise RuntimeError("--secondGrid or --thirdGrid used and images already exists on disk!")
     # Check that we have voltage, imagesCount and magnification:
-    for key in ["voltage", "magnification", "imagesCount"]:
+    for key in ["magnification", "imagesCount"]:
         if key not in configDict or configDict[key] is None:
             raise RuntimeError(
                 "--secondGrid or --thirdGrid used, missing command line argument '--{0}'!".format(key)
@@ -423,7 +423,7 @@ if configDict["magnification"] is None:
         dictResults = UtilsPath.getXmlMetaData(xml)
         configDict["doPhaseShiftEstimation"] = dictResults["phasePlateUsed"]
         configDict["magnification"] = int(dictResults["magnification"])
-        configDict["voltage"] = int(dictResults["accelerationVoltage"])
+        # configDict["voltage"] = int(dictResults["accelerationVoltage"])
         configDict["imagesCount"] = int(dictResults["numberOffractions"])
 
     elif configDict["dataType"] == 2:  # "SERIALEM"

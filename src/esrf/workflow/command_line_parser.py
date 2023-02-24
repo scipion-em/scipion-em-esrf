@@ -84,7 +84,7 @@ def getCommandlineOptions():
         help="Number of images per movie.",
         default=None,
     )
-    optional.add_argument("--voltage", action="store", help="Voltage [V]", default=None)
+    # optional.add_argument("--voltage", action="store", help="Voltage [V]", default=None)
     optional.add_argument(
         "--startMotioncorFrame",
         action="store",
@@ -190,7 +190,7 @@ def getCommandlineOptions():
         "imagesCount": int(results.imagesCount)
         if results.imagesCount is not None
         else None,
-        "voltage": int(results.voltage) if results.voltage is not None else None,
+        # "voltage": int(results.voltage) if results.voltage is not None else None,
         "dosePerFrame": float(results.dosePerFrame),
         "dataStreaming": True,
         "alignFrame0": int(results.startMotioncorFrame),

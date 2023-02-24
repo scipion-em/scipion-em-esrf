@@ -49,6 +49,7 @@ config_dict = getCommandlineOptions()
 # --dosePerFrame 0.935 --samplingRate 0.84
 #
 #
+
 if config_dict["filesPattern"] is None:
     # No filesPattern, let's assume that we are dealing with EPU data
     config_dict[
@@ -71,7 +72,7 @@ if config_dict["secondGrid"] or config_dict["thirdGrid"]:
     if noMovies > 0:
         raise RuntimeError("--secondGrid or --thirdGrid used and images already exists on disk!")
     # Check that we have voltage, imagesCount and magnification:
-    for key in ["voltage", "magnification", "imagesCount"]:
+    for key in ["magnification", "imagesCount"]:
         if key not in config_dict or config_dict[key] is None:
             raise RuntimeError(
                 "--secondGrid or --thirdGrid used, missing command line argument '--{0}'!".format(key)

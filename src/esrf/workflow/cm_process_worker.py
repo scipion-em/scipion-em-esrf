@@ -181,8 +181,10 @@ def create_blackfile_list(config_dict):
 
 
 def set_em_data(config_dict):
+    # Hard-coded voltage and spherical abberation for the ESRF
+    config_dict["voltage"] = 300000
+    config_dict["sphericalAberration"] = 2.7
     if config_dict["phasePlateData"]:
-        config_dict["sphericalAberration"] = 2.7
         config_dict["minDefocus"] = 2000
         config_dict["maxDefocus"] = 20000
         config_dict["astigmatism"] = 500.0
@@ -195,7 +197,6 @@ def set_em_data(config_dict):
         config_dict["lowRes"] = 15.0
         config_dict["highRes"] = 4.0
     else:
-        config_dict["sphericalAberration"] = 2.7
         config_dict["minDefocus"] = 5000
         config_dict["maxDefocus"] = 90000
         config_dict["astigmatism"] = 1000.0

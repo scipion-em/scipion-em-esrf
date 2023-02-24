@@ -516,13 +516,16 @@ def preprocessWorkflow(config_dict):
         triggers = []
 
         def getNoClasses(no_particles):
-            no_classes = 50
+            if no_particles <= 50000:
+                no_classes = 20
+            else:
+                no_classes = 50
             return no_classes
 
         if config_dict["debug"]:
             list_trigger_particles = [1000, 10000]
         else:
-            list_trigger_particles = [5000, 20000, 50000, 100000, 200000]
+            list_trigger_particles = [20000, 50000, 100000]
 
         for outputSize in list_trigger_particles:
             allAvgs = []

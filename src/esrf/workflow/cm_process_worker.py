@@ -460,6 +460,24 @@ def kill_workflow(config_dict):
         logger.warning(f"Killing process {process}")
         os.kill(process, 9)
 
+@app.task()
+def extract_meta_data(movie_path, phase_plate_data=False, super_resolution=True):
+    config_dict = {}
+    config_dict["phasePlateData"] = phase_plate_data
+    config_dict["superResolution"] = super_resolution
+    set_em_data(config_dict)
+    config_dict[
+        "filesPattern"
+    ] = "Images-Disc*/GridSquare_*/Data/FoilHole_*_fractions.tiff"
+    jpeg, mrc, xml, gridSquareThumbNail = UtilsPath.getEpuTiffMovieJpegMrcXml(
+        movie_path
+    )
+    config_dict["dataType"] = 1  # "EPU_TIFF"
+    config_dict["gainFlip"] = motioncorr.constants.FLIP_LEFTRIGHT
+    config_dict["gainRot"] = motioncorr.constants.ROTATE_180
+    return config_dict
+
+
 
 # if __name__ == "__main__":
 #     argv = [

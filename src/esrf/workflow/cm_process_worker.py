@@ -472,6 +472,11 @@ def extract_meta_data(movie_path, phase_plate_data=False, super_resolution=True)
     jpeg, mrc, xml, gridSquareThumbNail = UtilsPath.getEpuTiffMovieJpegMrcXml(
         movie_path
     )
+    dictResults = UtilsPath.getXmlMetaData(xml)
+    config_dict["doPhaseShiftEstimation"] = dictResults["phasePlateUsed"]
+    config_dict["magnification"] = int(dictResults["magnification"])
+    config_dict["voltage"] = int(dictResults["accelerationVoltage"])
+    config_dict["imagesCount"] = int(dictResults["numberOffractions"])
     config_dict["dataType"] = 1  # "EPU_TIFF"
     config_dict["gainFlip"] = motioncorr.constants.FLIP_LEFTRIGHT
     config_dict["gainRot"] = motioncorr.constants.ROTATE_180

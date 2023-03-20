@@ -183,11 +183,11 @@ if proposal is None:
     db = 3
 else:
     if proposal == "mx415":
-        # Use valid data base
-        print("ISPyB valid data base used")
-        db = 1
+        # Use production data base
+        print("ISPyB production data base used")
+        db = 0
     elif proposal == "mx2112":
-        # Use valid data base
+        # Use production data base
         print("ISPyB production data base used")
         db = 0
     else:

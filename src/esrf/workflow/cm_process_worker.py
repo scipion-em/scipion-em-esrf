@@ -148,9 +148,9 @@ def set_ispyb_database(config_dict):
         config_dict["db"] = -1
     else:
         if config_dict["proposal"] == "mx415":
-            # Use valid data base
-            logger.info("ISPyB valid data base used")
-            config_dict["db"] = 1
+            # Use production data base
+            logger.info("ISPyB production data base used")
+            config_dict["db"] = 0
         elif config_dict["proposal"] == "mx2112":
             # Use production data base
             logger.info("ISPyB production data base used")

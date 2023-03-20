@@ -115,10 +115,10 @@ QUEUE_PARAMS_WITH_2_GPU_16_CPU = (
 )
 
 QUEUE_PARAMS_WITHOUT_GPU_16_CPU = (
-    "cm-gpu",
+    "mx",
     {
         "JOB_TIME": "24",  # in hours
-        "JOB_MEMORY": "100000",  # in Mb
+        "JOB_MEMORY": "50000",  # in Mb
         "QUEUE_FOR_JOBS": "N",
         "JOB_GPU": "",
         "JOB_THREADS": 16,
@@ -720,10 +720,14 @@ def preprocessWorkflow(config_dict):
         #     "delay": 5,
         #     "inputImages": "2854.outputMicrographsDoseWeighted"
         # },
+        if config_dict["debug"]:
+            outputSize = 20
+        else:
+            outputSize = 100
         protSupportBranchTrigInitPick = project.newProtocol(
             XmippProtTriggerData,
             objLabel="xmipp3 - trigger data (initial picking)",
-            outputSize=100,
+            outputSize=outputSize,
             delay=5,
             allImages=False,
             splitImages=False,
@@ -1045,11 +1049,11 @@ def preprocessWorkflow(config_dict):
             streamingWarning=None,
             streamingSleepOnWait=10,
             streamingBatchSize=1,
-            hostName="localhost",
+            # hostName="localhost",
             numberOfMpi=4,
         )
-        protSupportBranchRelionAutopickLoG._useQueue.set(True)
-        protSupportBranchRelionAutopickLoG._queueParams.set(json.dumps(QUEUE_PARAMS_WITHOUT_GPU_16_CPU))
+        # protSupportBranchRelionAutopickLoG._useQueue.set(True)
+        # protSupportBranchRelionAutopickLoG._queueParams.set(json.dumps(QUEUE_PARAMS_WITHOUT_GPU_16_CPU))
         setExtendedInput(
             protSupportBranchRelionAutopickLoG.inputMicrographs,
             protPreMics,
@@ -1365,7 +1369,7 @@ def preprocessWorkflow(config_dict):
         #     "inputImages": "5430.outputParticles"
         # },
         if config_dict["debug"]:
-            output_size = 1000
+            output_size = 5000
         else:
             output_size = 20000
         protSupportBranchTriggerData = project.newProtocol(
@@ -1378,13 +1382,14 @@ def preprocessWorkflow(config_dict):
             triggerSignal=True,
             delay=4,
         )
-        #     "triggerProt": "3202.",
+        #     "triggerProt": 3202.,
         # setExtendedInput(
-        #     protSupportBranchTriggerData,
+        #     protSupportBranchTriggerData.triggerProt,
         #     protSupportBranchTrigStopSignal,
-        #     "triggerProt",
-        #     pointer=True
+        #     protSupportBranchTrigStopSignal
         # )
+        protSupportBranchTriggerData.triggerProt.set(protSupportBranchTrigStopSignal)
+        # protDotInput.setExtended(extended)
         # "inputImages": "5430.outputParticles"
         setExtendedInput(
             protSupportBranchTriggerData.inputImages,
@@ -1447,7 +1452,7 @@ def preprocessWorkflow(config_dict):
         #     "inputParticles": "3610.outputParticles"
         # },
         if config_dict["debug"]:
-            numberOfIterations = 10
+            numberOfIterations = 15
         else:
             numberOfIterations = 25
         protSupportBranchRelionClassify2D = project.newProtocol(
@@ -1469,7 +1474,7 @@ def preprocessWorkflow(config_dict):
             doCtfManualGroups=False,
             defocusRange=1000.0,
             numParticles=10.0,
-            numberOfClasses=50,
+            numberOfClasses=20,
             regularisationParamT=2.0,
             useGradientAlg=False,
             numberOfVDAMBatches=200,

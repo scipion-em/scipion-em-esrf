@@ -780,8 +780,10 @@ class UtilsPath(object):
 
                 index += 1
             dictResults["noPoints"] = noPoints
-            dictResults["totalMotion"] = round(totalMotion, 1)
-            dictResults["averageMotionPerFrame"] = round(totalMotion / noPoints, 1)
+            if totalMotion != 0:
+                dictResults["totalMotion"] = round(totalMotion, 1)
+                dictResults["averageMotionPerFrame"] = round(totalMotion / noPoints, 1)
+
         return dictResults
 
     @staticmethod

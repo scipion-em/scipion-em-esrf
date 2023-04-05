@@ -8,14 +8,12 @@ import pprint
 import celery
 import socket
 import logging
-import objgraph
 import tempfile
 import datetime
-import traceback
 
 import pyworkflow
 import motioncorr.constants
-from esrf.workflow.workflow import preprocessWorkflow
+from esrf.sp.workflow import preprocessWorkflow
 
 from esrf.utils.esrf_utils_path import UtilsPath
 

@@ -5,7 +5,7 @@ import time
 import celery
 
 
-from esrf.workflow.cm_process_status import print_worker_status
+from esrf.sp.cm_process_status import print_worker_status
 
 app = celery.Celery()
 app.config_from_object("esrf.workflow.celeryconfig")

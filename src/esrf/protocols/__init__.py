@@ -25,19 +25,5 @@
 # *
 # **************************************************************************
 
-
-import pwem
-
-__version__ = '1.0.0'
-_logo = None
-_references = []
-
-
-class Plugin(pwem.Plugin):
-    @classmethod
-    def _defineVariables(cls):
-        pass
-
-    @classmethod
-    def getEnviron(cls):
-        return None
+from .protocol_monitor_icat_tomo import ProtMonitorIcatTomo
+from .protocol_monitor_ispyb import ProtMonitorISPyB_ESRF

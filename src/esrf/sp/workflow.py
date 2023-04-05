@@ -78,7 +78,7 @@ from relion.protocols import ProtRelionExtractParticles
 if "v3_dev" in __file__:
     sys.path.insert(0, "/opt/pxsoft/scipion/v3_dev/ubuntu20.04/scipion-em-esrf")
 
-from esrf.protocols import ProtMonitorISPyB_ESRF
+from esrf.protocols.protocol_monitor_ispyb import ProtMonitorISPyB_ESRF
 
 
 QUEUE_PARAMS_WITH_1_GPU_4_CPU = (

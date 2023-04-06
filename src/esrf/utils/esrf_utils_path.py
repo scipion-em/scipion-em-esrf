@@ -955,3 +955,22 @@ class UtilsPath(object):
             lineIndex += 1
         dictStarFile = {"numberOfClasses": numberOfClasses, "classes": listClass}
         return dictStarFile
+
+    @staticmethod
+    def getTomoMovieFileNameParameters(movie_file_path):
+        directory = os.path.dirname(movie_file_path)
+        file_name = os.path.basename(movie_file_path)
+        list_file_name = file_name.split("_")
+        if list_file_name[1] != "Position" or \
+            list_file_name[7] != "fractions.tiff":
+            raise RuntimeError(f"ERROR! Path can not be parsed: {movie_file_path}")
+        dict_movie = {
+            "directory": directory,
+            "grid_name": list_file_name[0],
+            "tilt_serie_number": int(list_file_name[2]),
+            "movie_number": int(list_file_name[3]),
+            "tilt_angle": float(list_file_name[4]),
+            "date": list_file_name[5],
+            "time": list_file_name[6]
+        }
+        return dict_movie

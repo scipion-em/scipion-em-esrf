@@ -36,7 +36,7 @@ from esrf.utils.esrf_utils_serialem import UtilsSerialEM
 class Test(unittest.TestCase):
     def setUp(self):
         self.dataDir = (
-            "/scisoft/pxsoft/data/cryoem/testSerialEmData/"
+            "/data/scisoft/pxsoft/data/cryoem/testSerialEmData/"
             + "20190905/RAW_DATA/mx2214/data"
         )
         self.correctDir = tempfile.mkdtemp()

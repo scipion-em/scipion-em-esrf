@@ -30,22 +30,9 @@ import json
 import random
 
 from collections import OrderedDict
-
-from pwem.protocols import ProtImportMovies
-from pwem.protocols import ProtUnionSet
-from pwem.protocols import ProtBoxSizeParameters
-from pwem.protocols import ProtManualCheckpoint
-from pwem.protocols import ProtExtractCoords
-from pwem.protocols import ProtClassesSelector
-
-from gautomatch.protocols import ProtGautomatch
-
-
+from tomo.protocols import ProtImportTsMovies
 from pyworkflow.object import Pointer
-import pyworkflow.utils as pwutils
-
 from pyworkflow.project.manager import Manager
-
 
 try:  # Xmipp plugin is mandatory to run this workflow
     from xmipp3.protocols import (
@@ -56,10 +43,8 @@ except Exception as exc:
     raise
     pwutils.pluginNotFound("xmipp", errorMsg=exc, doRaise=True)
 
-from motioncorr.protocols import ProtMotionCorr
-from gctf.protocols import ProtGctf
 
-from esrf.protocols import ProtMonitorISPyB_ESRF
+from esrf.protocols import ProtMonitorIcatTomo
 
 QUEUE_PARAMS_WITH_1_GPU_4_CPU = (
     "cm-gpu",
@@ -193,9 +178,9 @@ def preprocessWorkflow(config_dict):
     timeout = 43200  # 12 hours
 
     protImport = project.newProtocol(
-        ProtImportMovies,
-        objLabel="Import movies",
-        importFrom=ProtImportMovies.IMPORT_FROM_FILES,
+        ProtImportTsMovies,
+        objLabel="Import tilt serie movies",
+        importFrom=ProtImportTsMovies.IMPORT_FROM_FILES,
         filesPath=config_dict["dataDirectory"],
         filesPattern=config_dict["filesPattern"],
         amplitudeContrast=0.1,
@@ -206,7 +191,8 @@ def preprocessWorkflow(config_dict):
         dosePerFrame=config_dict["dosePerFrame"],
         magnification=config_dict["magnification"],
         dataStreaming=config_dict["dataStreaming"],
-        blacklistFile=config_dict["blacklistFile"],
+        tiltAxisAngle=config_dict["tiltAxisAngle"],
+        # blacklistFile=config_dict["blacklistFile"],
         useRegexps=False,
         fileTimeout=30,
         timeout=timeout,
@@ -217,9 +203,9 @@ def preprocessWorkflow(config_dict):
     # Stop here if --onlyISPyB
     # --------- ISPyB MONITOR -----------------------
     if not config_dict["noISPyB"]:
-        ispybMonitor = project.newProtocol(
-            ProtMonitorISPyB_ESRF,
-            objLabel="ISPyB monitor",
+        icat_tomo_monitor = project.newProtocol(
+            ProtMonitorIcatTomo,
+            objLabel="ICAT Tomo monitor",
             samplingInterval=10,
             proposal=config_dict["proposal"],
             proteinAcronym=config_dict["proteinAcronym"],
@@ -237,9 +223,7 @@ def preprocessWorkflow(config_dict):
             alignFrameN=config_dict["alignFrameN"],
             defectMapPath=config_dict["defectMapPath"],
             gainFilePath=config_dict["gainFilePath"],
-            particleSize=config_dict["partSize"],
-            doProcessDir=config_dict["doProcessDir"],
         )
-        ispybMonitor.inputProtocols.set(ispybUploads)
-        _registerProt(ispybMonitor, "ispybMonitor")
+        icat_tomo_monitor.inputProtocols.set(ispybUploads)
+        _registerProt(icat_tomo_monitor, "icatTomoMonitor")
 

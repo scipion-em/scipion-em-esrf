@@ -248,9 +248,9 @@ else:
 #         dateString = time.strftime("%Y%m%d", time.localtime(time.time()))
 #         user = os.environ["USER"]
 #         location = os.path.join(location, dateString, user)
-# elif os.path.exists("/scisoft"):
-# if os.path.exists("/scisoft"):
-#     location = "/scisoft/cm01"
+# elif os.path.exists("/data/scisoft"):
+# if os.path.exists("/data/scisoft"):
+#     location = "/data/scisoft/cm01"
 #     if "RAW_DATA" in configDict["dataDirectory"]:
 #         listDir = configDict["dataDirectory"].split("/")
 #         location = os.path.join(location, listDir[5], listDir[3])

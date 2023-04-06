@@ -64,6 +64,13 @@ def getCommandlineOptions():
         required=True,
     )
     optional.add_argument(
+        "--tiltAxisAngle",
+        action="store",
+        help="Tilt axis angle.",
+        default=-175.9,
+        required=False,
+    )
+    optional.add_argument(
         "--samplingRate",
         action="store",
         help="Sampling rate.",
@@ -74,8 +81,8 @@ def getCommandlineOptions():
         "--filesPattern",
         action="store",
         help="file pattern for finding CRyo ET movies, default pattern "
-        + "'*_fractions.tiff'",
-        default="*_fractions.tiff",
+        + "'*_Position_{TS}_{TO}_{TA}_*_fractions.tiff'",
+        default="*_Position_{TS}_{TO}_{TA}_*_fractions.tiff",
     )
     # optional.add_argument(
     #     "--scipionProjectName",
@@ -92,6 +99,12 @@ def getCommandlineOptions():
         default=None,
     )
     # optional.add_argument("--voltage", action="store", help="Voltage [V]", default=None)
+    optional.add_argument(
+        "--defectMapPath", action="store", help="Defect map file path", default=None
+    )
+    optional.add_argument(
+        "--gainFilePath", action="store", help="Gain file path", default=None
+    )
     optional.add_argument(
         "--startMotioncorFrame",
         action="store",
@@ -153,6 +166,9 @@ def getCommandlineOptions():
         "onlyISPyB": results.onlyISPyB,
         "noISPyB": results.noISPyB,
         "celery_worker": results.celery_worker,
+        "defectMapPath": results.defectMapPath,
+        "gainFilePath": results.gainFilePath,
+        "tiltAxisAngle": results.tiltAxisAngle,
     }
     pprint.pprint(opt_dict)
     return opt_dict

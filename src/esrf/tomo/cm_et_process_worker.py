@@ -14,7 +14,7 @@ import datetime
 import pyworkflow
 import motioncorr.constants
 
-from esrf.workflow.cryo_et_workflow import preprocessWorkflow
+from esrf.tomo.cryo_et_workflow import preprocessWorkflow
 
 from esrf.utils.esrf_utils_path import UtilsPath
 

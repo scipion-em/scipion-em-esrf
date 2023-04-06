@@ -44,7 +44,7 @@ class Test(unittest.TestCase):
 
     def test_findGridSquaresNotUploaded_2(self):
         with open(
-            "/scisoft/pxsoft/data/cryoem/testRunData/" + "20181105/allParams.json"
+            "/data/scisoft/pxsoft/data/cryoem/testRunData/" + "20181105/allParams.json"
         ) as fd:
             allParams = json.loads(fd.read())
         dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(

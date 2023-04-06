@@ -9,8 +9,8 @@ import motioncorr.constants
 
 from esrf.utils.esrf_utils_path import UtilsPath
 from esrf.utils.esrf_utils_ispyb import UtilsISPyB
-from esrf.workflow.cryo_et_command_line_parser import getCommandlineOptions
-from esrf.workflow.cm_et_process_worker import run_workflow_commandline
+from esrf.tomo.cryo_et_command_line_parser import getCommandlineOptions
+from esrf.tomo.cm_et_process_worker import run_workflow_commandline
 
 # print(getCommandlineOptions.__module__)
 config_dict = getCommandlineOptions()
@@ -60,7 +60,7 @@ listMovies = glob.glob(
 noMovies = len(listMovies)
 # Check how many movies are present on disk
 listMovies = glob.glob(
-    os.path.join(config_dict["dataDirectory"], config_dict["filesPattern"])
+    os.path.join(config_dict["dataDirectory"], "*_fractions.tiff")
 )
 noMovies = len(listMovies)
 if noMovies == 0:

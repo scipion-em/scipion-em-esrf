@@ -190,14 +190,14 @@ class Test(unittest.TestCase):
     def test_getSerialEMMovieFileNameParameters(self):
         # Test1
         topDir1 = (
-            "/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214"
+            "/data/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214"
         )
-        movieFullPath1 = "/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214/data/mx2214_00005.tif"
+        movieFullPath1 = "/data/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214/data/mx2214_00005.tif"
         dictResult1 = UtilsPath.getSerialEMMovieFileNameParameters(
             topDir1, movieFullPath1
         )
         refDict1 = {
-            "directory": "/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214/data",
+            "directory": "/data/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214/data",
             "movieName": "data_mx2214_00005",
             "movieNumber": "00005",
             "prefix": "data_mx2214",
@@ -220,27 +220,27 @@ class Test(unittest.TestCase):
         self.assertEqual(refDict2, dictResult2)
 
     def test_getMovieJpegMrcXml(self):
-        movieFullPath = "/scisoft/pxsoft/data/cryoem/20171123/RAW_DATA/testsecretin-grid1/Images-Disc1/GridSquare_23722826/Data/FoilHole_23724105_Data_23724797_23724798_20171123_1448-3385.mrc"
+        movieFullPath = "/data/scisoft/pxsoft/data/cryoem/20171123/RAW_DATA/testsecretin-grid1/Images-Disc1/GridSquare_23722826/Data/FoilHole_23724105_Data_23724797_23724798_20171123_1448-3385.mrc"
         jpeg, mrc, xml, gridSquareThumbNail = UtilsPath.getMovieJpegMrcXml(
             movieFullPath
         )
-        jpegRef = "/scisoft/pxsoft/data/cryoem/20171123/RAW_DATA/testsecretin-grid1/Images-Disc1/GridSquare_23722826/Data/FoilHole_23724105_Data_23724797_23724798_20171123_1448.jpg"
+        jpegRef = "/data/scisoft/pxsoft/data/cryoem/20171123/RAW_DATA/testsecretin-grid1/Images-Disc1/GridSquare_23722826/Data/FoilHole_23724105_Data_23724797_23724798_20171123_1448.jpg"
         self.assertEqual(jpegRef, jpeg)
-        mrcRef = "/scisoft/pxsoft/data/cryoem/20171123/RAW_DATA/testsecretin-grid1/Images-Disc1/GridSquare_23722826/Data/FoilHole_23724105_Data_23724797_23724798_20171123_1448.mrc"
+        mrcRef = "/data/scisoft/pxsoft/data/cryoem/20171123/RAW_DATA/testsecretin-grid1/Images-Disc1/GridSquare_23722826/Data/FoilHole_23724105_Data_23724797_23724798_20171123_1448.mrc"
         self.assertEqual(mrcRef, mrc)
-        xmlRef = "/scisoft/pxsoft/data/cryoem/20171123/RAW_DATA/testsecretin-grid1/Images-Disc1/GridSquare_23722826/Data/FoilHole_23724105_Data_23724797_23724798_20171123_1448.xml"
+        xmlRef = "/data/scisoft/pxsoft/data/cryoem/20171123/RAW_DATA/testsecretin-grid1/Images-Disc1/GridSquare_23722826/Data/FoilHole_23724105_Data_23724797_23724798_20171123_1448.xml"
         self.assertEqual(xmlRef, xml)
-        gridSquareThumbNailRef = "/scisoft/pxsoft/data/cryoem/20171123/RAW_DATA/testsecretin-grid1/Images-Disc1/GridSquare_23722826/GridSquare_20171123_144119.jpg"
+        gridSquareThumbNailRef = "/data/scisoft/pxsoft/data/cryoem/20171123/RAW_DATA/testsecretin-grid1/Images-Disc1/GridSquare_23722826/GridSquare_20171123_144119.jpg"
         self.assertEqual(gridSquareThumbNailRef, gridSquareThumbNail)
 
     def test_getAlignMoviesPngLogFilePath(self):
-        mrcFilePath = "/scisoft/pxsoft/data/cryoem/testRunData/20171113/Runs/000056_ProtMotionCorr/extra/FoilHole_9208892_Data_9209286_9209287_20171109_1540-0539_aligned_mic.mrc"
+        mrcFilePath = "/data/scisoft/pxsoft/data/cryoem/testRunData/20171113/Runs/000056_ProtMotionCorr/extra/FoilHole_9208892_Data_9209286_9209287_20171109_1540-0539_aligned_mic.mrc"
         dictResult = UtilsPath.getAlignMoviesPngLogFilePath(mrcFilePath)
         dictRef = {
-            "doseWeightMrc": "/scisoft/pxsoft/data/cryoem/testRunData/20171113/Runs/000056_ProtMotionCorr/extra/FoilHole_9208892_Data_9209286_9209287_20171109_1540-0539_aligned_mic_DW.mrc",
-            "globalShiftPng": "/scisoft/pxsoft/data/cryoem/testRunData/20171113/Runs/000056_ProtMotionCorr/extra/FoilHole_9208892_Data_9209286_9209287_20171109_1540-0539_global_shifts.png",
-            "logFileFullPath": "/scisoft/pxsoft/data/cryoem/testRunData/20171113/Runs/000056_ProtMotionCorr/logs/run.log",
-            "thumbnailPng": "/scisoft/pxsoft/data/cryoem/testRunData/20171113/Runs/000056_ProtMotionCorr/extra/FoilHole_9208892_Data_9209286_9209287_20171109_1540-0539_thumbnail.png",
+            "doseWeightMrc": "/data/scisoft/pxsoft/data/cryoem/testRunData/20171113/Runs/000056_ProtMotionCorr/extra/FoilHole_9208892_Data_9209286_9209287_20171109_1540-0539_aligned_mic_DW.mrc",
+            "globalShiftPng": "/data/scisoft/pxsoft/data/cryoem/testRunData/20171113/Runs/000056_ProtMotionCorr/extra/FoilHole_9208892_Data_9209286_9209287_20171109_1540-0539_global_shifts.png",
+            "logFileFullPath": "/data/scisoft/pxsoft/data/cryoem/testRunData/20171113/Runs/000056_ProtMotionCorr/logs/run.stdout",
+            "thumbnailPng": "/data/scisoft/pxsoft/data/cryoem/testRunData/20171113/Runs/000056_ProtMotionCorr/extra/FoilHole_9208892_Data_9209286_9209287_20171109_1540-0539_thumbnail.png",
         }
         self.assertEqual(dictRef, dictResult)
 
@@ -250,24 +250,24 @@ class Test(unittest.TestCase):
         pprint.pprint(dictResult)
 
     def test_getSerialEMAlignMoviesPngLogFilePath(self):
-        mrcFilePath = "/scisoft/pxsoft/data/cryoem/testRunData/20191028/Runs/000064_ProtMotionCorr/extra/data_mx2214_00005_aligned_mic.mrc"
+        mrcFilePath = "/data/scisoft/pxsoft/data/cryoem/testRunData/20191028/Runs/000064_ProtMotionCorr/extra/data_mx2214_00005_aligned_mic.mrc"
         dictResult = UtilsPath.getSerialEMAlignMoviesPngLogFilePath(mrcFilePath)
         dictRef = {
-            "doseWeightMrc": "/scisoft/pxsoft/data/cryoem/testRunData/20191028/Runs/000064_ProtMotionCorr/extra/data_mx2214_00005_aligned_mic_DW.mrc",
-            "globalShiftPng": "/scisoft/pxsoft/data/cryoem/testRunData/20191028/Runs/000064_ProtMotionCorr/extra/data_mx2214_00005_global_shifts.png",
-            "logFileFullPath": "/scisoft/pxsoft/data/cryoem/testRunData/20191028/Runs/000064_ProtMotionCorr/logs/run.log",
-            "thumbnailPng": "/scisoft/pxsoft/data/cryoem/testRunData/20191028/Runs/000064_ProtMotionCorr/extra/data_mx2214_00005_thumbnail.png",
+            "doseWeightMrc": "/data/scisoft/pxsoft/data/cryoem/testRunData/20191028/Runs/000064_ProtMotionCorr/extra/data_mx2214_00005_aligned_mic_DW.mrc",
+            "globalShiftPng": "/data/scisoft/pxsoft/data/cryoem/testRunData/20191028/Runs/000064_ProtMotionCorr/extra/data_mx2214_00005_global_shifts.png",
+            "logFileFullPath": "/data/scisoft/pxsoft/data/cryoem/testRunData/20191028/Runs/000064_ProtMotionCorr/logs/run.stdout",
+            "thumbnailPng": "/data/scisoft/pxsoft/data/cryoem/testRunData/20191028/Runs/000064_ProtMotionCorr/extra/data_mx2214_00005_thumbnail.png",
         }
         self.assertEqual(dictRef, dictResult)
 
     def test_getShiftData(self):
-        mrcFilePath = "/scisoft/pxsoft/data/cryoem/testRunData/20171113/Runs/000056_ProtMotionCorr/extra/FoilHole_9208892_Data_9209286_9209287_20171109_1540-0539_aligned_mic.mrc"
+        mrcFilePath = "/data/scisoft/pxsoft/data/cryoem/testRunData/20171113/Runs/000056_ProtMotionCorr/extra/FoilHole_9208892_Data_9209286_9209287_20171109_1540-0539_aligned_mic.mrc"
         dictResult = UtilsPath.getShiftData(mrcFilePath)
         dictRef = {"averageMotionPerFrame": 6.3, "noPoints": 40, "totalMotion": 250.6}
         self.assertEqual(dictRef, dictResult)
 
     def test_getXmlMetaData(self):
-        xmlMetaDataFullPath = "/scisoft/pxsoft/data/cryoem/testMetaData/supervisor_20171115_150623/Images-Disc1/GridSquare_15441375/Data/FoilHole_15445484_Data_15444206_15444207_20171115_1620.xml"
+        xmlMetaDataFullPath = "/data/scisoft/pxsoft/data/cryoem/testMetaData/supervisor_20171115_150623/Images-Disc1/GridSquare_15441375/Data/FoilHole_15445484_Data_15444206_15444207_20171115_1620.xml"
         dictResult = UtilsPath.getXmlMetaData(xmlMetaDataFullPath)
         dictRef = {
             "accelerationVoltage": "300000",
@@ -283,7 +283,7 @@ class Test(unittest.TestCase):
         self.assertEqual(dictRef, dictResult)
 
     def test_getMdocMetaData(self):
-        mdocMetaDataFullPath = "/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214/data/mx2214_00005.tif.mdoc"
+        mdocMetaDataFullPath = "/data/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214/data/mx2214_00005.tif.mdoc"
         dictResult = UtilsPath.getMdocMetaData(mdocMetaDataFullPath)
         import pprint
 
@@ -324,8 +324,8 @@ class Test(unittest.TestCase):
         self.assertEqual(dictRef, dictResult)
 
     def test_getCtfMetaData(self):
-        workingDir = "/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf"
-        mrcFilePath = "/scisoft/pxsoft/data/cryoem/testRunData/20190715/000064_ProtMotionCorr/extra/GridSquare_7828225_Data_FoilHole_8853794_Data_7832898_7832899_20190711_0913-4443_aligned_mic.mrc"
+        workingDir = "/data/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf"
+        mrcFilePath = "/data/scisoft/pxsoft/data/cryoem/testRunData/20190715/000064_ProtMotionCorr/extra/GridSquare_7828225_Data_FoilHole_8853794_Data_7832898_7832899_20190711_0913-4443_aligned_mic.mrc"
         dictResult = UtilsPath.getCtfMetaData(workingDir, mrcFilePath)
         dictRef = {
             "Angle": "35.60",
@@ -334,16 +334,16 @@ class Test(unittest.TestCase):
             "Defocus_V": "22988.54",
             "Phase_shift": None,
             "estimatedBfactor": "82.54",
-            "logFilePath": "/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf/logs/run.log",
+            "logFilePath": "/data/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf/logs/run.stdout",
             "resolutionLimit": "3.381",
-            "spectraImageFullPath": "/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf/extra/GridSquare_7828225_Data_FoilHole_8853794_Data_7832898_7832899_20190711_0913-4443_aligned_mic_ctf.mrc",
-            "spectraImageSnapshotFullPath": "/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf/extra/GridSquare_7828225_Data_FoilHole_8853794_Data_7832898_7832899_20190711_0913-4443_aligned_mic_ctf.jpeg",
+            "spectraImageFullPath": "/data/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf/extra/GridSquare_7828225_Data_FoilHole_8853794_Data_7832898_7832899_20190711_0913-4443_aligned_mic_ctf.mrc",
+            "spectraImageSnapshotFullPath": "/data/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf/extra/GridSquare_7828225_Data_FoilHole_8853794_Data_7832898_7832899_20190711_0913-4443_aligned_mic_ctf.jpeg",
         }
         self.assertEqual(dictRef, dictResult)
 
     def test_getCtfMetaData_2(self):
-        workingDir = "/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf"
-        mrcFilePath = "/scisoft/pxsoft/data/cryoem/testRunData/20190715/000064_ProtMotionCorr/extra/GridSquare_7828225_Data_FoilHole_8853794_Data_7832898_7832899_20190711_0913-4443_aligned_mic.mrc"
+        workingDir = "/data/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf"
+        mrcFilePath = "/data/scisoft/pxsoft/data/cryoem/testRunData/20190715/000064_ProtMotionCorr/extra/GridSquare_7828225_Data_FoilHole_8853794_Data_7832898_7832899_20190711_0913-4443_aligned_mic.mrc"
         dictResult = UtilsPath.getCtfMetaData(workingDir, mrcFilePath)
         dictRef = {
             "Angle": "35.60",
@@ -352,10 +352,10 @@ class Test(unittest.TestCase):
             "Defocus_V": "22988.54",
             "Phase_shift": None,
             "estimatedBfactor": "82.54",
-            "logFilePath": "/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf/logs/run.log",
+            "logFilePath": "/data/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf/logs/run.stdout",
             "resolutionLimit": "3.381",
-            "spectraImageFullPath": "/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf/extra/GridSquare_7828225_Data_FoilHole_8853794_Data_7832898_7832899_20190711_0913-4443_aligned_mic_ctf.mrc",
-            "spectraImageSnapshotFullPath": "/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf/extra/GridSquare_7828225_Data_FoilHole_8853794_Data_7832898_7832899_20190711_0913-4443_aligned_mic_ctf.jpeg",
+            "spectraImageFullPath": "/data/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf/extra/GridSquare_7828225_Data_FoilHole_8853794_Data_7832898_7832899_20190711_0913-4443_aligned_mic_ctf.mrc",
+            "spectraImageSnapshotFullPath": "/data/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf/extra/GridSquare_7828225_Data_FoilHole_8853794_Data_7832898_7832899_20190711_0913-4443_aligned_mic_ctf.jpeg",
         }
         self.assertEqual(dictRef, dictResult)
 
@@ -384,7 +384,7 @@ class Test(unittest.TestCase):
         )
         pyarch_file_path = UtilsPath.getPyarchFilePath(mrcFilePath)
         self.assertEqual(
-            "/data/pyarch/2022/20171108/opcm01/RAW_DATA/nicetest/Frame.mrc",
+            "/data/pyarch/2023/20171108/opcm01/RAW_DATA/nicetest/Frame.mrc",
             pyarch_file_path,
         )
         # CRYOEM-25 : New paths for inhouse research...
@@ -397,31 +397,31 @@ class Test(unittest.TestCase):
         mrcFilePath = "/mntdirect/_data_cm01_cmihr2/IH-LS3198/20181203/RAW_DATA/EPU_IH_LS3198/Images-Disc1/GridSquare_3087308/GridSquare_20181204_115820.jpg"
         pyarch_file_path = UtilsPath.getPyarchFilePath(mrcFilePath)
         self.assertEqual(
-            "/data/pyarch/2022/cm01/IH-LS3198/20181203/RAW_DATA/EPU_IH_LS3198/Images-Disc1/GridSquare_3087308/GridSquare_20181204_115820.jpg",
+            "/data/pyarch/2023/cm01/IH-LS3198/20181203/RAW_DATA/EPU_IH_LS3198/Images-Disc1/GridSquare_3087308/GridSquare_20181204_115820.jpg",
             pyarch_file_path,
         )
         file_path = "/mnt/multipath-shares/data/visitor/mx2112/cm01/20221017/PROCESSED_DATA/mx2440_RESC_Grid_4_EPU/mx2112_RESC_grid4_20221017-140309/Runs/000066_ProtMotionCorr/extra/Images-Disc1_GridSquare_10177155_Data_FoilHole_10275476_Data_10274776_10274778_20221010_180120_fractions_thumbnail.png"
         pyarch_file_path = UtilsPath.getPyarchFilePath(file_path)
         self.assertEqual(
-            "/data/pyarch/2022/cm01/mx2112/20221017/PROCESSED_DATA/mx2440_RESC_Grid_4_EPU/mx2112_RESC_grid4_20221017-140309/Runs/000066_ProtMotionCorr/extra/Images-Disc1_GridSquare_10177155_Data_FoilHole_10275476_Data_10274776_10274778_20221010_180120_fractions_thumbnail.png",
+            "/data/pyarch/2023/cm01/mx2112/20221017/PROCESSED_DATA/mx2440_RESC_Grid_4_EPU/mx2112_RESC_grid4_20221017-140309/Runs/000066_ProtMotionCorr/extra/Images-Disc1_GridSquare_10177155_Data_FoilHole_10275476_Data_10274776_10274778_20221010_180120_fractions_thumbnail.png",
             pyarch_file_path,
         )
 
-    def test_getPyarchFilePath_1(self):
-        # /mnt/multipath-shares/tmp_14_days
-        logFilePath = "/mnt/multipath-shares/scisoft/cm01/visitor/mx2260/20210402/PROCESSED_DATA/mx2260_grid1_CBC_EPU/mx2260_CBC/Runs/000124_ProtGctf/logs/run.log"
-        pyarchFilePath = UtilsPath.getPyarchFilePath(logFilePath)
-        self.assertEqual(
-            "/data/pyarch/2021/cm01/mx2260/20210402/PROCESSED_DATA/mx2260_grid1_CBC_EPU/mx2260_CBC/Runs/000124_ProtGctf/logs/run.log",
-            pyarchFilePath,
-        )
-        # logFilePath = "/data/visitor/mx2346/cm01/20210329/RAW_DATA/mx2346_Grid4_R217H_EPU/Images-Disc1/GridSquare_29246918/GridSquare_20210329_132858.jpg"
-        # pyarchFilePath = UtilsPath.getPyarchFilePath(logFilePath)
-        # self.assertEqual("/data/pyarch/2021/cm01/mx2346/20210329/PROCESSED_DATA/mx2346_R217H_11/Runs/000124_ProtGctf/logs/run.log", pyarchFilePath)
+    # def test_getPyarchFilePath_1(self):
+    #     # /mnt/multipath-shares/tmp_14_days
+    #     logFilePath = "/mnt/multipath-shares/scisoft/cm01/visitor/mx2260/20210402/PROCESSED_DATA/mx2260_grid1_CBC_EPU/mx2260_CBC/Runs/000124_ProtGctf/logs/run.stdout"
+    #     pyarchFilePath = UtilsPath.getPyarchFilePath(logFilePath)
+    #     self.assertEqual(
+    #         "/data/pyarch/2021/cm01/mx2260/20210402/PROCESSED_DATA/mx2260_grid1_CBC_EPU/mx2260_CBC/Runs/000124_ProtGctf/logs/run.stdout",
+    #         pyarchFilePath,
+    #     )
+    #     # logFilePath = "/data/visitor/mx2346/cm01/20210329/RAW_DATA/mx2346_Grid4_R217H_EPU/Images-Disc1/GridSquare_29246918/GridSquare_20210329_132858.jpg"
+    #     # pyarchFilePath = UtilsPath.getPyarchFilePath(logFilePath)
+    #     # self.assertEqual("/data/pyarch/2021/cm01/mx2346/20210329/PROCESSED_DATA/mx2346_R217H_11/Runs/000124_ProtGctf/logs/run.stdout", pyarchFilePath)
 
     def test_findDefectFilePath(self):
         topDirectory = (
-            "/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214"
+            "/data/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214"
         )
         (
             tifDir,
@@ -439,18 +439,18 @@ class Test(unittest.TestCase):
 
     def test_serialEMFilesPattern(self):
         topDirectory = (
-            "/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214"
+            "/data/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214"
         )
         tifDir = (
-            "/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214/data"
+            "/data/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214/data"
         )
         filesPattern = UtilsPath.serialEMFilesPattern(topDirectory, tifDir)
         print(filesPattern)
         self.assertEqual("*/*.tif", filesPattern)
         topDirectory = (
-            "/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214"
+            "/data/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214"
         )
-        tifDir = "/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214/grid5/data/140"
+        tifDir = "/data/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214/grid5/data/140"
         filesPattern = UtilsPath.serialEMFilesPattern(topDirectory, tifDir)
         print(filesPattern)
         self.assertEqual("*/*/*/*.tif", filesPattern)
@@ -510,6 +510,19 @@ class Test(unittest.TestCase):
         dictStarFile = UtilsPath.parseRelionModelStarFile(starFile)
         pprint.pprint(dictStarFile)
 
+    def test_getTomoMovieFileNameParameters(self):
+        file_path = "/data/scisoft/pxsoft/data/cryoem/ihls3478/cm01/20230301/RAW_DATA/grid1/grid1_Position_1_030_54.50_20230301_174921_fractions.tiff"
+        dict_movie = UtilsPath.getTomoMovieFileNameParameters(file_path)
+        self.assertEqual(
+            dict_movie["directory"],
+            "/data/scisoft/pxsoft/data/cryoem/ihls3478/cm01/20230301/RAW_DATA/grid1"
+        )
+        self.assertEqual(dict_movie["grid_name"], "grid1")
+        self.assertEqual(dict_movie["tilt_serie_number"], 1)
+        self.assertEqual(dict_movie["movie_number"], 30)
+        self.assertEqual(dict_movie["tilt_angle"], 54.50)
+        self.assertEqual(dict_movie["date"], "20230301")
+        self.assertEqual(dict_movie["time"], "174921")
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

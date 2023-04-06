@@ -37,13 +37,16 @@ import pyworkflow.protocol.params as params
 from pyworkflow import VERSION_1_1
 from pyworkflow.protocol import getUpdatedProtocol
 from emfacilities.protocols import ProtMonitor, Monitor, PrintNotifier
+from tomo.protocols import ProtImportTsMovies
+
+from esrf.utils.esrf_utils_path import UtilsPath
 
 # Fix for GPFS problem
 shutil._USE_CP_SENDFILE = False
 
 
 class ProtMonitorIcatTomo(ProtMonitor):
-    """ 
+    """
     Monitor to communicated with ICAT system at ESRF for tomo data.
     """
 
@@ -160,7 +163,6 @@ class ProtMonitorIcatTomo(ProtMonitor):
 
     # --------------------------- STEPS functions -------------------------------
     def monitorStep(self):
-
         monitor = MonitorESRFIcatTomo(
             self,
             workingDir=self._getPath(),
@@ -185,7 +187,6 @@ class MonitorESRFIcatTomo(Monitor):
         self.numberOfFrames = None
         self.imageGenerator = None
         self.project = self.protocol.getProject()
-        self.client = protocol.client
         self.proposal = protocol.proposal.get()
         self.proteinAcronym = protocol.proteinAcronym.get()
         self.sampleAcronym = protocol.sampleAcronym.get()
@@ -194,7 +195,6 @@ class MonitorESRFIcatTomo(Monitor):
         self.currentGridSquare = None
         self.currentGridSquareLastMovieTime = None
         self.beamlineName = "cm01"
-        self.dataType = protocol.dataType.get()
         self.voltage = protocol.voltage.get()
         self.magnification = protocol.magnification.get()
         self.imagesCount = protocol.imagesCount.get()
@@ -202,8 +202,6 @@ class MonitorESRFIcatTomo(Monitor):
         self.alignFrameN = protocol.alignFrameN.get()
         self.gainFilePath = protocol.gainFilePath.get()
         self.defectMapPath = protocol.defectMapPath.get()
-        self.particleSize = protocol.particleSize.get()
-        self.doProcessDir = protocol.doProcessDir.get()
         self.positionX = None
         self.positionY = None
         self.collectionDate = None
@@ -213,21 +211,21 @@ class MonitorESRFIcatTomo(Monitor):
             if os.path.exists(self.allParamsJsonFile):
                 try:
                     dictAllParams = json.loads(open(self.allParamsJsonFile).read())
-                    self.allParams = collections.OrderedDict(dictAllParams)
+                    self.all_params = collections.OrderedDict(dictAllParams)
                 except BaseException:
-                    self.allParams = collections.OrderedDict()
+                    self.all_params = collections.OrderedDict()
             else:
-                self.allParams = collections.OrderedDict()
+                self.all_params = collections.OrderedDict()
         else:
             self.allParamsJsonFile = None
-            self.allParams = collections.OrderedDict()
+            self.all_params = collections.OrderedDict()
 
     def step(self):
         self.info("MonitorISPyB: start step ------------------------")
-        self.info("Number of movies in all params: {0}".format(len(self.allParams)))
+        self.info("Number of movies in all params: {0}".format(len(self.all_params)))
 
         # Check if we should archive gain an defect maps
-        self.archiveGainAndDefectMap()
+        # self.archiveGainAndDefectMap()
 
         if self.proposal == "None":
             self.info("WARNING! Proposal is 'None', no data uploaded to ISPyB")
@@ -244,21 +242,21 @@ class MonitorESRFIcatTomo(Monitor):
             isActiveCTFMicrographs = True
 
             # Check if we should archive any grid squares
-            archivedGridSquare = self.archiveOldGridSquare()
-            if archivedGridSquare is not None:
-                self.info("Grid square archived: {0}".format(archivedGridSquare))
-                self.updateJsonFile()
-            else:
-                self.info("No grid square to archive.")
+            # archivedGridSquare = self.archiveOldGridSquare()
+            # if archivedGridSquare is not None:
+            #     self.info("Grid square archived: {0}".format(archivedGridSquare))
+            #     self.updateJsonFile()
+            # else:
+            #     self.info("No grid square to archive.")
 
             for n in nodes:
                 prot = n.run
                 self.info("*" * 80)
                 self.info("Protocol name: {0}".format(prot.getRunName()))
 
-                # if isinstance(prot, ProtImportMovies):
-                #     self.uploadImportMovies(prot)
-                #     isActiveImportMovies = prot.isActive()
+                if isinstance(prot, ProtImportTsMovies):
+                    self.uploadImportMovies(prot)
+                    isActiveImportMovies = prot.isActive()
                 # # elif isinstance(prot, XmippProtMovieMaxShift) and hasattr(prot, 'outputMicrographs'):
                 # elif isinstance(prot, ProtMotionCorr) and hasattr(
                 #     prot, "outputMicrographs"
@@ -278,18 +276,14 @@ class MonitorESRFIcatTomo(Monitor):
                 #     self.uploadClassify2D(prot)
                 #     isActiveClassify2D = prot.isActive()
 
-            if (
-                isActiveImportMovies
-                or isActiveAlignMovies
-                or isActiveCTFMicrographs
-            ):
+            if isActiveImportMovies or isActiveAlignMovies or isActiveCTFMicrographs:
                 finished = False
             else:
                 self.info(
                     "MonitorIcatTomo: All upstream activities ended, stopping monitor"
                 )
                 finished = True
-
+            self.updateJsonFile()
         self.info("MonitorIcatTomo: end step --------------------------")
 
         return finished
@@ -302,7 +296,7 @@ class MonitorESRFIcatTomo(Monitor):
         if self.allParamsJsonFile is not None:
             thread = threading.Thread(
                 target=self.noInterrupt,
-                args=(self.allParamsJsonFile, json.dumps(self.allParams, indent=4)),
+                args=(self.allParamsJsonFile, json.dumps(self.all_params, indent=4)),
             )
             thread.start()
             thread.join()
@@ -313,3 +307,71 @@ class MonitorESRFIcatTomo(Monitor):
         for obj in objSet:
             yield obj
         objSet.close()
+
+    def uploadImportMovies(self, prot):
+        prot._initialize()
+        # self.info(pprint.pprint(prot.getMatchingFiles()))
+        dict_tilt_serie = prot.getMatchingFiles()
+        movies_to_be_archived = []
+        for tilt_serie_name, list_movie_tuples in dict_tilt_serie.items():
+            # self.info(f"Tilt serie name: {tilt_serie_name}")
+            for movie_tuple in list_movie_tuples:
+                movie_full_path, movie_number, movie_angle = movie_tuple
+                # self.info(f"Import movies: movieFullPath: {movie_full_path}")
+                # self.info(f"Import movies: movie_number: {movie_number}")
+                # self.info(f"Import movies: movie_angle: {movie_angle}")
+                movie_name = os.path.splitext(os.path.basename(movie_full_path))[0]
+                # Check if movie should be uploaded to ICAT
+                if movie_name not in self.all_params:
+                    movies_to_be_archived.append(movie_full_path)
+                else:
+                    for movie_name in self.all_params:
+                        if (
+                            "movieFullPath" in self.all_params[movie_name]
+                            and "archived" in self.all_params[movie_name]
+                        ):
+                            if not self.all_params[movie_name]["archived"]:
+                                movies_to_be_archived.append(
+                                    self.all_params[movie_name]["movieFullPath"]
+                                )
+        for movie_full_path in movies_to_be_archived:
+            self.archiveMovieInIcat(movie_full_path)
+
+    def archiveMovieInIcat(self, movie_full_path):
+        dict_movie = UtilsPath.getTomoMovieFileNameParameters(movie_full_path)
+        movie_directory = dict_movie["directory"]
+        parent_directory = os.path.dirname(movie_directory)
+        grid_directory_name = os.path.basename(movie_directory)
+        grid_name = dict_movie["grid_name"]
+        if grid_directory_name != grid_name:
+            self.info(
+                f"WARNING! Movie grid name '{grid_name}' "
+                + f"different from directory name '{grid_directory_name}'"
+            )
+        tilt_serie_number = dict_movie["tilt_serie_number"]
+        movie_number = dict_movie["movie_number"]
+        icat_dataset_directory_name = (
+            f"{grid_name}_Position_{tilt_serie_number}_{movie_number:03d}"
+        )
+        icat_dataset_directory_path = os.path.join(
+            parent_directory, icat_dataset_directory_name
+        )
+        icat_dataset_file_path = os.path.join(
+            icat_dataset_directory_path, os.path.basename(movie_full_path)
+        )
+        if os.path.exists(icat_dataset_directory_path):
+            self.info(f"WARNING! Movie alread archived: {movie_full_path}")
+        else:
+            os.makedirs(icat_dataset_directory_path, mode=0o755, exist_ok=False)
+            self.info(f"Created symlink : {movie_full_path} -> {icat_dataset_file_path}")
+            os.symlink(movie_full_path, icat_dataset_file_path)
+        # self.info(f"Archiving movie: movieFullPath: {movie_full_path}")
+        # movie_name = os.path.splitext(os.path.basename(movie_full_path))[0]
+        #
+        # self.all_params[movie_name] = {
+        #     "tiltSerieName": tilt_serie_name,
+        #     "movieFullPath": movie_full_path,
+        #     "movieNumber": movie_number,
+        #     "movieAngle": movie_angle,
+        #     "archived": True,
+        # }

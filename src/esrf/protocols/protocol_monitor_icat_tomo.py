@@ -27,6 +27,7 @@
 
 import os
 import json
+import pathlib
 import shutil
 import threading
 import collections
@@ -37,8 +38,10 @@ import pyworkflow.protocol.params as params
 from pyworkflow import VERSION_1_1
 from pyworkflow.protocol import getUpdatedProtocol
 from emfacilities.protocols import ProtMonitor, Monitor, PrintNotifier
-from tomo.protocols import ProtImportTsMovies
+from pwem.protocols import ProtImportMovies
+from motioncorr.protocols import ProtMotionCorr
 
+from esrf.utils.esrf_utils_icat import UtilsIcat
 from esrf.utils.esrf_utils_path import UtilsPath
 
 # Fix for GPFS problem
@@ -254,15 +257,15 @@ class MonitorESRFIcatTomo(Monitor):
                 self.info("*" * 80)
                 self.info("Protocol name: {0}".format(prot.getRunName()))
 
-                if isinstance(prot, ProtImportTsMovies):
+                if isinstance(prot, ProtImportMovies):
                     self.uploadImportMovies(prot)
                     isActiveImportMovies = prot.isActive()
-                # # elif isinstance(prot, XmippProtMovieMaxShift) and hasattr(prot, 'outputMicrographs'):
-                # elif isinstance(prot, ProtMotionCorr) and hasattr(
-                #     prot, "outputMicrographs"
-                # ):
-                #     self.uploadAlignMovies(prot)
-                #     isActiveAlignMovies = prot.isActive()
+                # elif isinstance(prot, XmippProtMovieMaxShift) and hasattr(prot, 'outputMicrographs'):
+                elif isinstance(prot, ProtMotionCorr) and hasattr(
+                    prot, "outputMicrographs"
+                ):
+                    self.uploadAlignMovies(prot)
+                    isActiveAlignMovies = prot.isActive()
                 # elif isinstance(prot, ProtCTFMicrographs) and hasattr(
                 #     prot, "outputCTF"
                 # ):
@@ -271,7 +274,7 @@ class MonitorESRFIcatTomo(Monitor):
                 # elif (
                 #     isinstance(prot, ProtClassify2D)
                 #     and hasattr(prot, "outputClasses")
-                #     and not prot.getObjId() in self.allParams
+                #     and not prot.getObjId() in self.all_params
                 # ):
                 #     self.uploadClassify2D(prot)
                 #     isActiveClassify2D = prot.isActive()
@@ -309,69 +312,65 @@ class MonitorESRFIcatTomo(Monitor):
         objSet.close()
 
     def uploadImportMovies(self, prot):
-        prot._initialize()
-        # self.info(pprint.pprint(prot.getMatchingFiles()))
-        dict_tilt_serie = prot.getMatchingFiles()
-        movies_to_be_archived = []
-        for tilt_serie_name, list_movie_tuples in dict_tilt_serie.items():
-            # self.info(f"Tilt serie name: {tilt_serie_name}")
-            for movie_tuple in list_movie_tuples:
-                movie_full_path, movie_number, movie_angle = movie_tuple
-                # self.info(f"Import movies: movieFullPath: {movie_full_path}")
-                # self.info(f"Import movies: movie_number: {movie_number}")
-                # self.info(f"Import movies: movie_angle: {movie_angle}")
-                movie_name = os.path.splitext(os.path.basename(movie_full_path))[0]
-                # Check if movie should be uploaded to ICAT
-                if movie_name not in self.all_params:
-                    movies_to_be_archived.append(movie_full_path)
-                else:
-                    for movie_name in self.all_params:
-                        if (
-                            "movieFullPath" in self.all_params[movie_name]
-                            and "archived" in self.all_params[movie_name]
-                        ):
-                            if not self.all_params[movie_name]["archived"]:
-                                movies_to_be_archived.append(
-                                    self.all_params[movie_name]["movieFullPath"]
-                                )
-        for movie_full_path in movies_to_be_archived:
-            self.archiveMovieInIcat(movie_full_path)
+        for movie_full_path in prot.getMatchFiles():
+            list_movie_full_path = []
+            for movieName in self.all_params:
+                if (
+                    "movieFullPath" in self.all_params[movieName]
+                ):
+                    list_movie_full_path.append(
+                        self.all_params[movieName]["movieFullPath"]
+                    )
+            #            listMovieFullPath = [ self.all_params[movieName]["movieFullPath"] for movieName in self.all_params if "movieFullPath" in self.all_params[movieName]]
+            if movie_full_path in list_movie_full_path:
+                pass
+                self.info("Movie already uploaded: {0}".format(movie_full_path))
+            else:
+                self.info("Import movies: movieFullPath: {0}".format(movie_full_path))
+                self.archiveMovieInIcatPlus(prot, movie_full_path)
 
-    def archiveMovieInIcat(self, movie_full_path):
+    def uploadAlignMovies(self, prot):
+        self.protocol.info("ESRF ISPyB upload motion corr results")
+
+    def archiveMovieInIcatPlus(self, prot, movie_full_path):
+        spherical_aberration = prot.sphericalAberration.get()
+        amplitude_contrast = prot.amplitudeContrast.get()
+        sampling_rate = prot.samplingRate.get()
+        dose_initial = prot.doseInitial.get()
+        dose_per_frame = prot.dosePerFrame.get()
         dict_movie = UtilsPath.getTomoMovieFileNameParameters(movie_full_path)
-        movie_directory = dict_movie["directory"]
-        parent_directory = os.path.dirname(movie_directory)
-        grid_directory_name = os.path.basename(movie_directory)
-        grid_name = dict_movie["grid_name"]
-        if grid_directory_name != grid_name:
-            self.info(
-                f"WARNING! Movie grid name '{grid_name}' "
-                + f"different from directory name '{grid_directory_name}'"
-            )
-        tilt_serie_number = dict_movie["tilt_serie_number"]
+        file_name = dict_movie["file_name"]
+        movie_name = dict_movie["movie_name"]
         movie_number = dict_movie["movie_number"]
-        icat_dataset_directory_name = (
-            f"{grid_name}_Position_{tilt_serie_number}_{movie_number:03d}"
+        grid_name = dict_movie["grid_name"]
+        tilt_angle = dict_movie["tilt_angle"]
+        tilt_serie_number = dict_movie["tilt_serie_number"]
+        icat_movie_directory_path = UtilsPath.createIcatDirectory(movie_full_path)
+        self.info(f"Archiving movie: movieFullPath: {movie_full_path}")
+        dictMetadata = {
+            "Sample_name": f"{grid_name}_Position_{tilt_serie_number}",
+            "EM_amplitude_contrast": amplitude_contrast,
+            "EM_dose_initial": dose_initial,
+            "EM_dose_per_frame": dose_per_frame,
+            "EM_images_count": self.imagesCount,
+            "EM_magnification": self.magnification,
+            "EM_protein_acronym": self.proteinAcronym,
+            "EM_sampling_rate": sampling_rate,
+            "EM_spherical_aberration": spherical_aberration,
+            "EM_voltage": self.voltage,
+            "EM_grid_name": grid_name,
+            "EM_tilt_angle": tilt_angle
+        }
+        UtilsIcat.uploadToIcatPlus(
+            directory=str(icat_movie_directory_path),
+            proposal=self.proposal,
+            dataSetName=f"{movie_number:03d}",
+            dictMetadata=dictMetadata
         )
-        icat_dataset_directory_path = os.path.join(
-            parent_directory, icat_dataset_directory_name
-        )
-        icat_dataset_file_path = os.path.join(
-            icat_dataset_directory_path, os.path.basename(movie_full_path)
-        )
-        if os.path.exists(icat_dataset_directory_path):
-            self.info(f"WARNING! Movie alread archived: {movie_full_path}")
-        else:
-            os.makedirs(icat_dataset_directory_path, mode=0o755, exist_ok=False)
-            self.info(f"Created symlink : {movie_full_path} -> {icat_dataset_file_path}")
-            os.symlink(movie_full_path, icat_dataset_file_path)
-        # self.info(f"Archiving movie: movieFullPath: {movie_full_path}")
-        # movie_name = os.path.splitext(os.path.basename(movie_full_path))[0]
-        #
-        # self.all_params[movie_name] = {
-        #     "tiltSerieName": tilt_serie_name,
-        #     "movieFullPath": movie_full_path,
-        #     "movieNumber": movie_number,
-        #     "movieAngle": movie_angle,
-        #     "archived": True,
-        # }
+        self.all_params[movie_name] = {
+            "tiltSerieNumber": tilt_serie_number,
+            "movieFullPath": movie_full_path,
+            "movieNumber": movie_number,
+            "tiltAngle": tilt_angle,
+            "archived": True,
+        }

@@ -30,6 +30,7 @@ import json
 import glob
 import pprint
 import pathlib
+import tempfile
 import unittest
 
 from esrf.utils.esrf_utils_path import UtilsPath
@@ -513,6 +514,7 @@ class Test(unittest.TestCase):
     def test_getTomoMovieFileNameParameters(self):
         file_path = "/data/scisoft/pxsoft/data/cryoem/ihls3478/cm01/20230301/RAW_DATA/grid1/grid1_Position_1_030_54.50_20230301_174921_fractions.tiff"
         dict_movie = UtilsPath.getTomoMovieFileNameParameters(file_path)
+        pprint.pprint(dict_movie)
         self.assertEqual(
             dict_movie["directory"],
             "/data/scisoft/pxsoft/data/cryoem/ihls3478/cm01/20230301/RAW_DATA/grid1"
@@ -523,6 +525,15 @@ class Test(unittest.TestCase):
         self.assertEqual(dict_movie["tilt_angle"], 54.50)
         self.assertEqual(dict_movie["date"], "20230301")
         self.assertEqual(dict_movie["time"], "174921")
+
+    def test_createIcatDirectory(self):
+        test_dir = pathlib.Path(tempfile.mkdtemp())
+        movie_directory = test_dir / "grid1"
+        movie_directory.mkdir(mode=0o755)
+        movie_full_path = movie_directory / "grid1_Position_8_001_17.00_20230301_220611_fractions.tiff"
+        UtilsPath.createIcatDirectory(str(movie_full_path))
+
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

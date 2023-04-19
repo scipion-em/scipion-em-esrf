@@ -188,6 +188,24 @@ def set_em_data(config_dict):
     config_dict["sphericalAberration"] = 2.7
     config_dict["gainFlip"] = motioncorr.constants.NO_FLIP
     config_dict["gainRot"] = motioncorr.constants.NO_ROTATION
+    # Needed by GCTF
+    config_dict["minDefocus"] = 5000
+    config_dict["maxDefocus"] = 90000
+    config_dict["astigmatism"] = 1000.0
+    config_dict["convsize"] = 85
+    config_dict["doPhShEst"] = False
+    config_dict["phaseShiftL"] = 0.0
+    config_dict["phaseShiftH"] = 180.0
+    config_dict["phaseShiftS"] = 10.0
+    config_dict["phaseShiftT"] = 0
+    config_dict["lowRes"] = 30.0
+    config_dict["highRes"] = 4.0
+    #
+    if config_dict["superResolution"]:
+        config_dict["binFactor"] = 2.0
+    else:
+        config_dict["binFactor"] = 1.0
+    config_dict["extraParams2"] = ""
 
 
 def set_gpu_data(config_dict):
@@ -304,7 +322,7 @@ def run_workflow_main(config_dict, logger):
     logger.info("Starting new workflow.")
     logger.debug(pprint.pformat(config_dict))
     # First check that a worker is not running on this computer
-    check_active_workers(config_dict)
+    # check_active_workers(config_dict)
     # Set up location
     set_location(config_dict)
     # Set up ispyb data base
@@ -431,6 +449,10 @@ def extract_meta_data(movie_path, phase_plate_data=False, super_resolution=True)
     config_dict["dataType"] = 1  # "EPU_TIFF"
     config_dict["gainFlip"] = motioncorr.constants.FLIP_LEFTRIGHT
     config_dict["gainRot"] = motioncorr.constants.ROTATE_180
+    if config_dict["superResolution"]:
+        config_dict["binFactor"] = 2.0
+    else:
+        config_dict["binFactor"] = 1.0
     return config_dict
 
 

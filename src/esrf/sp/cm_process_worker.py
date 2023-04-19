@@ -352,7 +352,7 @@ def run_workflow_main(config_dict, logger):
     logger.info("Starting new workflow.")
     logger.debug(pprint.pformat(config_dict))
     # First check that a worker is not running on this computer
-    check_active_workers(config_dict)
+    # check_active_workers(config_dict)
     # Set up location
     set_location(config_dict)
     # Set up ispyb data base

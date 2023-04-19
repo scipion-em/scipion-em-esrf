@@ -30,7 +30,11 @@ import json
 import random
 
 from collections import OrderedDict
-from tomo.protocols import ProtImportTsMovies
+from pwem.protocols import ProtImportMovies
+from motioncorr.protocols import ProtMotionCorr
+from gctf.protocols import ProtGctf
+from tomo.protocols.protocol_compose_TS import ProtComposeTS
+
 from pyworkflow.object import Pointer
 from pyworkflow.project.manager import Manager
 
@@ -178,9 +182,9 @@ def preprocessWorkflow(config_dict):
     timeout = 43200  # 12 hours
 
     protImport = project.newProtocol(
-        ProtImportTsMovies,
-        objLabel="Import tilt serie movies",
-        importFrom=ProtImportTsMovies.IMPORT_FROM_FILES,
+        ProtImportMovies,
+        objLabel="Import movies",
+        importFrom=ProtImportMovies.IMPORT_FROM_FILES,
         filesPath=config_dict["dataDirectory"],
         filesPattern=config_dict["filesPattern"],
         amplitudeContrast=0.1,
@@ -191,9 +195,9 @@ def preprocessWorkflow(config_dict):
         dosePerFrame=config_dict["dosePerFrame"],
         magnification=config_dict["magnification"],
         dataStreaming=config_dict["dataStreaming"],
-        tiltAxisAngle=config_dict["tiltAxisAngle"],
-        # blacklistFile=config_dict["blacklistFile"],
+        blacklistFile=config_dict["blacklistFile"],
         useRegexps=False,
+        gainFile=config_dict["gainFilePath"],
         fileTimeout=30,
         timeout=timeout,
     )
@@ -201,6 +205,120 @@ def preprocessWorkflow(config_dict):
     ispybUploads.append(protImport)
 
     # Stop here if --onlyISPyB
+    if not config_dict["onlyISPyB"]:
+        # ----------- Movie Gain ----------------------------
+        # protMG = project.newProtocol(
+        #     XmippProtMovieGain,
+        #     objLabel="xmipp3 - movie gain",
+        #     estimateGain=True,
+        #     estimateOrientation=True,
+        #     estimateResidualGain=True,
+        #     normalizeGain=True,
+        #     estimateSigma=False,
+        #     frameStep=5,
+        #     movieStep=20,
+        #     hostName="localhost",
+        #     numberOfThreads=4,
+        #     numberOfMpi=1,
+        # )
+        # setExtendedInput(protMG.inputMovies, protImport, "outputMovies")
+        # _registerProt(protMG, "MovieGain")
+
+        # ----------- MOTIONCOR ----------------------------
+        protMA = project.newProtocol(
+            ProtMotionCorr,
+            objLabel="MotionCor2 - movie align.",
+            gpuList=config_dict["motioncor2Gpu"],
+            numberOfThreads=config_dict["motioncor2Cpu"],
+            numberOfMpi=1,
+            doApplyDoseFilter=True,
+            doSaveUnweightedMic=True,
+            doSaveAveMic=True,
+            doSaveMovie=False,
+            doComputeMicThumbnail=True,
+            computeAllFramesAvg=False,
+            patchX=5,
+            patchY=5,
+            useEst=True,
+            gainFlip=config_dict["gainFlip"],
+            gainRot=config_dict["gainRot"],
+            alignFrame0=config_dict["alignFrame0"],
+            alignFrameN=config_dict["alignFrameN"],
+            binFactor=config_dict["binFactor"],
+            extraParams2=config_dict["extraParams2"],
+        )
+        setExtendedInput(protMA.inputMovies, protImport, "outputMovies")
+        _registerProt(protMA, "MotionCorr")
+        ispybUploads.append(protMA)
+
+        # ----------- GCTF ----------------------------
+        protCTF2 = project.newProtocol(
+            ProtGctf,
+            objLabel="gCTF estimation",
+            gpuList=config_dict["gctfGpu"],
+            lowRes=config_dict["lowRes"],
+            plotResRing=True,
+            doEPA=False,
+            doHighRes=True,
+            convsize=config_dict["convsize"],
+            highRes=config_dict["highRes"],
+            minDefocus=config_dict["minDefocus"],
+            maxDefocus=config_dict["maxDefocus"],
+            astigmatism=config_dict["astigmatism"],
+            doPhShEst=config_dict["doPhShEst"],
+            phaseShiftL=config_dict["phaseShiftL"],
+            phaseShiftH=config_dict["phaseShiftH"],
+            phaseShiftS=config_dict["phaseShiftS"],
+            phaseShiftT=config_dict["phaseShiftT"],
+        )
+        setExtendedInput(
+            protCTF2.inputMicrographs, protMA, "outputMicrographsDoseWeighted"
+        )
+        _registerProt(protCTF2, "CTF")
+        ispybUploads.append(protCTF2)
+
+    # {
+    #     "object.className": "ProtComposeTS",
+    #     "object.id": "201",
+    #     "object.label": "tomo - Compose Tilt Serie",
+    #     "object.comment": "",
+    #     "_useQueue": false,
+    #     "_prerequisites": "",
+    #     "_queueParams": null,
+    #     "runName": null,
+    #     "runMode": 0,
+    #     "filesPath": "/data/visitor/mx2112/cm01/20230417/RAW_DATA/grid1_1",
+    #     "mdoc_bug_Correction": false,
+    #     "dataStreaming": true,
+    #     "time4NextTilt": 180,
+    #     "time4NextMic": 12,
+    #     "time4NextTS": 1800,
+    #     "hostName": "localhost",
+    #     "numberOfThreads": 3,
+    #     "numberOfMpi": 1,
+    #     "inputMicrographs": "66.outputMicrographsDoseWeighted"
+    # }
+
+    # ----------- Prot Compose Time-Series ----------------------------
+    protComposeTS = project.newProtocol(
+        ProtComposeTS,
+        objLabel="tomo - Compose Tilt Serie",
+        filesPath="/data/visitor/mx2112/cm01/20230417/RAW_DATA/grid1_1",
+        mdoc_bug_Correction=True,
+        dataStreaming=True,
+        time4NextTilt=180,
+        time4NextMic=12,
+        time4NextTS=1800,
+        hostName="localhost",
+        numberOfThreads=3,
+        numberOfMpi= 1,
+    )
+    setExtendedInput(
+        protComposeTS.inputMicrographs, protMA, "outputMicrographsDoseWeighted"
+    )
+    _registerProt(protComposeTS, "ComposeTs")
+    ispybUploads.append(protComposeTS)
+
     # --------- ISPyB MONITOR -----------------------
     if not config_dict["noISPyB"]:
         icat_tomo_monitor = project.newProtocol(

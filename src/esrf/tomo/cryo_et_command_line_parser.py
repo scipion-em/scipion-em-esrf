@@ -81,8 +81,10 @@ def getCommandlineOptions():
         "--filesPattern",
         action="store",
         help="file pattern for finding CRyo ET movies, default pattern "
-        + "'*_Position_{TS}_{TO}_{TA}_*_fractions.tiff'",
-        default="*_Position_{TS}_{TO}_{TA}_*_fractions.tiff",
+        + "'*_Position_*_*_*_*_fractions.tiff'",
+        default="*_Position_*_*_*_*_fractions.tiff",
+        # + "'*_Position_{TS}_{TO}_{TA}_*_fractions.tiff'",
+        # default="*_Position_{TS}_{TO}_{TA}_*_fractions.tiff",
     )
     # optional.add_argument(
     #     "--scipionProjectName",
@@ -169,6 +171,7 @@ def getCommandlineOptions():
         "defectMapPath": results.defectMapPath,
         "gainFilePath": results.gainFilePath,
         "tiltAxisAngle": results.tiltAxisAngle,
+        "superResolution": results.superResolution,
     }
     pprint.pprint(opt_dict)
     return opt_dict

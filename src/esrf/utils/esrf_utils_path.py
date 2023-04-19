@@ -26,6 +26,7 @@
 # **************************************************************************
 
 import os
+import pathlib
 import re
 import glob
 import json
@@ -960,12 +961,15 @@ class UtilsPath(object):
     def getTomoMovieFileNameParameters(movie_file_path):
         directory = os.path.dirname(movie_file_path)
         file_name = os.path.basename(movie_file_path)
+        movie_name = os.path.splitext(file_name)[0]
         list_file_name = file_name.split("_")
         if list_file_name[1] != "Position" or \
             list_file_name[7] != "fractions.tiff":
             raise RuntimeError(f"ERROR! Path can not be parsed: {movie_file_path}")
         dict_movie = {
             "directory": directory,
+            "file_name": file_name,
+            "movie_name": movie_name,
             "grid_name": list_file_name[0],
             "tilt_serie_number": int(list_file_name[2]),
             "movie_number": int(list_file_name[3]),
@@ -974,3 +978,40 @@ class UtilsPath(object):
             "time": list_file_name[6]
         }
         return dict_movie
+
+    @staticmethod
+    def createIcatDirectory(movie_full_path):
+        dict_movie = UtilsPath.getTomoMovieFileNameParameters(movie_full_path)
+        file_name = dict_movie["file_name"]
+        movie_name = dict_movie["movie_name"]
+        tilt_angle = dict_movie["tilt_angle"]
+        tilt_serie_number = dict_movie["tilt_serie_number"]
+        grid_directory = pathlib.Path(dict_movie["directory"])
+        grid_directory_name = grid_directory.name
+        grid_name = dict_movie["grid_name"]
+        if grid_directory_name != grid_name:
+            print(
+                f"WARNING! Movie grid name '{grid_name}' "
+                + f"different from directory name '{grid_directory_name}'"
+            )
+        # Create tilt serie directory if not already exists
+        tilt_serie_directory_name = f"{grid_name}_Position_{tilt_serie_number}"
+        tilt_serie_directory_path = (
+            pathlib.Path(grid_directory) / tilt_serie_directory_name
+        )
+        if not tilt_serie_directory_path.exists():
+            tilt_serie_directory_path.mkdir(mode=0o755, parents=True)
+
+        # Create movie directory
+        movie_number = dict_movie["movie_number"]
+        icat_movie_directory_path = tilt_serie_directory_path / f"{movie_number:03d}"
+        icat_movie_path = icat_movie_directory_path / file_name
+        if icat_movie_directory_path.exists():
+            print(f"WARNING! Movie already archived: {movie_full_path}")
+        else:
+            os.makedirs(icat_movie_directory_path, mode=0o755, exist_ok=False)
+            print(
+                f"Created symlink : {movie_full_path} -> {icat_movie_path}"
+            )
+            os.symlink(movie_full_path, icat_movie_path)
+        return icat_movie_directory_path

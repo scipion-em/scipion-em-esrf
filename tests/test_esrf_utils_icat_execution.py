@@ -260,6 +260,50 @@ class Test(unittest.TestCase):
                 }
         return allParams
 
+
+    def test_uploadToIcatPlus(self):
+        directory = "/data/visitor/mx2112/cm01/20230405/RAW_DATA/grid1_1/grid1_Position_8/001"
+        proposal = "CM012304"
+        dataSetName = "001"
+        dictMetadata = {
+            "Sample_name": "grid1_Position_8",
+            "EM_amplitude_contrast": 0.0,
+            "EM_dose_initial": 1.0,
+            "EM_dose_per_frame": 2.0,
+            "EM_images_count": 3.0,
+            "EM_magnification": 4.0,
+            "EM_position_x": 5.0,
+            "EM_position_y": 6.0,
+            "EM_protein_acronym": 7.0,
+            "EM_sampling_rate": 8.0,
+            "EM_spherical_aberration": 9.0,
+            "EM_voltage": 10.0,
+            "EM_grid_name": "grid1",
+            "EM_tilt_angle": 23.45
+        }
+        UtilsIcat.uploadToIcatPlus(
+            directory=directory,
+            proposal=proposal,
+            dataSetName=dataSetName,
+            dictMetadata=dictMetadata
+        )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     # def test_archive_mx2261_20201005(self):
     #     proposal = "mx2261"
     #     # proposal = "id000001"

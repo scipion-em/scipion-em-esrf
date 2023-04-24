@@ -126,13 +126,13 @@ def getCommandlineOptions():
         default=False,
     )
     optional.add_argument(
-        "--onlyISPyB",
+        "--onlyICAT",
         action="store_true",
-        help="Only upload data to ISPyB i.e. no processing, default 'False'.",
+        help="Only upload raw data to ICAT i.e. no processing, default 'False'.",
         default=False,
     )
     optional.add_argument(
-        "--noISPyB",
+        "--noICAT",
         action="store_true",
         help="Don't upload to ISPyB or iCAT, default 'False'.",
         default=False,
@@ -165,8 +165,8 @@ def getCommandlineOptions():
         "dataStreaming": True,
         "alignFrame0": int(results.startMotioncorFrame),
         "alignFrameN": int(results.endMotioncorFrame),
-        "onlyISPyB": results.onlyISPyB,
-        "noISPyB": results.noISPyB,
+        "onlyICAT": results.onlyICAT,
+        "noICAT": results.noICAT,
         "celery_worker": results.celery_worker,
         "defectMapPath": results.defectMapPath,
         "gainFilePath": results.gainFilePath,

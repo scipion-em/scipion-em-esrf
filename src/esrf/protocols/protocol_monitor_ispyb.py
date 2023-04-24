@@ -202,7 +202,7 @@ class ProtMonitorISPyB_ESRF(ProtMonitor):
         )
 
         section3.addParam(
-            "allParamsJsonFile",
+            "all_params_json_file",
             params.StringParam,
             default="",
             label="All parameters json file",
@@ -271,18 +271,18 @@ class MonitorISPyB_ESRF(Monitor):
         self.positionY = None
         self.collectionDate = None
         self.collectionTime = None
-        if hasattr(protocol, "allParamsJsonFile"):
-            self.allParamsJsonFile = protocol.allParamsJsonFile.get()
-            if os.path.exists(self.allParamsJsonFile):
+        if hasattr(protocol, "all_params_json_file"):
+            self.all_params_json_file = protocol.all_params_json_file.get()
+            if os.path.exists(self.all_params_json_file):
                 try:
-                    dictAllParams = json.loads(open(self.allParamsJsonFile).read())
+                    dictAllParams = json.loads(open(self.all_params_json_file).read())
                     self.allParams = collections.OrderedDict(dictAllParams)
                 except BaseException:
                     self.allParams = collections.OrderedDict()
             else:
                 self.allParams = collections.OrderedDict()
         else:
-            self.allParamsJsonFile = None
+            self.all_params_json_file = None
             self.allParams = collections.OrderedDict()
 
     def step(self):
@@ -364,10 +364,10 @@ class MonitorISPyB_ESRF(Monitor):
             fd.write(obj)
 
     def updateJsonFile(self):
-        if self.allParamsJsonFile is not None:
+        if self.all_params_json_file is not None:
             thread = threading.Thread(
                 target=self.noInterrupt,
-                args=(self.allParamsJsonFile, json.dumps(self.allParams, indent=4)),
+                args=(self.all_params_json_file, json.dumps(self.allParams, indent=4)),
             )
             thread.start()
             thread.join()

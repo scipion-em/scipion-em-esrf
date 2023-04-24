@@ -30,8 +30,8 @@ config_dict = getCommandlineOptions()
 #     "alignFrameN": 0,
 #     "phasePlateData": False,
 #     "no2dClass": True,
-#     "onlyISPyB": False,
-#     "noISPyB": True,
+#     "onlyICAT": False,
+#     "noICAT": True,
 #     "particleElimination": False,
 #     "samplingRate": 0.84,
 #     "superResolution": True,
@@ -102,7 +102,7 @@ config_dict["imagesCount"] = config_dict["numberOfFrames"]
 
 proposal = UtilsISPyB.getProposal(config_dict["dataDirectory"])
 
-if config_dict["noISPyB"]:
+if config_dict["noICAT"]:
     print("No upload to ISPyB or iCAT")
     db = -1
 elif proposal is None:

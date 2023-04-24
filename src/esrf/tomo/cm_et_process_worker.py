@@ -142,10 +142,10 @@ def set_ispyb_database(config_dict):
     logger = logging.getLogger("cm_et_process_worker")
     if config_dict["proposal"] is None:
         logger.info("WARNING! No data will be uploaded to ISPyB.")
-        config_dict["noISPyB"] = True
+        config_dict["noICAT"] = True
         config_dict["db"] = -1
         config_dict["proposal"] = "Unknown"
-    elif config_dict["noISPyB"]:
+    elif config_dict["noICAT"]:
         logger.info("No upload to ISPyB or iCAT")
         config_dict["db"] = -1
     else:

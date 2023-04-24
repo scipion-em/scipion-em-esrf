@@ -30,6 +30,7 @@ import json
 import glob
 import pprint
 import pathlib
+import shutil
 import tempfile
 import unittest
 
@@ -511,28 +512,55 @@ class Test(unittest.TestCase):
         dictStarFile = UtilsPath.parseRelionModelStarFile(starFile)
         pprint.pprint(dictStarFile)
 
-    def test_getTomoMovieFileNameParameters(self):
+    def test_getTomoMovieFileNameParameters_rawMovie(self):
         file_path = "/data/scisoft/pxsoft/data/cryoem/ihls3478/cm01/20230301/RAW_DATA/grid1/grid1_Position_1_030_54.50_20230301_174921_fractions.tiff"
-        dict_movie = UtilsPath.getTomoMovieFileNameParameters(file_path)
+        dict_movie = UtilsPath.getTSFileParameters(file_path)
         pprint.pprint(dict_movie)
         self.assertEqual(
             dict_movie["directory"],
             "/data/scisoft/pxsoft/data/cryoem/ihls3478/cm01/20230301/RAW_DATA/grid1"
         )
         self.assertEqual(dict_movie["grid_name"], "grid1")
-        self.assertEqual(dict_movie["tilt_serie_number"], 1)
+        self.assertEqual(dict_movie["ts_number"], 1)
         self.assertEqual(dict_movie["movie_number"], 30)
         self.assertEqual(dict_movie["tilt_angle"], 54.50)
         self.assertEqual(dict_movie["date"], "20230301")
         self.assertEqual(dict_movie["time"], "174921")
+
+    def test_getTomoMovieFileNameParameters_motionCor(self):
+        file_path = "/mnt/multipath-shares/data/visitor/mx2112/cm01/20230421/PROCESSED_DATA/grid1/mx2112_test_grid1_20230421-172001/Runs/000066_ProtMotionCorr/extra/grid1_Position_1_001_17.00_20230301_172443_fractions_aligned_mic.mrc"
+        dict_movie = UtilsPath.getTSFileParameters(file_path)
+        pprint.pprint(dict_movie)
+        self.assertEqual(
+            dict_movie["directory"],
+            "/mnt/multipath-shares/data/visitor/mx2112/cm01/20230421/PROCESSED_DATA/grid1/mx2112_test_grid1_20230421-172001/Runs/000066_ProtMotionCorr/extra"
+        )
+        self.assertEqual(dict_movie["grid_name"], "grid1")
+        self.assertEqual(dict_movie["ts_number"], 1)
+        self.assertEqual(dict_movie["movie_number"], 1)
+        self.assertEqual(dict_movie["tilt_angle"], 17.00)
+        self.assertEqual(dict_movie["date"], "20230301")
+        self.assertEqual(dict_movie["time"], "172443")
 
     def test_createIcatDirectory(self):
         test_dir = pathlib.Path(tempfile.mkdtemp())
         movie_directory = test_dir / "grid1"
         movie_directory.mkdir(mode=0o755)
         movie_full_path = movie_directory / "grid1_Position_8_001_17.00_20230301_220611_fractions.tiff"
-        UtilsPath.createIcatDirectory(str(movie_full_path))
+        icat_movie_path = UtilsPath.createIcatDirectory(str(movie_full_path))
 
+
+    def test_createTiltSerieInstrumentSnapshot(self):
+        test_dir = pathlib.Path(tempfile.mkdtemp())
+        movie_directory = test_dir / "grid1"
+        movie_directory.mkdir(mode=0o755)
+        movie_full_path = movie_directory / "grid1_Position_8_001_17.00_20230301_220611_fractions.tiff"
+        # Copy "real" movie
+        real_movie_path = "/data/scisoft/pxsoft/data/cryoem/ihls3478/cm01/20230301/RAW_DATA/grid1/grid1_Position_1_030_54.50_20230301_174921_fractions.tiff"
+        shutil.copy(real_movie_path, movie_full_path)
+        icat_movie_path = UtilsPath.createIcatDirectory(str(movie_full_path))
+        print(icat_movie_path)
+        UtilsPath.createTiltSerieInstrumentSnapshot(icat_movie_path)
 
 
 if __name__ == "__main__":

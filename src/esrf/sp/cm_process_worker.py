@@ -125,11 +125,11 @@ def set_location(config_dict):
     logger.info("Scipion project location: {0}".format(location))
     config_dict["location"] = location
     # All param json file
-    config_dict["allParamsJsonFile"] = os.path.join(location, "allParams.json")
+    config_dict["all_params_json_file"] = os.path.join(location, "allParams.json")
     logger.info(
-        "Location of allParams file: {0}".format(config_dict["allParamsJsonFile"])
+        "Location of allParams file: {0}".format(config_dict["all_params_json_file"])
     )
-    if os.path.exists(config_dict["allParamsJsonFile"]):
+    if os.path.exists(config_dict["all_params_json_file"]):
         logger.info("Using existing allParams file")
     return location
 
@@ -162,13 +162,13 @@ def set_ispyb_database(config_dict):
 def create_blackfile_list(config_dict):
     logger = logging.getLogger("cm_process_worker")
     config_dict["blacklistFile"] = None
-    if os.path.exists(config_dict["allParamsJsonFile"]):
+    if os.path.exists(config_dict["all_params_json_file"]):
         # Check how many movies are present on disk
         list_movies = glob.glob(
             os.path.join(config_dict["dataDirectory"], config_dict["filesPattern"])
         )
         black_list = UtilsPath.getBlacklistAllMovies(
-            list_movies, config_dict["allParamsJsonFile"]
+            list_movies, config_dict["all_params_json_file"]
         )
         blacklist_file = os.path.join(config_dict["location"], "blacklist.txt")
         with open(blacklist_file, "w") as f:
@@ -289,22 +289,22 @@ def print_config(config_dict):
     logger.info("")
     logger.info("Scipion project name: {0}".format(config_dict["scipionProjectName"]))
     logger.info("Scipion user data location: {0}".format(config_dict["location"]))
-    logger.info("All param json file: {0}".format(config_dict["allParamsJsonFile"]))
+    logger.info("All param json file: {0}".format(config_dict["all_params_json_file"]))
     logger.info("")
 
 
 def update_all_params(config_dict):
-    if os.path.exists(config_dict["allParamsJsonFile"]):
-        with open(config_dict["allParamsJsonFile"]) as fd:
+    if os.path.exists(config_dict["all_params_json_file"]):
+        with open(config_dict["all_params_json_file"]) as fd:
             all_params = json.loads(fd.read())
     else:
         all_params = {}
     key = "config_dict_" + time.strftime("%Y%m%d-%H%M%S", time.localtime(time.time()))
     all_params[key] = config_dict
     os.makedirs(
-        os.path.dirname(config_dict["allParamsJsonFile"]), exist_ok=True, mode=0o755
+        os.path.dirname(config_dict["all_params_json_file"]), exist_ok=True, mode=0o755
     )
-    with open(config_dict["allParamsJsonFile"], "w") as fd:
+    with open(config_dict["all_params_json_file"], "w") as fd:
         fd.write(json.dumps(all_params, indent=4))
 
 
@@ -365,7 +365,7 @@ def run_workflow_main(config_dict, logger):
     set_gpu_data(config_dict)
     # Print configuration
     print_config(config_dict)
-    # Update the allParamsJsonFile with the config_dict
+    # Update the all_params_json_file with the config_dict
     update_all_params(config_dict)
 
     # the project may be a soft link which may be unavailable to the cluster

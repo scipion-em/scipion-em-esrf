@@ -204,8 +204,8 @@ def preprocessWorkflow(config_dict):
     _registerProt(protImport, label="Movies", toSummary=True)
     ispybUploads.append(protImport)
 
-    # Stop here if --onlyISPyB
-    if not config_dict["onlyISPyB"]:
+    # Stop here if --onlyICAT
+    if not config_dict["onlyICAT"]:
         # ----------- Movie Gain ----------------------------
         # protMG = project.newProtocol(
         #     XmippProtMovieGain,
@@ -303,7 +303,7 @@ def preprocessWorkflow(config_dict):
     protComposeTS = project.newProtocol(
         ProtComposeTS,
         objLabel="tomo - Compose Tilt Serie",
-        filesPath="/data/visitor/mx2112/cm01/20230417/RAW_DATA/grid1_1",
+        filesPath=config_dict["dataDirectory"],
         mdoc_bug_Correction=True,
         dataStreaming=True,
         time4NextTilt=180,
@@ -320,7 +320,7 @@ def preprocessWorkflow(config_dict):
     ispybUploads.append(protComposeTS)
 
     # --------- ISPyB MONITOR -----------------------
-    if not config_dict["noISPyB"]:
+    if not config_dict["noICAT"]:
         icat_tomo_monitor = project.newProtocol(
             ProtMonitorIcatTomo,
             objLabel="ICAT Tomo monitor",
@@ -329,7 +329,7 @@ def preprocessWorkflow(config_dict):
             proteinAcronym=config_dict["proteinAcronym"],
             sampleAcronym=config_dict["sampleAcronym"],
             db=config_dict["db"],
-            allParamsJsonFile=config_dict["allParamsJsonFile"],
+            all_params_json_file=config_dict["allParamsJsonFile"],
             samplingRate=config_dict["samplingRate"],
             doseInitial=config_dict["doseInitial"],
             dosePerFrame=config_dict["dosePerFrame"],

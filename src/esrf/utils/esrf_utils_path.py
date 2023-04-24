@@ -958,60 +958,105 @@ class UtilsPath(object):
         return dictStarFile
 
     @staticmethod
-    def getTomoMovieFileNameParameters(movie_file_path):
-        directory = os.path.dirname(movie_file_path)
-        file_name = os.path.basename(movie_file_path)
-        movie_name = os.path.splitext(file_name)[0]
-        list_file_name = file_name.split("_")
+    def getTSFileParameters(file_path):
+        extra = None
+        directory = os.path.dirname(file_path)
+        file_name = os.path.basename(file_path)
+        file_stem, suffix = os.path.splitext(file_name)
+        list_file_name = file_stem.split("_")
+        movie_name = "_".join(list_file_name[:8])
+        ts_number = list_file_name[2]
+        grid_name = list_file_name[0]
+        movie_number = list_file_name[3]
         if list_file_name[1] != "Position" or \
-            list_file_name[7] != "fractions.tiff":
-            raise RuntimeError(f"ERROR! Path can not be parsed: {movie_file_path}")
+            list_file_name[7] != "fractions":
+            raise RuntimeError(f"ERROR! Path can not be parsed: {file_path}")
+        if len(list_file_name) > 8:
+            extra = "_".join(list_file_name[8:])
+        # RAW_DATA or PROCESSED_DATA directory
+        if "RAW_DATA" in directory:
+            date_dir = directory.split("RAW_DATA")[0]
+            icat_top_dir = os.path.join(date_dir, "RAW_DATA")
+        elif "PROCESSED_DATA" in directory:
+            date_dir = directory.split("PROCESSED_DATA")[0]
+            icat_top_dir = os.path.join(date_dir, "PROCESSED_DATA")
+        else:
+            icat_top_dir = directory
+        icat_dir = os.path.join(
+            icat_top_dir,
+            grid_name,
+            f"{grid_name}_Position_{ts_number}",
+            movie_number
+        )
+        raw_data_dir = os.path.join(date_dir, "RAW_DATA")
         dict_movie = {
-            "directory": directory,
+            "file_path": str(file_path),
+            "directory": str(directory),
             "file_name": file_name,
             "movie_name": movie_name,
-            "grid_name": list_file_name[0],
-            "tilt_serie_number": int(list_file_name[2]),
-            "movie_number": int(list_file_name[3]),
+            "grid_name": grid_name,
+            "ts_number": int(ts_number),
+            "movie_number": int(movie_number),
             "tilt_angle": float(list_file_name[4]),
             "date": list_file_name[5],
-            "time": list_file_name[6]
+            "time": list_file_name[6],
+            "extra": extra,
+            "suffix": suffix,
+            "icat_dir": icat_dir
         }
         return dict_movie
 
     @staticmethod
-    def createIcatDirectory(movie_full_path):
-        dict_movie = UtilsPath.getTomoMovieFileNameParameters(movie_full_path)
-        file_name = dict_movie["file_name"]
-        movie_name = dict_movie["movie_name"]
-        tilt_angle = dict_movie["tilt_angle"]
-        tilt_serie_number = dict_movie["tilt_serie_number"]
-        grid_directory = pathlib.Path(dict_movie["directory"])
-        grid_directory_name = grid_directory.name
-        grid_name = dict_movie["grid_name"]
-        if grid_directory_name != grid_name:
-            print(
-                f"WARNING! Movie grid name '{grid_name}' "
-                + f"different from directory name '{grid_directory_name}'"
-            )
-        # Create tilt serie directory if not already exists
-        tilt_serie_directory_name = f"{grid_name}_Position_{tilt_serie_number}"
-        tilt_serie_directory_path = (
-            pathlib.Path(grid_directory) / tilt_serie_directory_name
-        )
-        if not tilt_serie_directory_path.exists():
-            tilt_serie_directory_path.mkdir(mode=0o755, parents=True)
-
-        # Create movie directory
-        movie_number = dict_movie["movie_number"]
-        icat_movie_directory_path = tilt_serie_directory_path / f"{movie_number:03d}"
-        icat_movie_path = icat_movie_directory_path / file_name
-        if icat_movie_directory_path.exists():
-            print(f"WARNING! Movie already archived: {movie_full_path}")
+    def createIcatLink(file_path, icat_path):
+        file_name = file_path.name
+        icat_path = icat_path / file_name
+        if icat_path.exists():
+            raise RuntimeError(f"WARNING! File already archived: {icat_path}")
         else:
-            os.makedirs(icat_movie_directory_path, mode=0o755, exist_ok=False)
+            os.symlink(str(file_path), str(icat_path))
             print(
-                f"Created symlink : {movie_full_path} -> {icat_movie_path}"
+                f"Created symlink : {file_path} -> {icat_path}"
             )
-            os.symlink(movie_full_path, icat_movie_path)
-        return icat_movie_directory_path
+        return icat_path
+
+    @staticmethod
+    def createTiltSerieInstrumentSnapshot(icat_movie_path):
+        if type(icat_movie_path) == str:
+            icat_movie_path = pathlib.Path(icat_movie_path)
+        if not icat_movie_path.exists():
+            raise RuntimeError(f"File path {icat_movie_path} doesn't exist!")
+        icat_dir = icat_movie_path.parent
+        gallery_dir = icat_dir / "gallery"
+        if not gallery_dir.exists():
+            gallery_dir.mkdir(mode=0o755)
+        temp_tif_path = gallery_dir / (icat_movie_path.stem + ".tif")
+        snapshot_path = gallery_dir / (icat_movie_path.stem + ".jpg")
+        os.system(f"bimg -average -truncate 0,1 -minmax 0,1 {icat_movie_path} {temp_tif_path}")
+        os.system(f"bscale -bin 20 {temp_tif_path} {snapshot_path}")
+        os.remove(str(temp_tif_path))
+
+    @staticmethod
+    def createTiltSerieSearchSnapshot(dict_movie, search_dir):
+        movie_dir = pathlib.Path(dict_movie["directory"])
+        grid_name = dict_movie["grid_name"]
+        ts_number = dict_movie["ts_number"]
+        if not movie_dir.exists():
+            raise RuntimeError(f"File path {movie_dir} doesn't exist!")
+        batch_dir = movie_dir / "Batch"
+        grid_position = f"{grid_name}_Position_{ts_number}"
+        search_file_name = grid_position + "_Search"
+        search_mrc_path = batch_dir / (search_file_name + ".mrc")
+        temp_tif_path = search_dir / (search_file_name + ".tif")
+        search_snapshot_path = search_dir / (search_file_name + ".jpg")
+        print("*"*80)
+        print(str(search_mrc_path))
+        print(str(search_snapshot_path))
+        print("*" * 80)
+        if search_mrc_path.exists():
+            if not search_snapshot_path.exists():
+                os.system(f"bimg -average -truncate 0,1 -minmax 0,1 {search_mrc_path} {temp_tif_path}")
+                os.system(f"bscale -bin 6 {temp_tif_path} {search_snapshot_path}")
+                os.remove(str(temp_tif_path))
+        else:
+            search_snapshot_path = None
+        return search_snapshot_path

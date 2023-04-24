@@ -620,7 +620,7 @@ def preprocessWorkflow(config_dict):
             proteinAcronym=config_dict["proteinAcronym"],
             sampleAcronym=config_dict["sampleAcronym"],
             db=config_dict["db"],
-            allParamsJsonFile=config_dict["allParamsJsonFile"],
+            all_params_json_file=config_dict["all_params_json_file"],
             samplingRate=config_dict["samplingRate"],
             doseInitial=config_dict["doseInitial"],
             dosePerFrame=config_dict["dosePerFrame"],

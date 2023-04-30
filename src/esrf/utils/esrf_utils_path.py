@@ -1007,9 +1007,9 @@ class UtilsPath(object):
         return dict_movie
 
     @staticmethod
-    def createIcatLink(file_path, icat_path):
+    def createIcatLink(file_path, icat_dir):
         file_name = file_path.name
-        icat_path = icat_path / file_name
+        icat_path = icat_dir / file_name
         if icat_path.exists():
             raise RuntimeError(f"WARNING! File already archived: {icat_path}")
         else:

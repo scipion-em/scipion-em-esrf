@@ -304,7 +304,7 @@ def preprocessWorkflow(config_dict):
         ProtComposeTS,
         objLabel="tomo - Compose Tilt Serie",
         filesPath=config_dict["dataDirectory"],
-        mdoc_bug_Correction=True,
+        mdoc_bug_Correction=False,
         dataStreaming=True,
         time4NextTilt=180,
         time4NextMic=12,

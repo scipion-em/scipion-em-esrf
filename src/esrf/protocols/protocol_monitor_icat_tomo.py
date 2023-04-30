@@ -195,7 +195,7 @@ class MonitorESRFIcatTomo(Monitor):
         self.proteinAcronym = protocol.proteinAcronym.get()
         self.sampleAcronym = protocol.sampleAcronym.get()
         self.movieDirectory = None
-        self.currentDir = os.getcwd()
+        self.current_dir = pathlib.Path(os.getcwd())
         self.currentGridSquare = None
         self.currentGridSquareLastMovieTime = None
         self.beamlineName = "cm01"
@@ -210,7 +210,8 @@ class MonitorESRFIcatTomo(Monitor):
         self.positionY = None
         self.collectionDate = None
         self.collectionTime = None
-        self.no_threads = 0
+        self.no_movie_threads = 0
+        self.no_mc_threads = 0
         if hasattr(protocol, "all_params_json_file"):
             self.all_params_json_file = protocol.all_params_json_file.get()
             if os.path.exists(self.all_params_json_file):
@@ -335,23 +336,21 @@ class MonitorESRFIcatTomo(Monitor):
                     search_path = UtilsPath.createTiltSerieSearchSnapshot(dict_movie, search_dir)
                     dict_movie["search_path"] = str(search_path)
                     # Start threads - if max number of threads not reached
-                    self.no_threads += 1
-                    while self.no_threads > 5:
-                        self.info(f"Waiting for threads... no_threads: {self.no_threads}")
+                    self.no_movie_threads += 1
+                    while self.no_movie_threads > 10:
+                        self.info(f"Waiting for threads... no_threads: {self.no_movie_threads}")
                         time.sleep(5)
                     thread = threading.Thread(
                         target=self.archiveMovieInIcatPlus,
                         args=(prot, movie_name, icat_dir)
                     )
-                    self.info(f"Starting thread for movie {movie_name} - no_threads: {self.no_threads}")
+                    self.info(f"Starting thread for movie {movie_name} - no_threads: {self.no_movie_threads}")
                     thread.start()
                     # self.archiveMovieInIcatPlus(prot, movie_name, icat_dir)
 
     def uploadAlignMovies(self, prot):
         for micrograph in self.iter_updated_set(prot.outputMicrographs):
-            micrograph_full_path = pathlib.Path(
-                os.path.join(self.currentDir, micrograph.getFileName())
-            )
+            micrograph_full_path = self.current_dir / micrograph.getFileName()
             dict_micrograph = UtilsPath.getTSFileParameters(micrograph_full_path)
             mc_icat_dir = pathlib.Path(dict_micrograph["icat_dir"]) / "MotionCor"
             movie_name = dict_micrograph["movie_name"]
@@ -361,25 +360,39 @@ class MonitorESRFIcatTomo(Monitor):
                     if mc_icat_dir.exists():
                         self.info("Motion cor results already archived: {0}".format(movie_name))
                     else:
-                        self.info(f"Archiving motion cor results {movie_name}")
                         os.makedirs(mc_icat_dir, mode=0o755, exist_ok=False)
-                        self.archiveAlignedMovieInIcatPlus(prot, movie_name, micrograph_full_path, mc_icat_dir)
+                        self.info(f"Archiving motion cor results {movie_name}")
+                        # Start threads - if max number of threads not reached
+                        self.no_mc_threads += 1
+                        while self.no_mc_threads > 10:
+                            self.info(f"Waiting for threads... no_threads: {self.no_mc_threads}")
+                            time.sleep(5)
+                        thread = threading.Thread(
+                            target=self.archiveAlignedMovieInIcatPlus,
+                            args=(prot, movie_name, micrograph_full_path, mc_icat_dir)
+                        )
+                        self.info(f"Starting mc thread for movie {movie_name} - no_threads: {self.no_mc_threads}")
+                        thread.start()
+                        # self.archiveAlignedMovieInIcatPlus(prot, movie_name, micrograph_full_path, mc_icat_dir)
 
     def uploadCTFMicrographs(self, prot):
         for ctf in self.iter_updated_set(prot.outputCTF):
-            ctf_full_path = pathlib.Path(
-                os.path.join(self.currentDir, ctf.getMicrograph().getFileName())
-            )
-            dict_movie = UtilsPath.getTSFileParameters(ctf_full_path)
-            icat_dir = os.path.join(dict_movie["icat_dir"], "CTF")
+            mc_full_path = self.current_dir / ctf.getMicrograph().getFileName()
+            ctf_working_dir = self.current_dir / str(prot.workingDir)
+            dict_movie = UtilsPath.getTSFileParameters(mc_full_path)
             movie_name = dict_movie["movie_name"]
-            if movie_name in self.all_params and "archived_ctf" not in self.all_params[movie_name]:
-                self.all_params[movie_name]["archived_ctf"] = True
-                if os.path.exists(icat_dir):
-                    self.info("CTF results already archived: {0}".format(movie_name))
-                else:
-                    self.info(f"Archiving CTF results: {movie_name}")
-                    os.makedirs(icat_dir, mode=0o755, exist_ok=False)
+            ctf_full_path = ctf_working_dir / "extra" / (mc_full_path.stem + "_ctf.mrc")
+            ctf_icat_dir = pathlib.Path(dict_movie["icat_dir"]) / "CTF"
+            if movie_name in self.all_params:
+                dict_movie = self.all_params[movie_name]
+                if "ctf_archived" not in dict_movie and "icat_mc_path" in dict_movie:
+                    if os.path.exists(ctf_icat_dir):
+                        self.info("CTF results already archived: {0}".format(movie_name))
+                    else:
+                        self.info(f"Archiving CTF results: {movie_name}")
+                        os.makedirs(ctf_icat_dir, mode=0o755, exist_ok=False)
+                        self.info(f"ctf_full_path: {ctf_full_path}")
+                        self.archiveCTFInIcatPlus(prot, movie_name, ctf_full_path, ctf_icat_dir)
 
             # movie_name = micrograph_full_path.stem.split("_aligned_mic")[0]
             # if (
@@ -541,21 +554,22 @@ class MonitorESRFIcatTomo(Monitor):
             "EM_grid_name": grid_name,
             "EM_tilt_angle": tilt_angle,
         }
-        # UtilsIcat.uploadToIcatPlus(
-        #     directory=str(icat_movie_directory_path),
-        #     proposal=self.proposal,
-        #     dataSetName=f"{movie_number:03d}",
-        #     dictMetadata=dictMetadata
-        # )
+        UtilsIcat.uploadToIcatPlus(
+            directory=str(icat_dir),
+            proposal=self.proposal,
+            dataSetName=f"{movie_number:03d}",
+            dictMetadata=dictMetadata
+        )
         self.all_params[movie_name]["raw_movie_archived"] = True
         self.all_params[movie_name]["icat_raw_path"] = str(icat_movie_path)
-        self.no_threads -= 1
+        self.no_movie_threads -= 1
         self.info(f"Thread finished for movie {movie_name}")
 
     def archiveAlignedMovieInIcatPlus(self, prot, movie_name, micrograph_full_path, mc_icat_dir):
         dict_movie = self.all_params[movie_name]
         grid_name = dict_movie["grid_name"]
         ts_number = dict_movie["ts_number"]
+        movie_number = dict_movie["movie_number"]
         icat_raw_path = dict_movie["icat_raw_path"]
         # Link "raw" data
         icat_mc_path = UtilsPath.createIcatLink(micrograph_full_path, mc_icat_dir)
@@ -567,7 +581,7 @@ class MonitorESRFIcatTomo(Monitor):
         os.system(f"bimg {micrograph_full_path} {temp_tif_path}")
         os.system(f"bscale -bin 12 {temp_tif_path} {mc_snapshot_path}")
         os.remove(str(temp_tif_path))
-        # Copy global shits snap shot
+        # Copy global shift snap shot
         drift_plot_full_path = micrograph_full_path.parent / (
                 movie_name + "_global_shifts.png"
         )
@@ -582,11 +596,49 @@ class MonitorESRFIcatTomo(Monitor):
             "EMMotionCorrection_frame_dose": 0.0,
             "EMMotionCorrection_total_dose": 0.0,
         }
-        # UtilsIcat.uploadToIcatPlus(
-        #     directory=str(mc_icat_dir),
-        #     proposal=self.proposal,
-        #     dataSetName=f"{movie_number:03d}",
-        #     dictMetadata=dictMetadata
-        # )
+        UtilsIcat.uploadToIcatPlus(
+            directory=str(mc_icat_dir),
+            proposal=self.proposal,
+            dataSetName=f"{movie_number:03d}",
+            dictMetadata=dictMetadata
+        )
         self.all_params[movie_name]["mc_archived"] = True
         self.all_params[movie_name]["icat_mc_path"] = str(icat_mc_path)
+        self.no_mc_threads -= 1
+
+
+    def archiveCTFInIcatPlus(self, prot, movie_name, ctf_full_path, ctf_icat_dir):
+        dict_movie = self.all_params[movie_name]
+        grid_name = dict_movie["grid_name"]
+        ts_number = dict_movie["ts_number"]
+        movie_number = dict_movie["movie_number"]
+        icat_mc_path = dict_movie["icat_mc_path"]
+        # Read meta data
+        working_dir = self.current_dir / str(prot.workingDir)
+        # ctf_dict_results = UtilsPath.getCtfMetaData(working_dir, ctf_full_path)
+        # Link "raw" data
+        icat_ctf_path = UtilsPath.createIcatLink(ctf_full_path, ctf_icat_dir)
+        # Create CTF snapshot image
+        ctf_galley_path = ctf_icat_dir / "gallery"
+        ctf_galley_path.mkdir(mode=0o755)
+        temp_tif_path = ctf_galley_path / (ctf_full_path.stem + ".tif")
+        mc_snapshot_path = ctf_galley_path / (ctf_full_path.stem + ".jpg")
+        os.system(f"bimg {ctf_full_path} {mc_snapshot_path}")
+        dict_metadata = {
+            "Sample_name": f"{grid_name}_Position_{ts_number}",
+            "raw": icat_mc_path,
+            "EMCTF_resolution_limit": 0.0,
+            "EMCTF_correlation": 0.0,
+            "EMCTF_defocus_u": 0.0,
+            "EMCTF_defocus_v": 0.0,
+            "EMCTF_angle": 0.0,
+            "EMCTF_estimated_b_factor": 0.0,
+        }
+        UtilsIcat.uploadToIcatPlus(
+            directory=str(ctf_icat_dir),
+            proposal=self.proposal,
+            dataSetName=f"{movie_number:03d}",
+            dictMetadata=dict_metadata
+        )
+        self.all_params[movie_name]["ctf_archived"] = True
+        self.all_params[movie_name]["icat_ctf_path"] = str(ctf_icat_dir)

@@ -178,7 +178,7 @@ class UtilsIcat(object):
 
 
     @staticmethod
-    def uploadToIcatPlus(
+    def uploadRawToIcatPlus(
         directory,
         proposal,
         dataSetName,
@@ -194,4 +194,25 @@ class UtilsIcat(object):
             dataset=dataSetName,
             path=directory,
             metadata=dictMetadata,
+        )
+
+    @staticmethod
+    def uploadProcessedToIcatPlus(
+        directory,
+        proposal,
+        dataSetName,
+        dictMetadata,
+        raw
+    ):
+        # Hard-coded metadata-urls and proposal for tests
+        metadata_urls = ["bcu-mq-04:61613"]
+        proposal = "ID002304"
+        client = IcatClient(metadata_urls=metadata_urls)
+        client.store_processed_data(
+            beamline="CM01",
+            proposal=proposal,
+            dataset=dataSetName,
+            path=directory,
+            metadata=dictMetadata,
+            raw=raw
         )

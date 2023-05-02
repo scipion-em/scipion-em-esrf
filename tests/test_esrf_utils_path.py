@@ -268,6 +268,13 @@ class Test(unittest.TestCase):
         dictRef = {"averageMotionPerFrame": 6.3, "noPoints": 40, "totalMotion": 250.6}
         self.assertEqual(dictRef, dictResult)
 
+    def test_getTSShiftData(self):
+        mrcFilePath = "/mnt/multipath-shares/data/visitor/mx2112/cm01/20230502/PROCESSED_DATA/grid1/mx2112_test_grid1_20230502-112619/Runs/000066_ProtMotionCorr/extra/grid1_Position_13_001_17.00_20230302_005937_fractions_aligned_mic.mrc"
+        dictResult = UtilsPath.getTSShiftData(mrcFilePath)
+        pprint.pprint(dictResult)
+        dictRef = {"averageMotionPerFrame": 0.9, "noPoints": 5, "totalMotion": 4.7}
+        self.assertEqual(dictRef, dictResult)
+
     def test_getXmlMetaData(self):
         xmlMetaDataFullPath = "/data/scisoft/pxsoft/data/cryoem/testMetaData/supervisor_20171115_150623/Images-Disc1/GridSquare_15441375/Data/FoilHole_15445484_Data_15444206_15444207_20171115_1620.xml"
         dictResult = UtilsPath.getXmlMetaData(xmlMetaDataFullPath)
@@ -360,6 +367,23 @@ class Test(unittest.TestCase):
             "spectraImageSnapshotFullPath": "/data/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf/extra/GridSquare_7828225_Data_FoilHole_8853794_Data_7832898_7832899_20190711_0913-4443_aligned_mic_ctf.jpeg",
         }
         self.assertEqual(dictRef, dictResult)
+
+    def test_getTSCtfMetaData(self):
+        working_dir = pathlib.Path("/data/visitor/mx2112/cm01/20230502/PROCESSED_DATA/grid1/mx2112_test_grid1_20230502-112619/Runs/000132_ProtGctf")
+        movie_name = "grid1_Position_13_001_17.00_20230302_005937_fractions"
+        dict_result = UtilsPath.getTSCtfMetaData(working_dir, movie_name)
+        pprint.pprint(dict_result)
+        dict_ref = {
+            "Angle": "48.83",
+            "CCC": "0.001816",
+            "Defocus_U": "13964.01",
+            "Defocus_V": "16052.90",
+            "Phase_shift": None,
+            "estimatedBfactor": "0.00",
+            "logFilePath": "/data/visitor/mx2112/cm01/20230502/PROCESSED_DATA/grid1/mx2112_test_grid1_20230502-112619/Runs/000132_ProtGctf/logs/run.stdout",
+            "resolutionLimit": "16.413"
+        }
+        self.assertEqual(dict_ref, dict_result)
 
     def test_getPyarchFilePath(self):
         mrcFilePath = "/data/visitor/mx415/cm01/20171108/RAW_DATA/test2/CWAT_ESRF_RawData_K2/170620_TMV_1/Images-Disc1/GridSquare_20174003/Data/FoilHole_20182354_Data_20179605_20179606_20170620_1523-1198.mrc"

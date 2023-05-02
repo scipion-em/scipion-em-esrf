@@ -34,6 +34,7 @@ from pwem.protocols import ProtImportMovies
 from motioncorr.protocols import ProtMotionCorr
 from gctf.protocols import ProtGctf
 from tomo.protocols.protocol_compose_TS import ProtComposeTS
+from aretomo.protocols import ProtAreTomoAlignRecon
 
 from pyworkflow.object import Pointer
 from pyworkflow.project.manager import Manager
@@ -317,7 +318,62 @@ def preprocessWorkflow(config_dict):
         protComposeTS.inputMicrographs, protMA, "outputMicrographsDoseWeighted"
     )
     _registerProt(protComposeTS, "ComposeTs")
-    ispybUploads.append(protComposeTS)
+    # ispybUploads.append(protComposeTS)
+
+    # -------- Prot AreTomo tilt series align ----------------
+    # {
+    #         "object.className": "ProtAreTomoAlignRecon",
+    #         "object.id": "406",
+    #         "object.label": "aretomo - tilt-series align and reconstruct",
+    #         "object.comment": "",
+    #         "_useQueue": false,
+    #         "_prerequisites": "",
+    #         "_queueParams": null,
+    #         "runName": null,
+    #         "runMode": 0,
+    #         "tiltAxisAngle": 0.0,
+    #         "skipAlign": false,
+    #         "makeTomo": false,
+    #         "saveStack": true,
+    #         "useInputProt": false,
+    #         "binFactor": 2,
+    #         "alignZ": 800,
+    #         "tomoThickness": 1200,
+    #         "refineTiltAngles": 1,
+    #         "refineTiltAxis": 1,
+    #         "doDW": false,
+    #         "reconMethod": 0,
+    #         "SARTiter": 15,
+    #         "SARTproj": 5,
+    #         "flipInt": false,
+    #         "flipVol": true,
+    #         "roiArea": "",
+    #         "sampleType": 0,
+    #         "coordsFn": "",
+    #         "patchX": 5,
+    #         "patchY": 5,
+    #         "darkTol": 0.7,
+    #         "extraParams": "",
+    #         "gpuList": "0",
+    #         "inputSetOfTiltSeries": "201.TiltSeries"
+    #     }
+    protAreTomoAlignRecon = project.newProtocol(
+        ProtAreTomoAlignRecon,
+        objLabel="aretomo - tilt-series align",
+        filesPath=config_dict["dataDirectory"],
+        skipAlign=False,
+        makeTomo=False
+    )
+    setExtendedInput(
+        protAreTomoAlignRecon.inputSetOfTiltSeries, protComposeTS, "TiltSeries"
+    )
+    _registerProt(protAreTomoAlignRecon, "ComposeTs")
+    # ispybUploads.append(protComposeTS)
+
+
+
+
+
 
     # --------- ISPyB MONITOR -----------------------
     if not config_dict["noICAT"]:

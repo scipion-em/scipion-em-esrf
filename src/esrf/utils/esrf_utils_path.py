@@ -27,6 +27,7 @@
 
 import os
 import pathlib
+import pprint
 import re
 import glob
 import json
@@ -398,6 +399,44 @@ class UtilsPath(object):
         return dictResults
 
     @staticmethod
+    def getTSCtfMetaData(working_dir, movie_name):
+        dictResults = {
+            "Defocus_U": None,
+            "Defocus_V": None,
+            "Angle": None,
+            "CCC": None,
+            "Phase_shift": None,
+            "resolutionLimit": None,
+            "estimatedBfactor": None,
+            "logFilePath": None,
+        }
+        # Find extra directory
+        extra_directory = working_dir / "extra"
+        if extra_directory.exists():
+            ctf_estimation_path = extra_directory / (movie_name + "_aligned_mic_DW_ctf.log")
+            if ctf_estimation_path.exists():
+                f = open(ctf_estimation_path)
+                lines = f.readlines()
+                f.close()
+                for index in range(len(lines)):
+                    if "Final Values" in lines[index]:
+                        listLabels = lines[index - 1].split()
+                        listValues = lines[index].split()
+                        for label, value in zip(listLabels, listValues):
+                            dictResults[label] = value
+                    elif "Resolution limit" in lines[index]:
+                        listValues = lines[index].split()
+                        dictResults["resolutionLimit"] = listValues[-1]
+                    elif "Estimated Bfactor" in lines[index]:
+                        listValues = lines[index].split()
+                        dictResults["estimatedBfactor"] = listValues[-1]
+        # Find log file
+        logFilePath = os.path.join(working_dir, "logs", "run.stdout")
+        if os.path.exists(logFilePath):
+            dictResults["logFilePath"] = logFilePath
+        return dictResults
+
+    @staticmethod
     def getMovieFileNameParameters(mrcFilePath):
         """
         FoilHole_19150795_Data_19148847_19148848_20170619_2101-0344.mrc
@@ -739,53 +778,38 @@ class UtilsPath(object):
         return pyarchFilePath
 
     @staticmethod
-    def getShiftData(filePath):
-        dictResults = {}
-        logFile = os.path.join(
-            os.path.dirname(os.path.dirname(filePath)), "logs", "run.stdout"
-        )
-        if os.path.exists(logFile):
-            listLines = open(logFile).readlines()
-            index = 0
-            noPoints = 0
-            # Look for mrc file
-            mrcFileName = os.path.basename(filePath)
-            foundMrc = False
-            foundShiftTable = False
-            listXShift = []
-            listYShift = []
-            totalMotion = 0.0
-            while index < len(listLines):
-                line = listLines[index]
-                if mrcFileName in line:
-                    foundMrc = True
-                if foundMrc:
-                    if "Full-frame alignment shift" in line:
-                        foundShiftTable = True
-                    elif foundShiftTable:
-                        if len(line) > 1:
-                            listLine = line.split()
-                            try:
-                                # print(listLine)
-                                xShift = float(listLine[5])
-                                yShift = float(listLine[6].strip())
-                                listXShift.append(xShift)
-                                listYShift.append(yShift)
-                                totalMotion += math.sqrt(xShift ** 2 + yShift ** 2)
-                                noPoints += 1
-                            except BaseException:
-                                pass
-                        else:
-                            foundShiftTable = False
-                            foundMrc = False
-
-                index += 1
-            dictResults["noPoints"] = noPoints
-            if totalMotion != 0:
-                dictResults["totalMotion"] = round(totalMotion, 1)
-                dictResults["averageMotionPerFrame"] = round(totalMotion / noPoints, 1)
-
-        return dictResults
+    def getTSShiftData(file_path):
+        dict_results = {}
+        dict_file = UtilsPath.getTSFileParameters(file_path)
+        movie_name = dict_file["movie_name"]
+        file_dir = pathlib.Path(dict_file["directory"])
+        patch_path = file_dir / (movie_name + "-Patch-Full.log")
+        if patch_path.exists():
+            with open(patch_path) as f:
+                list_lines = f.readlines()
+            x_shift_prev = None
+            y_shift_prev = None
+            total_motion = 0
+            no_points = 0
+            for line in list_lines[3:]:
+                no_points += 1
+                line_parts = line.split()
+                index = int(line_parts[0])
+                x_shift = float(line_parts[1])
+                y_shift = float(line_parts[2])
+                if x_shift_prev is None:
+                    x_shift_prev = x_shift
+                    y_shift_prev = y_shift
+                else:
+                    delta_x_shift = x_shift - x_shift_prev
+                    delta_y_shift = y_shift - y_shift_prev
+                    shift = math.sqrt(delta_x_shift ** 2 + delta_y_shift ** 2)
+                    total_motion += shift
+            dict_results["noPoints"] = no_points
+            if total_motion != 0:
+                dict_results["totalMotion"] = round(total_motion, 1)
+                dict_results["averageMotionPerFrame"] = round(total_motion / no_points, 1)
+        return dict_results
 
     @staticmethod
     def findSerialEMFilePaths(topDirectory):

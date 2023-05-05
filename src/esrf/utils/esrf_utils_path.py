@@ -983,10 +983,13 @@ class UtilsPath(object):
 
     @staticmethod
     def getTSFileParameters(file_path):
+        if type(file_path) == str:
+            file_path = pathlib.Path(file_path)
         extra = None
-        directory = os.path.dirname(file_path)
-        file_name = os.path.basename(file_path)
-        file_stem, suffix = os.path.splitext(file_name)
+        directory = str(file_path.parent)
+        file_name = file_path.name
+        file_stem = file_path.stem
+        suffix = file_path.suffix
         list_file_name = file_stem.split("_")
         movie_name = "_".join(list_file_name[:8])
         ts_number = list_file_name[2]
@@ -1015,7 +1018,7 @@ class UtilsPath(object):
         raw_data_dir = os.path.join(date_dir, "RAW_DATA")
         dict_movie = {
             "file_path": str(file_path),
-            "directory": str(directory),
+            "directory": directory,
             "file_name": file_name,
             "movie_name": movie_name,
             "grid_name": grid_name,
@@ -1057,6 +1060,7 @@ class UtilsPath(object):
         snapshot_path = gallery_dir / (icat_movie_path.stem + ".jpg")
         os.system(f"bimg -average -truncate 0,1 -minmax 0,1 {icat_movie_path} {temp_tif_path}")
         os.system(f"bscale -bin 20 {temp_tif_path} {snapshot_path}")
+        # os.chmod(snapshot_path, mode=0o644)
         os.remove(str(temp_tif_path))
 
     @staticmethod
@@ -1080,7 +1084,15 @@ class UtilsPath(object):
             if not search_snapshot_path.exists():
                 os.system(f"bimg -average -truncate 0,1 -minmax 0,1 {search_mrc_path} {temp_tif_path}")
                 os.system(f"bscale -bin 6 {temp_tif_path} {search_snapshot_path}")
+                # os.chmod(search_snapshot_path, mode=0o644)
                 os.remove(str(temp_tif_path))
         else:
             search_snapshot_path = None
         return search_snapshot_path
+
+    @classmethod
+    def removePrefixDirs(cls, path):
+        str_path = str(path)
+        if "/data" in str_path and not str_path.startswith("/data"):
+            str_path = os.path.join("/data", str_path.split("/data")[1][1:])
+        return pathlib.Path(str_path)

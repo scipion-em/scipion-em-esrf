@@ -25,6 +25,8 @@
 # *
 # **************************************************************************
 
+DO_UPLOAD = True
+
 import os
 import json
 import time
@@ -194,7 +196,7 @@ class MonitorESRFIcatTomo(Monitor):
         self.proteinAcronym = protocol.proteinAcronym.get()
         self.sampleAcronym = protocol.sampleAcronym.get()
         self.movieDirectory = None
-        self.current_dir = pathlib.Path(os.getcwd())
+        self.current_dir = UtilsPath.removePrefixDirs(os.getcwd())
         self.currentGridSquare = None
         self.currentGridSquareLastMovieTime = None
         self.beamlineName = "cm01"
@@ -211,6 +213,7 @@ class MonitorESRFIcatTomo(Monitor):
         self.collectionTime = None
         self.no_movie_threads = 0
         self.no_mc_threads = 0
+        self.no_ctf_threads = 0
         if hasattr(protocol, "all_params_json_file"):
             self.all_params_json_file = protocol.all_params_json_file.get()
             if os.path.exists(self.all_params_json_file):
@@ -314,11 +317,12 @@ class MonitorESRFIcatTomo(Monitor):
         objSet.close()
 
     def uploadImportMovies(self, prot):
-        for movie_full_path in prot.getMatchFiles():
+        for movie_path in prot.getMatchFiles():
             # for movie in prot.iterNewInputFiles():
             #     movie_full_path = pathlib.Path(
             #         os.path.join(self.currentDir, movie.getFileName())
             # )
+            movie_full_path = UtilsPath.removePrefixDirs(movie_path)
             dict_movie = UtilsPath.getTSFileParameters(movie_full_path)
             icat_raw_dir = pathlib.Path(dict_movie["icat_dir"])
             movie_name = dict_movie["movie_name"]
@@ -375,7 +379,7 @@ class MonitorESRFIcatTomo(Monitor):
                         self.no_mc_threads += 1
                         while self.no_mc_threads > 10:
                             self.info(
-                                f"Waiting for threads... no_threads: {self.no_mc_threads}"
+                                f"Waiting for mc threads... no_mc_threads: {self.no_mc_threads}"
                             )
                             time.sleep(5)
                         thread = threading.Thread(
@@ -394,7 +398,7 @@ class MonitorESRFIcatTomo(Monitor):
             ctf_working_dir = self.current_dir / str(prot.workingDir)
             dict_movie = UtilsPath.getTSFileParameters(mc_full_path)
             movie_name = dict_movie["movie_name"]
-            ctf_full_path = ctf_working_dir / "extra" / (mc_full_path.stem + "_ctf.mrc")
+            ctf_full_path = ctf_working_dir / "extra" / (movie_name + "_aligned_mic_DW_ctf.mrc")
             icat_ctf_dir = pathlib.Path(dict_movie["icat_dir"]) / "CTF"
             if movie_name in self.all_params:
                 dict_movie = self.all_params[movie_name]
@@ -407,9 +411,23 @@ class MonitorESRFIcatTomo(Monitor):
                         self.info(f"Archiving CTF results: {movie_name}")
                         os.makedirs(icat_ctf_dir, mode=0o755, exist_ok=False)
                         self.info(f"ctf_full_path: {ctf_full_path}")
-                        self.archiveCTFInIcatPlus(
-                            prot, movie_name, ctf_full_path, icat_ctf_dir
+                        self.no_ctf_threads += 1
+                        while self.no_ctf_threads > 10:
+                            self.info(
+                                f"Waiting for CTF threads... no_ctf_threads: {self.no_mc_threads}"
+                            )
+                            time.sleep(5)
+                        thread = threading.Thread(
+                            target=self.archiveCTFInIcatPlus,
+                            args=(prot, movie_name, ctf_full_path, icat_ctf_dir),
                         )
+                        self.info(
+                            f"Starting ctf thread for movie {movie_name} - no_ctf_threads: {self.no_ctf_threads}"
+                        )
+                        thread.start()
+                        # self.archiveCTFInIcatPlus(
+                        #     prot, movie_name, ctf_full_path, icat_ctf_dir
+                        # )
 
     def archiveMovieInIcatPlus(self, prot, movie_name, icat_raw_dir):
         spherical_aberration = prot.sphericalAberration.get()
@@ -443,12 +461,14 @@ class MonitorESRFIcatTomo(Monitor):
             "EM_grid_name": grid_name,
             "EM_tilt_angle": tilt_angle,
         }
-        UtilsIcat.uploadRawToIcatPlus(
-            directory=str(icat_raw_dir),
-            proposal=self.proposal,
-            dataSetName=f"{movie_number:03d}",
-            dictMetadata=dictMetadata,
-        )
+        if DO_UPLOAD:
+            time.sleep(5)
+            UtilsIcat.uploadRawToIcatPlus(
+                directory=str(icat_raw_dir),
+                proposal=self.proposal,
+                dataSetName=f"{movie_number:03d}",
+                dictMetadata=dictMetadata,
+            )
         self.all_params[movie_name]["raw_movie_archived"] = True
         self.all_params[movie_name]["icat_raw_dir"] = str(icat_raw_dir)
         self.no_movie_threads -= 1
@@ -471,13 +491,16 @@ class MonitorESRFIcatTomo(Monitor):
         mc_snapshot_path = mc_galley_path / (micrograph_full_path.stem + ".jpg")
         os.system(f"bimg {micrograph_full_path} {temp_tif_path}")
         os.system(f"bscale -bin 12 {temp_tif_path} {mc_snapshot_path}")
+        os.chmod(mc_snapshot_path, mode=0o644)
         os.remove(str(temp_tif_path))
         # Copy global shift snap shot
         drift_plot_full_path = micrograph_full_path.parent / (
             movie_name + "_global_shifts.png"
         )
         self.info(drift_plot_full_path)
-        shutil.copy(drift_plot_full_path, mc_galley_path)
+        icat_drift_plot_path = mc_galley_path / drift_plot_full_path.name
+        shutil.copy(drift_plot_full_path, icat_drift_plot_path)
+        os.chmod(icat_drift_plot_path, 0o644)
         # Get metadata
         dict_shift_data = UtilsPath.getTSShiftData(micrograph_full_path)
         total_motion = dict_shift_data.get("totalMotion", None)
@@ -491,13 +514,15 @@ class MonitorESRFIcatTomo(Monitor):
             "EMMotionCorrection_frame_dose": -1.0,
             "EMMotionCorrection_total_dose": -1.0,
         }
-        UtilsIcat.uploadProcessedToIcatPlus(
-            directory=str(icat_mc_dir),
-            proposal=self.proposal,
-            dataSetName=f"{movie_number:03d}",
-            dictMetadata=dictMetadata,
-            raw=[icat_raw_dir]
-        )
+        if DO_UPLOAD:
+            time.sleep(5)
+            UtilsIcat.uploadProcessedToIcatPlus(
+                directory=str(icat_mc_dir),
+                proposal=self.proposal,
+                dataSetName=f"{movie_number:03d}_MotionCor",
+                dictMetadata=dictMetadata,
+                raw=[icat_raw_dir]
+            )
         self.all_params[movie_name]["mc_archived"] = True
         self.all_params[movie_name]["icat_mc_path"] = str(icat_mc_path)
         self.all_params[movie_name]["icat_mc_dir"] = str(icat_mc_dir)
@@ -535,13 +560,16 @@ class MonitorESRFIcatTomo(Monitor):
             "EMCTF_angle": angle,
             "EMCTF_estimated_b_factor": estimated_b_factor,
         }
-        UtilsIcat.uploadProcessedToIcatPlus(
-            directory=str(icat_ctf_dir),
-            proposal=self.proposal,
-            dataSetName=f"{movie_number:03d}",
-            dictMetadata=dict_metadata,
-            raw=[icat_mc_dir]
-        )
+        if DO_UPLOAD:
+            time.sleep(5)
+            UtilsIcat.uploadProcessedToIcatPlus(
+                directory=str(icat_ctf_dir),
+                proposal=self.proposal,
+                dataSetName=f"{movie_number:03d}_CTF",
+                dictMetadata=dict_metadata,
+                raw=[icat_mc_dir]
+            )
         self.all_params[movie_name]["ctf_archived"] = True
         self.all_params[movie_name]["icat_ctf_path"] = str(icat_ctf_path)
         self.all_params[movie_name]["icat_ctf_dir"] = str(icat_ctf_dir)
+        self.no_ctf_threads -= 1

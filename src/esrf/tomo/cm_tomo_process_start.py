@@ -9,8 +9,8 @@ import motioncorr.constants
 
 from esrf.utils.esrf_utils_path import UtilsPath
 from esrf.utils.esrf_utils_ispyb import UtilsISPyB
-from esrf.tomo.cryo_et_command_line_parser import getCommandlineOptions
-from esrf.tomo.cm_et_process_worker import run_workflow_commandline
+from esrf.tomo.cryo_tomo_command_line_parser import getCommandlineOptions
+from esrf.tomo.cm_tomo_process_worker import run_workflow_commandline
 
 # print(getCommandlineOptions.__module__)
 config_dict = getCommandlineOptions()

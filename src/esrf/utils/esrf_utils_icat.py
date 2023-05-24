@@ -184,9 +184,8 @@ class UtilsIcat(object):
         dataSetName,
         dictMetadata={}
     ):
-        # Hard-coded metadata-urls and proposal for tests
-        metadata_urls = ["bcu-mq-04:61613"]
-        proposal = "ID002304"
+        # Hard-coded metadata-urls
+        metadata_urls = ["bcu-mq-01.esrf.fr:61613", "bcu-mq-02.esrf.fr:61613"]
         client = IcatClient(metadata_urls=metadata_urls)
         client.store_dataset(
             beamline="CM01",
@@ -205,8 +204,7 @@ class UtilsIcat(object):
         raw
     ):
         # Hard-coded metadata-urls and proposal for tests
-        metadata_urls = ["bcu-mq-04:61613"]
-        proposal = "ID002304"
+        metadata_urls = ["bcu-mq-01.esrf.fr:61613", "bcu-mq-02.esrf.fr:61613"]
         client = IcatClient(metadata_urls=metadata_urls)
         client.store_processed_data(
             beamline="CM01",

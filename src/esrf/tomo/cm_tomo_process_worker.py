@@ -14,7 +14,7 @@ import datetime
 import pyworkflow
 import motioncorr.constants
 
-from esrf.tomo.cryo_et_workflow import preprocessWorkflow
+from esrf.tomo.cryo_tomo_workflow import preprocessWorkflow
 
 from esrf.utils.esrf_utils_path import UtilsPath
 
@@ -43,7 +43,7 @@ app.config_from_object("esrf.workflow.celeryconfig")
 
 def init_logging(config_dict):
     # Set up logging
-    logger = logging.getLogger("cm_et_process_worker")
+    logger = logging.getLogger("cm_tomo_process_worker")
     # Set up stream handler
     stream_handler = logging.StreamHandler()
     log_file_format = "%(asctime)s %(levelname)-8s %(message)s"
@@ -64,7 +64,7 @@ def init_logging(config_dict):
 
 def check_active_workers(config_dict):
     # Check if there are worker(s) already running on this computer
-    logger = logging.getLogger("cm_et_process_worker")
+    logger = logging.getLogger("cm_tomo_process_worker")
     logger.info("Checking active workers.")
     active_workers = celery.current_app.control.inspect().active()
     if active_workers is not None and config_dict["celery_worker"] is None:
@@ -80,7 +80,7 @@ def check_active_workers(config_dict):
 
 @app.task()
 def revoke_tst(input_data):
-    logger = logging.getLogger("cm_et_process_worker")
+    logger = logging.getLogger("cm_tomo_process_worker")
     logger.info("In test_revoke")
     try:
         while True:
@@ -94,7 +94,7 @@ def revoke_tst(input_data):
 
 def getUpdatedProtocol(protocol):
     """Retrieve the updated protocol and close db connections"""
-    logger = logging.getLogger("cm_et_process_worker")
+    logger = logging.getLogger("cm_tomo_process_worker")
     prot2 = None
     try:
         prot2 = pyworkflow.protocol.getProtocolFromDb(
@@ -119,7 +119,7 @@ def get_num_gpus():
 
 
 def set_location(config_dict):
-    logger = logging.getLogger("cm_et_process_worker")
+    logger = logging.getLogger("cm_tomo_process_worker")
     if "dataDirectory" in config_dict and "RAW_DATA" in config_dict["dataDirectory"]:
         location = config_dict["dataDirectory"].replace("RAW_DATA", "PROCESSED_DATA")
     else:
@@ -139,7 +139,7 @@ def set_location(config_dict):
 
 
 def set_ispyb_database(config_dict):
-    logger = logging.getLogger("cm_et_process_worker")
+    logger = logging.getLogger("cm_tomo_process_worker")
     if config_dict["proposal"] is None:
         logger.info("WARNING! No data will be uploaded to ISPyB.")
         config_dict["noICAT"] = True
@@ -164,7 +164,7 @@ def set_ispyb_database(config_dict):
 
 
 def create_blackfile_list(config_dict):
-    logger = logging.getLogger("cm_et_process_worker")
+    logger = logging.getLogger("cm_tomo_process_worker")
     config_dict["blacklistFile"] = None
     if os.path.exists(config_dict["allParamsJsonFile"]):
         # Check how many movies are present on disk
@@ -229,7 +229,7 @@ def set_gpu_data(config_dict):
 
 
 def print_config(config_dict):
-    logger = logging.getLogger("cm_et_process_worker")
+    logger = logging.getLogger("cm_tomo_process_worker")
     logger.info("")
     logger.info("Parameters:")
     logger.info("")

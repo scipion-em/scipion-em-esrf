@@ -1651,7 +1651,7 @@ def preprocessWorkflow(config_dict):
             input_size=1024,
             doFineTune=True,
             inputModelFrom=0,
-            numCpus=4,
+            numCpus=16,
             eFlagParam=10,
             max_box_per_image=600,
             nb_epochVal=50,
@@ -1659,11 +1659,13 @@ def preprocessWorkflow(config_dict):
             lowPassFilter=True,
             absCutOffFreq=0.1,
             batchSize=4,
-            gpuList="2",
+            gpuList="0 1",
             hostName="localhost",
             numberOfThreads=1,
             numberOfMpi=1,
         )
+        protSupportBranchCRYOLOTraining._useQueue.set(True)
+        protSupportBranchCRYOLOTraining._queueParams.set(json.dumps(QUEUE_PARAMS_WITH_2_GPU_16_CPU))
         #     "inputMicrographs": "3202.outputMicrographs",
         setExtendedInput(
             protSupportBranchCRYOLOTraining.inputMicrographs,

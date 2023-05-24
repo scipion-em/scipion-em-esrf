@@ -163,7 +163,7 @@ config_dict["scipionProjectName"] = "{0}_{1}_{2}_{3}".format(
     date_string
 )
 
-user_name = os.getlogin()
+user_name = os.environ["USER"]
 
 log_dir = os.path.join("/tmp_14_days", user_name, "scipion_logs")
 if not os.path.exists(log_dir):

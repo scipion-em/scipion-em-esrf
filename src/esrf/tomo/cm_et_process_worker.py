@@ -18,7 +18,7 @@ from esrf.tomo.cryo_et_workflow import preprocessWorkflow
 
 from esrf.utils.esrf_utils_path import UtilsPath
 
-user_name = os.getlogin()
+user_name = os.environ["USER"]
 host_name = socket.gethostname()
 queue_name = "celery." + user_name + "@" + host_name
 

@@ -502,7 +502,7 @@ class MonitorESRFIcatTomo(Monitor):
         shutil.copy(drift_plot_full_path, icat_drift_plot_path)
         os.chmod(icat_drift_plot_path, 0o644)
         # Get metadata
-        dict_shift_data = UtilsPath.getTSShiftData(micrograph_full_path)
+        dict_shift_data = UtilsPath.getShiftData(micrograph_full_path)
         total_motion = dict_shift_data.get("totalMotion", None)
         average_motion = dict_shift_data.get("averageMotionPerFrame", None)
         frame_range = dict_shift_data.get("noPoints", None)

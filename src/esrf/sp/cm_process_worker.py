@@ -17,7 +17,7 @@ from esrf.sp.workflow import preprocessWorkflow
 
 from esrf.utils.esrf_utils_path import UtilsPath
 
-user_name = os.getlogin()
+user_name = os.environ["USER"]
 host_name = socket.gethostname()
 queue_name = "celery." + user_name + "@" + host_name
 
@@ -213,7 +213,10 @@ def set_em_data(config_dict):
     else:
         config_dict["binFactor"] = 1.0
     config_dict["extraParams2"] = ""
-    config_dict["sampling2D"] = 3.0
+    if "partSize" in config_dict and config_dict["partSize"] <= 150:
+        config_dict["sampling2D"] = 2.0
+    else:
+        config_dict["sampling2D"] = 3.0
     config_dict["gainFlip"] = motioncorr.constants.NO_FLIP
     config_dict["gainRot"] = motioncorr.constants.NO_ROTATION
 

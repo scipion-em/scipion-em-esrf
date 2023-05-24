@@ -778,7 +778,7 @@ class UtilsPath(object):
         return pyarchFilePath
 
     @staticmethod
-    def getTSShiftData(file_path):
+    def getShiftData(file_path):
         dict_results = {}
         dict_file = UtilsPath.getTSFileParameters(file_path)
         movie_name = dict_file["movie_name"]

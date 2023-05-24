@@ -268,9 +268,9 @@ class Test(unittest.TestCase):
         dictRef = {"averageMotionPerFrame": 6.3, "noPoints": 40, "totalMotion": 250.6}
         self.assertEqual(dictRef, dictResult)
 
-    def test_getTSShiftData(self):
+    def test_getShiftData_new(self):
         mrcFilePath = "/mnt/multipath-shares/data/visitor/mx2112/cm01/20230502/PROCESSED_DATA/grid1/mx2112_test_grid1_20230502-112619/Runs/000066_ProtMotionCorr/extra/grid1_Position_13_001_17.00_20230302_005937_fractions_aligned_mic.mrc"
-        dictResult = UtilsPath.getTSShiftData(mrcFilePath)
+        dictResult = UtilsPath.getShiftData(mrcFilePath)
         pprint.pprint(dictResult)
         dictRef = {"averageMotionPerFrame": 0.9, "noPoints": 5, "totalMotion": 4.7}
         self.assertEqual(dictRef, dictResult)

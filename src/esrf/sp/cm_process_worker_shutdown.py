@@ -2,7 +2,7 @@ import os
 import socket
 import subprocess
 
-user_name = os.getlogin()
+user_name = os.environ["USER"]
 host_name = socket.gethostname()
 queue_name = "celery." + user_name + "@" + host_name
 

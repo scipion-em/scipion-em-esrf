@@ -780,9 +780,8 @@ class UtilsPath(object):
     @staticmethod
     def getShiftData(file_path):
         dict_results = {}
-        dict_file = UtilsPath.getTSFileParameters(file_path)
-        movie_name = dict_file["movie_name"]
-        file_dir = pathlib.Path(dict_file["directory"])
+        movie_name = pathlib.Path(file_path).stem.split("fractions")[0] + "fractions"
+        file_dir = pathlib.Path(file_path).parent
         patch_path = file_dir / (movie_name + "-Patch-Full.log")
         if patch_path.exists():
             with open(patch_path) as f:
@@ -1008,6 +1007,7 @@ class UtilsPath(object):
             date_dir = directory.split("PROCESSED_DATA")[0]
             icat_top_dir = os.path.join(date_dir, "PROCESSED_DATA")
         else:
+            date_dir = directory
             icat_top_dir = directory
         icat_dir = os.path.join(
             icat_top_dir,

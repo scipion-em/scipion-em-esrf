@@ -263,16 +263,16 @@ class Test(unittest.TestCase):
         self.assertEqual(dictRef, dictResult)
 
     def test_getShiftData(self):
-        mrcFilePath = "/data/scisoft/pxsoft/data/cryoem/testRunData/20171113/Runs/000056_ProtMotionCorr/extra/FoilHole_9208892_Data_9209286_9209287_20171109_1540-0539_aligned_mic.mrc"
+        mrcFilePath = "/data/scisoft/pxsoft/data/cryoem/testRunData/20230513/Runs/000066_ProtMotionCorr/extra/Images-Disc1_GridSquare_12458340_Data_FoilHole_14698958_Data_14692990_14692992_20230514_115604_fractions_aligned_mic.mrc"
         dictResult = UtilsPath.getShiftData(mrcFilePath)
-        dictRef = {"averageMotionPerFrame": 6.3, "noPoints": 40, "totalMotion": 250.6}
+        dictRef = {"averageMotionPerFrame": 1.7, "noPoints": 40, "totalMotion": 66.0}
         self.assertEqual(dictRef, dictResult)
 
-    def test_getShiftData_new(self):
-        mrcFilePath = "/mnt/multipath-shares/data/visitor/mx2112/cm01/20230502/PROCESSED_DATA/grid1/mx2112_test_grid1_20230502-112619/Runs/000066_ProtMotionCorr/extra/grid1_Position_13_001_17.00_20230302_005937_fractions_aligned_mic.mrc"
+    def test_getShiftData_ts(self):
+        mrcFilePath = "/data/scisoft/pxsoft/data/cryoem/testRunData/20230502/Runs/000066_ProtMotionCorr/extra/grid1_Position_17_041_67.00_20230302_041728_fractions_aligned_mic.mrc"
         dictResult = UtilsPath.getShiftData(mrcFilePath)
         pprint.pprint(dictResult)
-        dictRef = {"averageMotionPerFrame": 0.9, "noPoints": 5, "totalMotion": 4.7}
+        dictRef = {"averageMotionPerFrame": 158.2, "noPoints": 5, "totalMotion": 791.2}
         self.assertEqual(dictRef, dictResult)
 
     def test_getXmlMetaData(self):

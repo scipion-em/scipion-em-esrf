@@ -984,53 +984,56 @@ class UtilsPath(object):
     def getTSFileParameters(file_path):
         if type(file_path) == str:
             file_path = pathlib.Path(file_path)
-        extra = None
+        dict_movie = None
         directory = str(file_path.parent)
         file_name = file_path.name
-        file_stem = file_path.stem
-        suffix = file_path.suffix
-        list_file_name = file_stem.split("_")
-        movie_name = "_".join(list_file_name[:8])
-        ts_number = list_file_name[2]
-        grid_name = list_file_name[0]
-        movie_number = list_file_name[3]
-        if list_file_name[1] != "Position" or \
-            list_file_name[7] != "fractions":
-            raise RuntimeError(f"ERROR! Path can not be parsed: {file_path}")
-        if len(list_file_name) > 8:
-            extra = "_".join(list_file_name[8:])
-        # RAW_DATA or PROCESSED_DATA directory
-        if "RAW_DATA" in directory:
-            date_dir = directory.split("RAW_DATA")[0]
-            icat_top_dir = os.path.join(date_dir, "RAW_DATA")
-        elif "PROCESSED_DATA" in directory:
-            date_dir = directory.split("PROCESSED_DATA")[0]
-            icat_top_dir = os.path.join(date_dir, "PROCESSED_DATA")
-        else:
-            date_dir = directory
-            icat_top_dir = directory
-        icat_dir = os.path.join(
-            icat_top_dir,
-            grid_name,
-            f"{grid_name}_Position_{ts_number}",
-            movie_number
-        )
-        raw_data_dir = os.path.join(date_dir, "RAW_DATA")
-        dict_movie = {
-            "file_path": str(file_path),
-            "directory": directory,
-            "file_name": file_name,
-            "movie_name": movie_name,
-            "grid_name": grid_name,
-            "ts_number": int(ts_number),
-            "movie_number": int(movie_number),
-            "tilt_angle": float(list_file_name[4]),
-            "date": list_file_name[5],
-            "time": list_file_name[6],
-            "extra": extra,
-            "suffix": suffix,
-            "icat_dir": icat_dir
-        }
+        grid_name = str(file_path.parent.name)
+        reg_exp = "^(.+)_(\d{3})_(\-*\d+\.\d+)_(\d{8})_(\d{6})_([a-zA-Z0-9]+){1}([_a-zA-Z0-9]*)\.{1}([a-zA-Z0-9]+)$"
+        p = re.compile(reg_exp)
+        m = p.match(file_name)
+        if m is not None:
+            ts_name = m.group(1)
+            movie_number = m.group(2)
+            tilt_angle = float(m.group(3))
+            ts_date = m.group(4)
+            ts_time = m.group(5)
+            fractions_name = m.group(6)
+            extra = m.group(7)
+            suffix = m.group(8)
+            movie_name = ts_name
+            for index in range(2,7):
+                movie_name += "_" + m.group(index)
+            if "RAW_DATA" in directory:
+                date_dir = directory.split("RAW_DATA")[0]
+                icat_top_dir = os.path.join(date_dir, "RAW_DATA", grid_name)
+            elif "PROCESSED_DATA" in directory:
+                date_dir = directory.split("PROCESSED_DATA")[0]
+                icat_top_dir = os.path.join(date_dir, "PROCESSED_DATA", grid_name)
+            else:
+                date_dir = directory
+                icat_top_dir = directory
+            icat_dir = os.path.join(
+                icat_top_dir,
+                ts_name,
+                movie_number
+            )
+            raw_data_dir = os.path.join(date_dir, "RAW_DATA")
+            dict_movie = {
+                "file_path": str(file_path),
+                "directory": str(directory),
+                "file_name": file_name,
+                "ts_name": ts_name,
+                "movie_name": movie_name,
+                "grid_name": grid_name,
+                "movie_number": int(movie_number),
+                "tilt_angle": tilt_angle,
+                "date": ts_date,
+                "time": ts_time,
+                "extra": extra,
+                "suffix": suffix,
+                "icat_dir": icat_dir,
+                "fractions_name": fractions_name
+            }
         return dict_movie
 
     @staticmethod
@@ -1067,12 +1070,11 @@ class UtilsPath(object):
     def createTiltSerieSearchSnapshot(dict_movie, search_dir):
         movie_dir = pathlib.Path(dict_movie["directory"])
         grid_name = dict_movie["grid_name"]
-        ts_number = dict_movie["ts_number"]
+        ts_name = dict_movie["ts_name"]
         if not movie_dir.exists():
             raise RuntimeError(f"File path {movie_dir} doesn't exist!")
         batch_dir = movie_dir / "Batch"
-        grid_position = f"{grid_name}_Position_{ts_number}"
-        search_file_name = grid_position + "_Search"
+        search_file_name = ts_name + "_Search"
         search_mrc_path = batch_dir / (search_file_name + ".mrc")
         temp_tif_path = search_dir / (search_file_name + ".tif")
         search_snapshot_path = search_dir / (search_file_name + ".jpg")

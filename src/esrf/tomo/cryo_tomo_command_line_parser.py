@@ -82,7 +82,7 @@ def getCommandlineOptions():
         action="store",
         help="file pattern for finding CRyo ET movies, default pattern "
         + "'*_Position_*_*_*_*_fractions.tiff'",
-        default="*_Position_*_*_*_*_fractions.tiff",
+        default="*_fractions.tiff",
         # + "'*_Position_{TS}_{TO}_{TA}_*_fractions.tiff'",
         # default="*_Position_{TS}_{TO}_{TA}_*_fractions.tiff",
     )

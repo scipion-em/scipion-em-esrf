@@ -219,7 +219,7 @@ def set_gpu_data(config_dict):
         config_dict["motioncor2Gpu"] = "0 1"
         config_dict["motioncor2Cpu"] = 3
     else:
-        if config_dict["secondGrid"]:
+        if "seconGrid" in config_dict and config_dict["secondGrid"]:
             config_dict["motioncor2Gpu"] = "4 5 6 7"
         else:
             config_dict["motioncor2Gpu"] = "0 1 2 3"

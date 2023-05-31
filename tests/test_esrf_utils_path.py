@@ -333,7 +333,9 @@ class Test(unittest.TestCase):
         self.assertEqual(dictRef, dictResult)
 
     def test_getCtfMetaData(self):
-        workingDir = "/data/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf"
+        workingDir = (
+            "/data/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf"
+        )
         mrcFilePath = "/data/scisoft/pxsoft/data/cryoem/testRunData/20190715/000064_ProtMotionCorr/extra/GridSquare_7828225_Data_FoilHole_8853794_Data_7832898_7832899_20190711_0913-4443_aligned_mic.mrc"
         dictResult = UtilsPath.getCtfMetaData(workingDir, mrcFilePath)
         dictRef = {
@@ -351,7 +353,9 @@ class Test(unittest.TestCase):
         self.assertEqual(dictRef, dictResult)
 
     def test_getCtfMetaData_2(self):
-        workingDir = "/data/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf"
+        workingDir = (
+            "/data/scisoft/pxsoft/data/cryoem/testRunData/20190715/000126_ProtGctf"
+        )
         mrcFilePath = "/data/scisoft/pxsoft/data/cryoem/testRunData/20190715/000064_ProtMotionCorr/extra/GridSquare_7828225_Data_FoilHole_8853794_Data_7832898_7832899_20190711_0913-4443_aligned_mic.mrc"
         dictResult = UtilsPath.getCtfMetaData(workingDir, mrcFilePath)
         dictRef = {
@@ -369,7 +373,9 @@ class Test(unittest.TestCase):
         self.assertEqual(dictRef, dictResult)
 
     def test_getTSCtfMetaData(self):
-        working_dir = pathlib.Path("/data/visitor/mx2112/cm01/20230502/PROCESSED_DATA/grid1/mx2112_test_grid1_20230502-112619/Runs/000132_ProtGctf")
+        working_dir = pathlib.Path(
+            "/data/visitor/mx2112/cm01/20230502/PROCESSED_DATA/grid1/mx2112_test_grid1_20230502-112619/Runs/000132_ProtGctf"
+        )
         movie_name = "grid1_Position_13_001_17.00_20230302_005937_fractions"
         dict_result = UtilsPath.getTSCtfMetaData(working_dir, movie_name)
         pprint.pprint(dict_result)
@@ -381,7 +387,7 @@ class Test(unittest.TestCase):
             "Phase_shift": None,
             "estimatedBfactor": "0.00",
             "logFilePath": "/data/visitor/mx2112/cm01/20230502/PROCESSED_DATA/grid1/mx2112_test_grid1_20230502-112619/Runs/000132_ProtGctf/logs/run.stdout",
-            "resolutionLimit": "16.413"
+            "resolutionLimit": "16.413",
         }
         self.assertEqual(dict_ref, dict_result)
 
@@ -467,9 +473,7 @@ class Test(unittest.TestCase):
         topDirectory = (
             "/data/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214"
         )
-        tifDir = (
-            "/data/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214/data"
-        )
+        tifDir = "/data/scisoft/pxsoft/data/cryoem/testSerialEmData/20190905/RAW_DATA/mx2214/data"
         filesPattern = UtilsPath.serialEMFilesPattern(topDirectory, tifDir)
         print(filesPattern)
         self.assertEqual("*/*.tif", filesPattern)
@@ -542,14 +546,29 @@ class Test(unittest.TestCase):
         pprint.pprint(dict_movie)
         self.assertEqual(
             dict_movie["directory"],
-            "/data/scisoft/pxsoft/data/cryoem/ihls3478/cm01/20230301/RAW_DATA/grid1"
+            "/data/scisoft/pxsoft/data/cryoem/ihls3478/cm01/20230301/RAW_DATA/grid1",
         )
         self.assertEqual(dict_movie["grid_name"], "grid1")
-        self.assertEqual(dict_movie["ts_number"], 1)
+        self.assertEqual(dict_movie["ts_name"], "grid1_Position_1")
         self.assertEqual(dict_movie["movie_number"], 30)
         self.assertEqual(dict_movie["tilt_angle"], 54.50)
         self.assertEqual(dict_movie["date"], "20230301")
         self.assertEqual(dict_movie["time"], "174921")
+
+    def test_getTomoMovieFileNameParameters_rawMovie_2(self):
+        file_path = "/data/visitor/ihls3501/cm01/20230523/RAW_DATA/grid5-test-tomo-processing/test_1_001_0.00_20230525_155045_fractions.tiff"
+        dict_movie = UtilsPath.getTSFileParameters(file_path)
+        pprint.pprint(dict_movie)
+        self.assertEqual(
+            dict_movie["directory"],
+            "/data/visitor/ihls3501/cm01/20230523/RAW_DATA/grid5-test-tomo-processing",
+        )
+        self.assertEqual(dict_movie["grid_name"], "grid5-test-tomo-processing")
+        self.assertEqual(dict_movie["ts_name"], "test_1")
+        self.assertEqual(dict_movie["movie_number"], 1)
+        self.assertEqual(dict_movie["tilt_angle"], 0.00)
+        self.assertEqual(dict_movie["date"], "20230525")
+        self.assertEqual(dict_movie["time"], "155045")
 
     def test_getTomoMovieFileNameParameters_motionCor(self):
         file_path = "/mnt/multipath-shares/data/visitor/mx2112/cm01/20230421/PROCESSED_DATA/grid1/mx2112_test_grid1_20230421-172001/Runs/000066_ProtMotionCorr/extra/grid1_Position_1_001_17.00_20230301_172443_fractions_aligned_mic.mrc"
@@ -557,10 +576,10 @@ class Test(unittest.TestCase):
         pprint.pprint(dict_movie)
         self.assertEqual(
             dict_movie["directory"],
-            "/mnt/multipath-shares/data/visitor/mx2112/cm01/20230421/PROCESSED_DATA/grid1/mx2112_test_grid1_20230421-172001/Runs/000066_ProtMotionCorr/extra"
+            "/mnt/multipath-shares/data/visitor/mx2112/cm01/20230421/PROCESSED_DATA/grid1/mx2112_test_grid1_20230421-172001/Runs/000066_ProtMotionCorr/extra",
         )
         self.assertEqual(dict_movie["grid_name"], "grid1")
-        self.assertEqual(dict_movie["ts_number"], 1)
+        self.assertEqual(dict_movie["ts_name"], "grid1_Position_1")
         self.assertEqual(dict_movie["movie_number"], 1)
         self.assertEqual(dict_movie["tilt_angle"], 17.00)
         self.assertEqual(dict_movie["date"], "20230301")
@@ -570,15 +589,20 @@ class Test(unittest.TestCase):
         test_dir = pathlib.Path(tempfile.mkdtemp())
         movie_directory = test_dir / "grid1"
         movie_directory.mkdir(mode=0o755)
-        movie_full_path = movie_directory / "grid1_Position_8_001_17.00_20230301_220611_fractions.tiff"
+        movie_full_path = (
+            movie_directory
+            / "grid1_Position_8_001_17.00_20230301_220611_fractions.tiff"
+        )
         icat_movie_path = UtilsPath.createIcatDirectory(str(movie_full_path))
-
 
     def test_createTiltSerieInstrumentSnapshot(self):
         test_dir = pathlib.Path(tempfile.mkdtemp())
         movie_directory = test_dir / "grid1"
         movie_directory.mkdir(mode=0o755)
-        movie_full_path = movie_directory / "grid1_Position_8_001_17.00_20230301_220611_fractions.tiff"
+        movie_full_path = (
+            movie_directory
+            / "grid1_Position_8_001_17.00_20230301_220611_fractions.tiff"
+        )
         # Copy "real" movie
         real_movie_path = "/data/scisoft/pxsoft/data/cryoem/ihls3478/cm01/20230301/RAW_DATA/grid1/grid1_Position_1_030_54.50_20230301_174921_fractions.tiff"
         shutil.copy(real_movie_path, movie_full_path)

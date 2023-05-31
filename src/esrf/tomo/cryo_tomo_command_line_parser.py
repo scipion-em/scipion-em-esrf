@@ -80,11 +80,19 @@ def getCommandlineOptions():
     optional.add_argument(
         "--filesPattern",
         action="store",
-        help="file pattern for finding CRyo ET movies, default pattern "
-        + "'*_Position_*_*_*_*_fractions.tiff'",
-        default="*_fractions.tiff",
-        # + "'*_Position_{TS}_{TO}_{TA}_*_fractions.tiff'",
-        # default="*_Position_{TS}_{TO}_{TA}_*_fractions.tiff",
+        help="File pattern for finding CRyo ET movies, default pattern, default: '*_fractions.tiff'",
+        default="*_fractions.tiff"
+#         help="""
+# File pattern for finding CRyo ET movies, default pattern
+#     "{TS}_{TO}_{TA}_{DATE}_{TIME}_fractions.tiff"
+# where
+#     {TS}: tilt series identifier, which can be any UNIQUE part of the path, this must be an alpha-numeric sequence (avoid dash (-) symbol) and can not start with a number
+#     {TO}: acquisition order, an integer value (important for dose information)
+#     {TA}: tilt angle, a positive or negative float value
+#     {DATE}: date of format YYYYMMDD, e.g. 20230531
+#     {TIME}: time of format HHMMSS, e.g. 132315
+# """,
+#         default="{TS}_{TO}_{TA}_{DATE}_{TIME}_fractions.tiff",
     )
     # optional.add_argument(
     #     "--scipionProjectName",

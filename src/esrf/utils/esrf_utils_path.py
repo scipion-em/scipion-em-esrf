@@ -988,7 +988,7 @@ class UtilsPath(object):
         directory = str(file_path.parent)
         file_name = file_path.name
         grid_name = str(file_path.parent.name)
-        reg_exp = "^(.+)_(\d{3})_(\-*\d+\.\d+)_(\d{8})_(\d{6})_([a-zA-Z0-9]+){1}([_a-zA-Z0-9]*)\.{1}([a-zA-Z0-9]+)$"
+        reg_exp = "^(.+)_(\d+)_(\-*\d+\.\d+)_(\d{8})_(\d{6})_([a-zA-Z0-9]+){1}([_a-zA-Z0-9]*)\.{1}([a-zA-Z0-9]+)$"
         p = re.compile(reg_exp)
         m = p.match(file_name)
         if m is not None:

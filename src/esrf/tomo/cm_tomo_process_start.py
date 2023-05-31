@@ -47,11 +47,14 @@ config_dict = getCommandlineOptions()
 #
 #
 
-if config_dict["filesPattern"] is None:
-    # No filesPattern, let's assume that we are dealing with EPU data
-    config_dict[
-        "filesPattern"
-    ] = "*_fractions.tiff"
+# Files pattern - not yet implemented
+# files_reg_exp = config_dict.get("filesPattern", "{TS}_{TO}_{TA}_{DATE}_{TIME}_fractions.tiff")
+# files_reg_exp.replace("{TS}", "^(.+)")
+# files_reg_exp.replace("{TO}", "(\d+)")
+# files_reg_exp.replace("{TA}", "(\-*\d+\.\d+)")
+# files_reg_exp.replace("{DATE}", "\d{8}")
+# files_reg_exp.replace("{TIME}", "\d{6}")
+# config_dict["filesRegExp"] = files_reg_exp
 
 # Check how many movies are present on disk
 listMovies = glob.glob(

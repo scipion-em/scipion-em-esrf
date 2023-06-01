@@ -149,7 +149,7 @@ def getCommandlineOptions():
         "--celery_worker",
         action="store",
         help="Celery worker (dgx01, cmproc3, None)",
-        default="None",
+        default="dgx01",
     )
     results = parser.parse_args()
 

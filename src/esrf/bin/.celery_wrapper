@@ -1,0 +1,3 @@
+#!/usr/bin/bash
+prog_name=$(basename "$0")
+scipion3 python -m esrf.celery.$prog_name ${1:+"$@"}

@@ -8,7 +8,7 @@ import celery
 from esrf.sp.cm_process_status import print_worker_status
 
 app = celery.Celery()
-app.config_from_object("esrf.sp.celeryconfig")
+app.config_from_object("esrf.celery.cm_config")
 
 active_workers = celery.current_app.control.inspect().active()
 list_processing = print_worker_status(active_workers)

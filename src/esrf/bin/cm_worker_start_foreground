@@ -1,0 +1,26 @@
+#!/bin/bash
+
+user_name=$USER
+host_name=$(hostname)
+
+queue_name="celery.$user_name@$host_name"
+list_process=$(pgrep -f $queue_name)
+
+if [ "$list_process" != "" ]; then
+  echo "A celery worker '$queue_name' is already running on thist host!"
+  exit 1 
+fi
+
+datestring=$(date '+%Y-%m-%d')
+logdir="/tmp_14_days/$user_name/scipion_logs"
+mkdir -p $logdir
+logfile="$logdir/cm_process__celery_$datestring.log"
+echo "Celery worker log file: $logfile"
+
+# New version of MPI necessary for dgx01
+export PATH=/usr/mpi/gcc/openmpi-4.1.2a1/bin:$PATH
+
+scipion3 python -m celery -A esrf.celery.cm_worker worker --logfile $logfile --loglevel INFO -E --concurrency=3 -Q $queue_name -n $queue_name --detach
+# /opt/pxsoft/bin/scipion3 python -m celery -A esrf.workflow.cm_process_worker worker --logfile $logfile --loglevel INFO -E --concurrency=3 -Q $queue_name -n $queue_name
+
+echo "Celery worker '$queue_name' started."

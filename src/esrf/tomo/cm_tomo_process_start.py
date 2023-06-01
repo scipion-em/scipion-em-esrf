@@ -10,10 +10,11 @@ import motioncorr.constants
 from esrf.utils.esrf_utils_path import UtilsPath
 from esrf.utils.esrf_utils_ispyb import UtilsISPyB
 from esrf.tomo.cryo_tomo_command_line_parser import getCommandlineOptions
-from esrf.tomo.cm_tomo_process_worker import run_workflow_commandline
+from esrf.celery.cm_worker import run_workflow_commandline
 
 # print(getCommandlineOptions.__module__)
 config_dict = getCommandlineOptions()
+config_dict["experiment_type"] = "tomo"
 # config_dict = {
 #     "dataDirectory": "/data/visitor/mx2112/cm01/20220426/RAW_DATA/igm-grid3-2",
 #     "filesPattern": "Images-Disc1/GridSquare_*/Data/FoilHole_*_fractions.tiff",
@@ -213,9 +214,9 @@ else:
         for arg_key, arg_value in config_dict.items():
             print("{0:25s}= {1}".format(arg_key, arg_value))
         app = celery.Celery()
-        app.config_from_object("esrf.tomo.celeryconfig")
+        app.config_from_object("esrf.celery.cm_config")
         future = app.send_task(
-            "esrf.tomo.cm_process_worker.run_workflow",
+            "esrf.celery.cm_worker.run_workflow",
             args=(config_dict,),
             queue=worker_name,
         )

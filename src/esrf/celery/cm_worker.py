@@ -13,8 +13,8 @@ import datetime
 
 import pyworkflow
 import motioncorr.constants
-
-from esrf.tomo.cryo_tomo_workflow import preprocessWorkflow
+import esrf.sp.workflow
+import esrf.tomo.cryo_tomo_workflow
 
 from esrf.utils.esrf_utils_path import UtilsPath
 
@@ -22,7 +22,7 @@ user_name = os.environ["USER"]
 host_name = socket.gethostname()
 queue_name = "celery." + user_name + "@" + host_name
 
-# logger = logging.getLogger("cm_process_worker")
+# logger = logging.getLogger("cm_worker")
 # streamHandler = logging.StreamHandler()
 # logFileFormat = "%(asctime)s %(levelname)-8s %(message)s"
 # formatter = logging.Formatter(logFileFormat)
@@ -38,12 +38,11 @@ queue_name = "celery." + user_name + "@" + host_name
 # pprint.pprint(app.control.inspect().stats())
 
 app = celery.Celery()
-app.config_from_object("esrf.sp.celeryconfig")
-
+app.config_from_object("esrf.celery.cm_config")
 
 def init_logging(config_dict):
     # Set up logging
-    logger = logging.getLogger("cm_tomo_process_worker")
+    logger = logging.getLogger("cm_worker")
     # Set up stream handler
     stream_handler = logging.StreamHandler()
     log_file_format = "%(asctime)s %(levelname)-8s %(message)s"
@@ -64,7 +63,7 @@ def init_logging(config_dict):
 
 def check_active_workers(config_dict):
     # Check if there are worker(s) already running on this computer
-    logger = logging.getLogger("cm_tomo_process_worker")
+    logger = logging.getLogger("cm_worker")
     logger.info("Checking active workers.")
     active_workers = celery.current_app.control.inspect().active()
     if active_workers is not None and config_dict["celery_worker"] is None:
@@ -80,7 +79,7 @@ def check_active_workers(config_dict):
 
 @app.task()
 def revoke_tst(input_data):
-    logger = logging.getLogger("cm_tomo_process_worker")
+    logger = logging.getLogger("cm_worker")
     logger.info("In test_revoke")
     try:
         while True:
@@ -94,7 +93,7 @@ def revoke_tst(input_data):
 
 def getUpdatedProtocol(protocol):
     """Retrieve the updated protocol and close db connections"""
-    logger = logging.getLogger("cm_tomo_process_worker")
+    logger = logging.getLogger("cm_worker")
     prot2 = None
     try:
         prot2 = pyworkflow.protocol.getProtocolFromDb(
@@ -119,7 +118,7 @@ def get_num_gpus():
 
 
 def set_location(config_dict):
-    logger = logging.getLogger("cm_tomo_process_worker")
+    logger = logging.getLogger("cm_worker")
     if "dataDirectory" in config_dict and "RAW_DATA" in config_dict["dataDirectory"]:
         location = config_dict["dataDirectory"].replace("RAW_DATA", "PROCESSED_DATA")
     else:
@@ -129,50 +128,58 @@ def set_location(config_dict):
     logger.info("Scipion project location: {0}".format(location))
     config_dict["location"] = location
     # All param json file
-    config_dict["allParamsJsonFile"] = os.path.join(location, "allParams.json")
+    config_dict["all_params_json_file"] = os.path.join(location, "allParams.json")
     logger.info(
-        "Location of allParams file: {0}".format(config_dict["allParamsJsonFile"])
+        "Location of allParams file: {0}".format(config_dict["all_params_json_file"])
     )
-    if os.path.exists(config_dict["allParamsJsonFile"]):
+    if os.path.exists(config_dict["all_params_json_file"]):
         logger.info("Using existing allParams file")
     return location
 
 
 def set_ispyb_database(config_dict):
-    logger = logging.getLogger("cm_tomo_process_worker")
-    if config_dict["proposal"] is None:
-        logger.info("WARNING! No data will be uploaded to ISPyB.")
-        config_dict["noICAT"] = True
-        config_dict["db"] = -1
-        config_dict["proposal"] = "Unknown"
-    elif config_dict["noICAT"]:
-        logger.info("No upload to ISPyB or iCAT")
-        config_dict["db"] = -1
-    else:
-        if config_dict["proposal"] == "mx415":
-            # Use production data base
-            logger.info("ISPyB production data base used")
-            config_dict["db"] = 0
-        elif config_dict["proposal"] == "mx2112":
-            # Use production data base
-            logger.info("ISPyB production data base used")
-            config_dict["db"] = 0
+    logger = logging.getLogger("cm_worker")
+    if config_dict["experiment_type"] == "sp":
+        if config_dict["proposal"] is None:
+            logger.info("WARNING! No data will be uploaded to ISPyB.")
+            config_dict["noISPyB"] = True
+            config_dict["db"] = -1
+            config_dict["proposal"] = "Unknown"
+        elif config_dict["noISPyB"]:
+            logger.info("No upload to ISPyB or iCAT")
+            config_dict["db"] = -1
         else:
-            # Use productiond data base
-            logger.info("ISPyB production data base used")
-            config_dict["db"] = 0
+            if config_dict["proposal"] == "mx415":
+                # Use production data base
+                logger.info("ISPyB production data base used")
+                config_dict["db"] = 0
+            elif config_dict["proposal"] == "mx2112":
+                # Use production data base
+                logger.info("ISPyB production data base used")
+                config_dict["db"] = 0
+            else:
+                # Use productiond data base
+                logger.info("ISPyB production data base used")
+                config_dict["db"] = 0
+    else:
+        if config_dict["proposal"] is None:
+            logger.info("WARNING! No data will be uploaded to ICAT.")
+            config_dict["noICAT"] = True
+            config_dict["proposal"] = "Unknown"
+        elif config_dict["noICAT"]:
+            logger.info("No upload to iCAT")
 
 
 def create_blackfile_list(config_dict):
-    logger = logging.getLogger("cm_tomo_process_worker")
+    logger = logging.getLogger("cm_worker")
     config_dict["blacklistFile"] = None
-    if os.path.exists(config_dict["allParamsJsonFile"]):
+    if os.path.exists(config_dict["all_params_json_file"]):
         # Check how many movies are present on disk
         list_movies = glob.glob(
             os.path.join(config_dict["dataDirectory"], config_dict["filesPattern"])
         )
         black_list = UtilsPath.getBlacklistAllMovies(
-            list_movies, config_dict["allParamsJsonFile"]
+            list_movies, config_dict["all_params_json_file"]
         )
         blacklist_file = os.path.join(config_dict["location"], "blacklist.txt")
         with open(blacklist_file, "w") as f:
@@ -188,24 +195,41 @@ def set_em_data(config_dict):
     config_dict["sphericalAberration"] = 2.7
     config_dict["gainFlip"] = motioncorr.constants.NO_FLIP
     config_dict["gainRot"] = motioncorr.constants.NO_ROTATION
-    # Needed by GCTF
-    config_dict["minDefocus"] = 5000
-    config_dict["maxDefocus"] = 90000
-    config_dict["astigmatism"] = 1000.0
-    config_dict["convsize"] = 85
-    config_dict["doPhShEst"] = False
-    config_dict["phaseShiftL"] = 0.0
-    config_dict["phaseShiftH"] = 180.0
-    config_dict["phaseShiftS"] = 10.0
-    config_dict["phaseShiftT"] = 0
-    config_dict["lowRes"] = 30.0
-    config_dict["highRes"] = 4.0
-    #
+    if "phasePlateData" in config_dict and config_dict["phasePlateData"]:
+        config_dict["minDefocus"] = 2000
+        config_dict["maxDefocus"] = 20000
+        config_dict["astigmatism"] = 500.0
+        config_dict["convsize"] = 85
+        config_dict["doPhShEst"] = True
+        config_dict["phaseShiftL"] = 0.0
+        config_dict["phaseShiftH"] = 180.0
+        config_dict["phaseShiftS"] = 5.0
+        config_dict["phaseShiftT"] = 1
+        config_dict["lowRes"] = 15.0
+        config_dict["highRes"] = 4.0
+    else:
+        config_dict["minDefocus"] = 5000
+        config_dict["maxDefocus"] = 90000
+        config_dict["astigmatism"] = 1000.0
+        config_dict["convsize"] = 85
+        config_dict["doPhShEst"] = False
+        config_dict["phaseShiftL"] = 0.0
+        config_dict["phaseShiftH"] = 180.0
+        config_dict["phaseShiftS"] = 10.0
+        config_dict["phaseShiftT"] = 0
+        config_dict["lowRes"] = 30.0
+        config_dict["highRes"] = 4.0
+    if config_dict["lowRes"] > 50:
+        config_dict["lowRes"] = 50
     if config_dict["superResolution"]:
         config_dict["binFactor"] = 2.0
     else:
         config_dict["binFactor"] = 1.0
     config_dict["extraParams2"] = ""
+    if "partSize" in config_dict and config_dict["partSize"] <= 150:
+        config_dict["sampling2D"] = 2.0
+    else:
+        config_dict["sampling2D"] = 3.0
 
 
 def set_gpu_data(config_dict):
@@ -226,10 +250,13 @@ def set_gpu_data(config_dict):
         config_dict["motioncor2Cpu"] = 5
     config_dict["gctfGpu"] = "0"
     config_dict["gl2dGpu"] = "0"
+    config_dict["cryoloGpu"] = "1"
+    config_dict["relionGpu"] = "0,1"
+    config_dict["numCpus"] = 48
 
 
 def print_config(config_dict):
-    logger = logging.getLogger("cm_tomo_process_worker")
+    logger = logging.getLogger("cm_worker")
     logger.info("")
     logger.info("Parameters:")
     logger.info("")
@@ -251,30 +278,48 @@ def print_config(config_dict):
     )
     logger.info("{0:30s}{1:8.1f}".format("gainFlip", config_dict["gainFlip"]))
     logger.info("{0:30s}{1:8.1f}".format("gainRot", config_dict["gainRot"]))
+    logger.info("{0:30s}{1:8.2f}".format("minDefocus", config_dict["minDefocus"]))
+    logger.info("{0:30s}{1:8.2f}".format("maxDefocus", config_dict["maxDefocus"]))
+    logger.info("{0:30s}{1:8.1f}".format("astigmatism", config_dict["astigmatism"]))
+    logger.info("{0:30s}{1:8d}".format("convsize", config_dict["convsize"]))
+    logger.info("{0:30s}{1:>8}".format("doPhShEst", config_dict["doPhShEst"]))
+    logger.info("{0:30s}{1:8.1f}".format("phaseShiftL", config_dict["phaseShiftL"]))
+    logger.info("{0:30s}{1:8.1f}".format("phaseShiftH", config_dict["phaseShiftH"]))
+    logger.info("{0:30s}{1:8.1f}".format("phaseShiftS", config_dict["phaseShiftS"]))
+    logger.info("{0:30s}{1:8.1f}".format("phaseShiftT", config_dict["phaseShiftT"]))
+    logger.info("{0:30s}{1:8.3f}".format("lowRes", config_dict["lowRes"]))
+    logger.info("{0:30s}{1:8.3f}".format("highRes", config_dict["highRes"]))
     logger.info("{0:30s}{1:8.0f}".format("magnification", config_dict["magnification"]))
     logger.info("{0:30s}{1:8.2f}".format("samplingRate", config_dict["samplingRate"]))
+    logger.info("{0:30s}{1:8.2f}".format("sampling2D", config_dict["sampling2D"]))
+    if "partSize" in config_dict:
+        logger.info("{0:30s}{1:8.2f}".format("partSize", config_dict["partSize"]))
+    logger.info("{0:30s}{1:8.1f}".format("binFactor", config_dict["binFactor"]))
+    logger.info("{0:30s}{1:>8}".format("dataStreaming", config_dict["dataStreaming"]))
     logger.info("{0:30s}{1:>8s}".format("motioncor2Gpu", config_dict["motioncor2Gpu"]))
     logger.info("{0:30s}{1:>8d}".format("motioncor2Cpu", config_dict["motioncor2Cpu"]))
     logger.info("{0:30s}{1:>8s}".format("gctfGpu", config_dict["gctfGpu"]))
+    logger.info("{0:30s}{1:>8s}".format("gl2dGpu", config_dict["gl2dGpu"]))
+    logger.info("{0:30s}{1:8d}".format("numCpus", config_dict["numCpus"]))
     logger.info("")
     logger.info("Scipion project name: {0}".format(config_dict["scipionProjectName"]))
     logger.info("Scipion user data location: {0}".format(config_dict["location"]))
-    logger.info("All param json file: {0}".format(config_dict["allParamsJsonFile"]))
+    logger.info("All param json file: {0}".format(config_dict["all_params_json_file"]))
     logger.info("")
 
 
 def update_all_params(config_dict):
-    if os.path.exists(config_dict["allParamsJsonFile"]):
-        with open(config_dict["allParamsJsonFile"]) as fd:
+    if os.path.exists(config_dict["all_params_json_file"]):
+        with open(config_dict["all_params_json_file"]) as fd:
             all_params = json.loads(fd.read())
     else:
         all_params = {}
     key = "config_dict_" + time.strftime("%Y%m%d-%H%M%S", time.localtime(time.time()))
     all_params[key] = config_dict
     os.makedirs(
-        os.path.dirname(config_dict["allParamsJsonFile"]), exist_ok=True, mode=0o755
+        os.path.dirname(config_dict["all_params_json_file"]), exist_ok=True, mode=0o755
     )
-    with open(config_dict["allParamsJsonFile"], "w") as fd:
+    with open(config_dict["all_params_json_file"], "w") as fd:
         fd.write(json.dumps(all_params, indent=4))
 
 
@@ -303,15 +348,14 @@ def run_workflow(config_dict):
     # for object in gc.get_objects():
     #     if isinstance(object, pyworkflow.project.Project):
     #         logger.warning("Project found!")
-    # has_found_project = True
-    # log_dir = os.path.dirname(config_dict["log_path"])
-    # scipion_project_name = config_dict["scipionProjectName"]
-    # graph_path = os.path.join(log_dir, scipion_project_name + ".png")
-    # objgraph.show_backrefs([object], filename=graph_path, max_depth=10)
+            # has_found_project = True
+            # log_dir = os.path.dirname(config_dict["log_path"])
+            # scipion_project_name = config_dict["scipionProjectName"]
+            # graph_path = os.path.join(log_dir, scipion_project_name + ".png")
+            # objgraph.show_backrefs([object], filename=graph_path, max_depth=10)
     # if not has_found_project:
     #     logger.debug("Project not found!")
     time.sleep(2)
-
 
 def run_workflow_commandline(config_dict):
     logger = init_logging(config_dict)
@@ -335,7 +379,7 @@ def run_workflow_main(config_dict, logger):
     set_gpu_data(config_dict)
     # Print configuration
     print_config(config_dict)
-    # Update the allParamsJsonFile with the config_dict
+    # Update the all_params_json_file with the config_dict
     update_all_params(config_dict)
 
     # the project may be a soft link which may be unavailable to the cluster
@@ -348,7 +392,10 @@ def run_workflow_main(config_dict, logger):
     # except Exception:
     #     project_path = manager.getProjectPath(config_dict["scipionProjectName"])
 
-    preprocessWorkflow(config_dict)
+    if config_dict["experiment_type"] == "sp":
+        esrf.sp.workflow.preprocessWorkflow(config_dict)
+    else:
+        esrf.tomo.cryo_tomo_workflow.preprocessWorkflow(config_dict)
 
     # Start the project
     project = pyworkflow.project.Project(
@@ -428,7 +475,6 @@ def kill_workflow(config_dict):
         logger.warning(f"Killing process {process}")
         os.kill(process, 9)
 
-
 @app.task()
 def extract_meta_data(movie_path, phase_plate_data=False, super_resolution=True):
     config_dict = {}
@@ -454,6 +500,7 @@ def extract_meta_data(movie_path, phase_plate_data=False, super_resolution=True)
     else:
         config_dict["binFactor"] = 1.0
     return config_dict
+
 
 
 # if __name__ == "__main__":

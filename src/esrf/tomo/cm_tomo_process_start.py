@@ -213,9 +213,9 @@ else:
         for arg_key, arg_value in config_dict.items():
             print("{0:25s}= {1}".format(arg_key, arg_value))
         app = celery.Celery()
-        app.config_from_object("esrf.workflow.celeryconfig")
+        app.config_from_object("esrf.tomo.celeryconfig")
         future = app.send_task(
-            "esrf.workflow.cm_process_worker.run_workflow",
+            "esrf.tomo.cm_process_worker.run_workflow",
             args=(config_dict,),
             queue=worker_name,
         )

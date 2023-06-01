@@ -8,7 +8,7 @@ import celery
 from esrf.sp.cm_process_status import print_worker_status
 
 app = celery.Celery()
-app.config_from_object("esrf.workflow.celeryconfig")
+app.config_from_object("esrf.sp.celeryconfig")
 
 active_workers = celery.current_app.control.inspect().active()
 list_processing = print_worker_status(active_workers)
@@ -43,7 +43,7 @@ for dict_worker in worker_value:
         # Kill the remaining processes
         print("Killing remaining processes.")
         future = app.send_task(
-            "esrf.workflow.cm_process_worker.kill_workflow",
+            "esrf.sp.cm_process_worker.kill_workflow",
             args=(config_dict,),
             queue=worker_to_abort,
         )

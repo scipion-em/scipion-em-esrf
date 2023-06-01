@@ -34,7 +34,7 @@ def print_worker_status(active_workers):
 if __name__ == "__main__":
     print("Checking status of CM celery workers...")
     app = celery.Celery()
-    app.config_from_object("esrf.workflow.celeryconfig")
+    app.config_from_object("esrf.sp.celeryconfig")
     active_workers = celery.current_app.control.inspect().active()
     # print(f"Active workers: {active_workers}")
     list_processing = print_worker_status(active_workers)

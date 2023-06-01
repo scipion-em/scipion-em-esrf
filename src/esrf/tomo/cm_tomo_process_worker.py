@@ -38,7 +38,7 @@ queue_name = "celery." + user_name + "@" + host_name
 # pprint.pprint(app.control.inspect().stats())
 
 app = celery.Celery()
-app.config_from_object("esrf.workflow.celeryconfig")
+app.config_from_object("esrf.sp.celeryconfig")
 
 
 def init_logging(config_dict):

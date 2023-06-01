@@ -5,9 +5,9 @@ input_data = {}
 from celery import app
 worker_name = "svensson@cmproc3"
 app = celery.Celery()
-app.config_from_object("esrf.workflow.celeryconfig")
+app.config_from_object("esrf.sp.celeryconfig")
 future = app.send_task(
-    "esrf.workflow.cm_process_worker.revoke_tst",
+    "esrf.sp.cm_process_worker.revoke_tst",
     args=({"input_data": False},),
     queue=worker_name
 )

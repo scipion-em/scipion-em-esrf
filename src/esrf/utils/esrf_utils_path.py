@@ -27,7 +27,6 @@
 
 import os
 import pathlib
-import pprint
 import re
 import glob
 import json
@@ -256,7 +255,6 @@ class UtilsPath(object):
         fields_found = []
 
         for key, value in search_dict.items():
-
             if key == field:
                 fields_found.append(value)
 
@@ -413,7 +411,9 @@ class UtilsPath(object):
         # Find extra directory
         extra_directory = working_dir / "extra"
         if extra_directory.exists():
-            ctf_estimation_path = extra_directory / (movie_name + "_aligned_mic_DW_ctf.log")
+            ctf_estimation_path = extra_directory / (
+                movie_name + "_aligned_mic_DW_ctf.log"
+            )
             if ctf_estimation_path.exists():
                 f = open(ctf_estimation_path)
                 lines = f.readlines()
@@ -700,7 +700,6 @@ class UtilsPath(object):
                 listOfRemainingDirectories = list_directory[7:]
 
             elif topDirectory == "mntdirect" and "_data_cm01_" in secondDirectory:
-
                 if "inhouse" in secondDirectory:
                     proposal = list_directory[3]
                     beamline = list_directory[4]
@@ -793,7 +792,6 @@ class UtilsPath(object):
             for line in list_lines[3:]:
                 no_points += 1
                 line_parts = line.split()
-                index = int(line_parts[0])
                 x_shift = float(line_parts[1])
                 y_shift = float(line_parts[2])
                 if x_shift_prev is None:
@@ -802,12 +800,14 @@ class UtilsPath(object):
                 else:
                     delta_x_shift = x_shift - x_shift_prev
                     delta_y_shift = y_shift - y_shift_prev
-                    shift = math.sqrt(delta_x_shift ** 2 + delta_y_shift ** 2)
+                    shift = math.sqrt(delta_x_shift**2 + delta_y_shift**2)
                     total_motion += shift
             dict_results["noPoints"] = no_points
             if total_motion != 0:
                 dict_results["totalMotion"] = round(total_motion, 1)
-                dict_results["averageMotionPerFrame"] = round(total_motion / no_points, 1)
+                dict_results["averageMotionPerFrame"] = round(
+                    total_motion / no_points, 1
+                )
         return dict_results
 
     @staticmethod
@@ -1001,23 +1001,23 @@ class UtilsPath(object):
             extra = m.group(7)
             suffix = m.group(8)
             movie_name = ts_name
-            for index in range(2,7):
+            for index in range(2, 7):
                 movie_name += "_" + m.group(index)
-            if "RAW_DATA" in directory:
-                date_dir = directory.split("RAW_DATA")[0]
-                icat_top_dir = os.path.join(date_dir, "RAW_DATA", grid_name)
-            elif "PROCESSED_DATA" in directory:
-                date_dir = directory.split("PROCESSED_DATA")[0]
-                icat_top_dir = os.path.join(date_dir, "PROCESSED_DATA", grid_name)
+            if "RAW_DATA" in directory or "PROCESSED_DATA" in directory:
+                if "RAW_DATA" in directory:
+                    date_dir = directory.split("RAW_DATA")[0]
+                else:
+                    date_dir = directory.split("PROCESSED_DATA")[0]
+                icat_raw_dir = os.path.join(
+                    date_dir, "RAW_DATA", grid_name, ts_name, movie_number
+                )
+                icat_processed_dir = os.path.join(
+                    date_dir, "PROCESSED_DATA", grid_name, ts_name, movie_number
+                )
             else:
                 date_dir = directory
-                icat_top_dir = directory
-            icat_dir = os.path.join(
-                icat_top_dir,
-                ts_name,
-                movie_number
-            )
-            raw_data_dir = os.path.join(date_dir, "RAW_DATA")
+                icat_raw_dir = directory
+                icat_processed_dir = directory
             dict_movie = {
                 "file_path": str(file_path),
                 "directory": str(directory),
@@ -1031,8 +1031,9 @@ class UtilsPath(object):
                 "time": ts_time,
                 "extra": extra,
                 "suffix": suffix,
-                "icat_dir": icat_dir,
-                "fractions_name": fractions_name
+                "icat_raw_dir": icat_raw_dir,
+                "icat_processed_dir": icat_processed_dir,
+                "fractions_name": fractions_name,
             }
         return dict_movie
 
@@ -1044,9 +1045,7 @@ class UtilsPath(object):
             raise RuntimeError(f"WARNING! File already archived: {icat_path}")
         else:
             os.symlink(str(file_path), str(icat_path))
-            print(
-                f"Created symlink : {file_path} -> {icat_path}"
-            )
+            print(f"Created symlink : {file_path} -> {icat_path}")
         return icat_path
 
     @staticmethod
@@ -1061,7 +1060,9 @@ class UtilsPath(object):
             gallery_dir.mkdir(mode=0o755)
         temp_tif_path = gallery_dir / (icat_movie_path.stem + ".tif")
         snapshot_path = gallery_dir / (icat_movie_path.stem + ".jpg")
-        os.system(f"bimg -average -truncate 0,1 -minmax 0,1 {icat_movie_path} {temp_tif_path}")
+        os.system(
+            f"bimg -average -truncate 0,1 -minmax 0,1 {icat_movie_path} {temp_tif_path}"
+        )
         os.system(f"bscale -bin 20 {temp_tif_path} {snapshot_path}")
         # os.chmod(snapshot_path, mode=0o644)
         os.remove(str(temp_tif_path))
@@ -1069,7 +1070,6 @@ class UtilsPath(object):
     @staticmethod
     def createTiltSerieSearchSnapshot(dict_movie, search_dir):
         movie_dir = pathlib.Path(dict_movie["directory"])
-        grid_name = dict_movie["grid_name"]
         ts_name = dict_movie["ts_name"]
         if not movie_dir.exists():
             raise RuntimeError(f"File path {movie_dir} doesn't exist!")
@@ -1078,13 +1078,15 @@ class UtilsPath(object):
         search_mrc_path = batch_dir / (search_file_name + ".mrc")
         temp_tif_path = search_dir / (search_file_name + ".tif")
         search_snapshot_path = search_dir / (search_file_name + ".jpg")
-        print("*"*80)
+        print("*" * 80)
         print(str(search_mrc_path))
         print(str(search_snapshot_path))
         print("*" * 80)
         if search_mrc_path.exists():
             if not search_snapshot_path.exists():
-                os.system(f"bimg -average -truncate 0,1 -minmax 0,1 {search_mrc_path} {temp_tif_path}")
+                os.system(
+                    f"bimg -average -truncate 0,1 -minmax 0,1 {search_mrc_path} {temp_tif_path}"
+                )
                 os.system(f"bscale -bin 6 {temp_tif_path} {search_snapshot_path}")
                 # os.chmod(search_snapshot_path, mode=0o644)
                 os.remove(str(temp_tif_path))

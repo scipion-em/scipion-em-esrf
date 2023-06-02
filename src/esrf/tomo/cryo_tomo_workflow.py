@@ -26,7 +26,6 @@
 # **************************************************************************
 
 import sys
-import json
 import random
 
 from collections import OrderedDict
@@ -39,14 +38,8 @@ from aretomo.protocols import ProtAreTomoAlignRecon
 from pyworkflow.object import Pointer
 from pyworkflow.project.manager import Manager
 
-try:  # Xmipp plugin is mandatory to run this workflow
-    from xmipp3.protocols import (
-        XmippProtCTFMicrographs,
-    )
-#                                  XmippProtDeepMicrographScreen)
-except Exception as exc:
-    raise
-    pwutils.pluginNotFound("xmipp", errorMsg=exc, doRaise=True)
+# Xmipp plugin is mandatory to run this workflow
+from xmipp3.protocols import XmippProtCTFMicrographs
 
 
 from esrf.protocols import ProtMonitorIcatTomo
@@ -123,7 +116,7 @@ def preprocessWorkflow(config_dict):
             summaryList.append(prot)
 
     def applyLabel(prot, labelName, color=""):
-        if all(l != labelName for l in labelsDict.keys()):
+        if all(label_key != labelName for label_key in labelsDict.keys()):
             if color == "":
                 if len(colorsDict) < 9:
                     color = colorsDef[len(colorsDict)]
@@ -312,7 +305,7 @@ def preprocessWorkflow(config_dict):
         time4NextTS=1800,
         hostName="localhost",
         numberOfThreads=3,
-        numberOfMpi= 1,
+        numberOfMpi=1,
     )
     setExtendedInput(
         protComposeTS.inputMicrographs, protMA, "outputMicrographsDoseWeighted"
@@ -362,18 +355,13 @@ def preprocessWorkflow(config_dict):
         objLabel="aretomo - tilt-series align",
         filesPath=config_dict["dataDirectory"],
         skipAlign=False,
-        makeTomo=False
+        makeTomo=False,
     )
     setExtendedInput(
         protAreTomoAlignRecon.inputSetOfTiltSeries, protComposeTS, "TiltSeries"
     )
     _registerProt(protAreTomoAlignRecon, "ComposeTs")
     # ispybUploads.append(protComposeTS)
-
-
-
-
-
 
     # --------- ISPyB MONITOR -----------------------
     if not config_dict["noICAT"]:
@@ -400,4 +388,3 @@ def preprocessWorkflow(config_dict):
         )
         icat_tomo_monitor.inputProtocols.set(ispybUploads)
         _registerProt(icat_tomo_monitor, "icatTomoMonitor")
-

@@ -7,7 +7,6 @@ import celery
 #
 import motioncorr.constants
 
-from esrf.utils.esrf_utils_path import UtilsPath
 from esrf.utils.esrf_utils_ispyb import UtilsISPyB
 from esrf.tomo.cryo_tomo_command_line_parser import getCommandlineOptions
 from esrf.celery.cm_worker import run_workflow_commandline
@@ -63,9 +62,7 @@ listMovies = glob.glob(
 )
 noMovies = len(listMovies)
 # Check how many movies are present on disk
-listMovies = glob.glob(
-    os.path.join(config_dict["dataDirectory"], "*_fractions.tiff")
-)
+listMovies = glob.glob(os.path.join(config_dict["dataDirectory"], "*_fractions.tiff"))
 noMovies = len(listMovies)
 if noMovies == 0:
     print("ERROR - no files in direcory {0}".format(config_dict["dataDirectory"]))
@@ -164,7 +161,7 @@ config_dict["scipionProjectName"] = "{0}_{1}_{2}_{3}".format(
     config_dict["proposal"],
     config_dict["proteinAcronym"],
     config_dict["sampleAcronym"],
-    date_string
+    date_string,
 )
 
 user_name = os.environ["USER"]
@@ -178,7 +175,6 @@ config_dict["log_path"] = os.path.join(log_dir, log_file_name)
 if config_dict["celery_worker"] == "None":
     run_workflow_commandline(config_dict)
 else:
-
     celery_worker = config_dict["celery_worker"]
 
     active_workers = celery.current_app.control.inspect().active()
@@ -210,7 +206,11 @@ else:
                     break
 
     if found_worker:
-        print("Launching processing on worker '{0}' with the following parameters:".format(worker_name))
+        print(
+            "Launching processing on worker '{0}' with the following parameters:".format(
+                worker_name
+            )
+        )
         for arg_key, arg_value in config_dict.items():
             print("{0:25s}= {1}".format(arg_key, arg_value))
         app = celery.Celery()
@@ -232,7 +232,9 @@ else:
         if is_running:
             print("Worker started, celery task_id = {0}".format(task_id))
         else:
-            print("Error! Worker didn't start! Please check log files in this directory:")
+            print(
+                "Error! Worker didn't start! Please check log files in this directory:"
+            )
             print(log_dir)
             sys.exit(1)
     else:

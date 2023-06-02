@@ -40,6 +40,7 @@ queue_name = "celery." + user_name + "@" + host_name
 app = celery.Celery()
 app.config_from_object("esrf.celery.cm_config")
 
+
 def init_logging(config_dict):
     # Set up logging
     logger = logging.getLogger("cm_worker")
@@ -348,14 +349,15 @@ def run_workflow(config_dict):
     # for object in gc.get_objects():
     #     if isinstance(object, pyworkflow.project.Project):
     #         logger.warning("Project found!")
-            # has_found_project = True
-            # log_dir = os.path.dirname(config_dict["log_path"])
-            # scipion_project_name = config_dict["scipionProjectName"]
-            # graph_path = os.path.join(log_dir, scipion_project_name + ".png")
-            # objgraph.show_backrefs([object], filename=graph_path, max_depth=10)
+    # has_found_project = True
+    # log_dir = os.path.dirname(config_dict["log_path"])
+    # scipion_project_name = config_dict["scipionProjectName"]
+    # graph_path = os.path.join(log_dir, scipion_project_name + ".png")
+    # objgraph.show_backrefs([object], filename=graph_path, max_depth=10)
     # if not has_found_project:
     #     logger.debug("Project not found!")
     time.sleep(2)
+
 
 def run_workflow_commandline(config_dict):
     logger = init_logging(config_dict)
@@ -475,6 +477,7 @@ def kill_workflow(config_dict):
         logger.warning(f"Killing process {process}")
         os.kill(process, 9)
 
+
 @app.task()
 def extract_meta_data(movie_path, phase_plate_data=False, super_resolution=True):
     config_dict = {}
@@ -500,7 +503,6 @@ def extract_meta_data(movie_path, phase_plate_data=False, super_resolution=True)
     else:
         config_dict["binFactor"] = 1.0
     return config_dict
-
 
 
 # if __name__ == "__main__":

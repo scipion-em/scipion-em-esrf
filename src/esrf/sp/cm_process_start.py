@@ -69,14 +69,20 @@ listMovies = glob.glob(
 noMovies = len(listMovies)
 if config_dict["secondGrid"] or config_dict["thirdGrid"]:
     if config_dict["secondGrid"] and config_dict["thirdGrid"]:
-        raise RuntimeError("--secondGrid and --thirdGrid cannot be used at the same time!")
+        raise RuntimeError(
+            "--secondGrid and --thirdGrid cannot be used at the same time!"
+        )
     if noMovies > 0:
-        raise RuntimeError("--secondGrid or --thirdGrid used and images already exists on disk!")
+        raise RuntimeError(
+            "--secondGrid or --thirdGrid used and images already exists on disk!"
+        )
     # Check that we have voltage, imagesCount and magnification:
     for key in ["magnification", "imagesCount"]:
         if key not in config_dict or config_dict[key] is None:
             raise RuntimeError(
-                "--secondGrid or --thirdGrid used, missing command line argument '--{0}'!".format(key)
+                "--secondGrid or --thirdGrid used, missing command line argument '--{0}'!".format(
+                    key
+                )
             )
     # Assume EPU TIFF data
     config_dict["dataType"] = 1  # "EPU_TIFF"
@@ -204,7 +210,7 @@ config_dict["scipionProjectName"] = "{0}_{1}_{2}_{3}".format(
     config_dict["proposal"],
     config_dict["proteinAcronym"],
     config_dict["sampleAcronym"],
-    date_string
+    date_string,
 )
 
 user_name = os.environ["USER"]
@@ -218,7 +224,6 @@ config_dict["log_path"] = os.path.join(log_dir, log_file_name)
 if config_dict["celery_worker"] == "None":
     run_workflow_commandline(config_dict)
 else:
-
     celery_worker = config_dict["celery_worker"]
 
     active_workers = celery.current_app.control.inspect().active()
@@ -250,7 +255,11 @@ else:
                     break
 
     if found_worker:
-        print("Launching processing on worker '{0}' with the following parameters:".format(worker_name))
+        print(
+            "Launching processing on worker '{0}' with the following parameters:".format(
+                worker_name
+            )
+        )
         for arg_key, arg_value in config_dict.items():
             print("{0:25s}= {1}".format(arg_key, arg_value))
         app = celery.Celery()
@@ -272,7 +281,9 @@ else:
         if is_running:
             print("Worker started, celery task_id = {0}".format(task_id))
         else:
-            print("Error! Worker didn't start! Please check log files in this directory:")
+            print(
+                "Error! Worker didn't start! Please check log files in this directory:"
+            )
             print(log_dir)
             sys.exit(1)
     else:

@@ -25,8 +25,6 @@
 # *
 # **************************************************************************
 
-DO_UPLOAD = True
-
 import os
 import json
 import time
@@ -45,6 +43,10 @@ from motioncorr.protocols import ProtMotionCorr
 
 from esrf.utils.esrf_utils_icat import UtilsIcat
 from esrf.utils.esrf_utils_path import UtilsPath
+
+# Debug possibility to turn off upload
+DO_UPLOAD = True
+
 
 # Fix for GPFS problem
 shutil._USE_CP_SENDFILE = False
@@ -324,7 +326,7 @@ class MonitorESRFIcatTomo(Monitor):
             # )
             movie_full_path = UtilsPath.removePrefixDirs(movie_path)
             dict_movie = UtilsPath.getTSFileParameters(movie_full_path)
-            icat_raw_dir = pathlib.Path(dict_movie["icat_dir"])
+            icat_raw_dir = pathlib.Path(dict_movie["icat_raw_dir"])
             movie_name = dict_movie["movie_name"]
             if movie_name not in self.all_params:
                 self.all_params[movie_name] = dict_movie
@@ -363,7 +365,9 @@ class MonitorESRFIcatTomo(Monitor):
             movie_name = dict_micrograph["movie_name"]
             if movie_name in self.all_params:
                 dict_movie = self.all_params[movie_name]
-                icat_mc_dir = pathlib.Path(dict_movie["icat_dir"].replace("RAW_DATA", "PROCESSED_DATA")) / "MotionCor"
+                icat_mc_dir = (
+                    pathlib.Path(dict_movie["icat_processed_dir"]) / "MotionCor"
+                )
                 if "mc_archived" not in dict_movie and "icat_raw_dir" in dict_movie:
                     if icat_mc_dir.exists():
                         self.info(
@@ -398,8 +402,10 @@ class MonitorESRFIcatTomo(Monitor):
             movie_name = dict_micrograph["movie_name"]
             if movie_name in self.all_params:
                 dict_movie = self.all_params[movie_name]
-                icat_ctf_dir = pathlib.Path(dict_movie["icat_dir"].replace("RAW_DATA", "PROCESSED_DATA")) / "CTF"
-                ctf_full_path = ctf_working_dir / "extra" / (movie_name + "_aligned_mic_DW_ctf.mrc")
+                icat_ctf_dir = pathlib.Path(dict_movie["icat_processed_dir"]) / "CTF"
+                ctf_full_path = (
+                    ctf_working_dir / "extra" / (movie_name + "_aligned_mic_DW_ctf.mrc")
+                )
                 if "ctf_archived" not in dict_movie and "icat_mc_dir" in dict_movie:
                     if os.path.exists(icat_ctf_dir):
                         self.info(
@@ -469,13 +475,14 @@ class MonitorESRFIcatTomo(Monitor):
         self.all_params[movie_name]["raw_movie_archived"] = True
         self.all_params[movie_name]["icat_raw_dir"] = str(icat_raw_dir)
         self.no_movie_threads -= 1
-        self.info(f"Thread finished for movie {movie_name}, no_movie_threads: {self.no_movie_threads}")
+        self.info(
+            f"Thread finished for movie {movie_name}, no_movie_threads: {self.no_movie_threads}"
+        )
 
     def archiveAlignedMovieInIcatPlus(
         self, prot, movie_name, micrograph_full_path, icat_mc_dir
     ):
         dict_movie = self.all_params[movie_name]
-        grid_name = dict_movie["grid_name"]
         ts_name = dict_movie["ts_name"]
         movie_number = dict_movie["movie_number"]
         icat_raw_dir = dict_movie["icat_raw_dir"]
@@ -518,17 +525,18 @@ class MonitorESRFIcatTomo(Monitor):
                 proposal=self.proposal,
                 dataSetName=f"{movie_number:03d}_MotionCor",
                 dictMetadata=dictMetadata,
-                raw=[icat_raw_dir]
+                raw=[icat_raw_dir],
             )
         self.all_params[movie_name]["mc_archived"] = True
         self.all_params[movie_name]["icat_mc_path"] = str(icat_mc_path)
         self.all_params[movie_name]["icat_mc_dir"] = str(icat_mc_dir)
         self.no_mc_threads -= 1
-        self.info(f"MC thread finished for movie {movie_name}, no_mc_threads: {self.no_mc_threads}")
+        self.info(
+            f"MC thread finished for movie {movie_name}, no_mc_threads: {self.no_mc_threads}"
+        )
 
     def archiveCTFInIcatPlus(self, prot, movie_name, ctf_full_path, icat_ctf_dir):
         dict_movie = self.all_params[movie_name]
-        grid_name = dict_movie["grid_name"]
         ts_name = dict_movie["ts_name"]
         movie_number = dict_movie["movie_number"]
         movie_name = dict_movie["movie_name"]
@@ -565,10 +573,12 @@ class MonitorESRFIcatTomo(Monitor):
                 proposal=self.proposal,
                 dataSetName=f"{movie_number:03d}_CTF",
                 dictMetadata=dict_metadata,
-                raw=[icat_mc_dir]
+                raw=[icat_mc_dir],
             )
         self.all_params[movie_name]["ctf_archived"] = True
         self.all_params[movie_name]["icat_ctf_path"] = str(icat_ctf_path)
         self.all_params[movie_name]["icat_ctf_dir"] = str(icat_ctf_dir)
         self.no_ctf_threads -= 1
-        self.info(f"CTF thread finished for movie {movie_name}, no_ctf_threads: {self.no_ctf_threads}")
+        self.info(
+            f"CTF thread finished for movie {movie_name}, no_ctf_threads: {self.no_ctf_threads}"
+        )

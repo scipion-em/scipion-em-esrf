@@ -62,7 +62,7 @@ shutil._USE_CP_SENDFILE = False
 
 
 class ProtMonitorISPyB_ESRF(ProtMonitor):
-    """ 
+    """
     Monitor to communicated with ISPyB system at ESRF.
     """
 
@@ -187,7 +187,7 @@ class ProtMonitorISPyB_ESRF(ProtMonitor):
             params.BooleanParam,
             default=False,
             label="Enable process dir?",
-            help="Copy of motion corrected micrographs to RAW_DATA dir."
+            help="Copy of motion corrected micrographs to RAW_DATA dir.",
         )
 
         section3 = form.addSection(label="ISPyB")
@@ -477,7 +477,7 @@ class MonitorISPyB_ESRF(Monitor):
                     positionX = dictMetaData["positionX"]
                     positionY = dictMetaData["positionY"]
                     dosePerImage = round(
-                        float(dictMetaData["dose"]) / 10.0 ** 20 / float(imagesCount), 2
+                        float(dictMetaData["dose"]) / 10.0**20 / float(imagesCount), 2
                     )
                 except BaseException:
                     self.info("ERROR reading XML file {0}".format(xmlMetaDataFullPath))
@@ -720,7 +720,7 @@ class MonitorISPyB_ESRF(Monitor):
                         positionY = dictMetaData["positionY"]
                         dosePerImage = round(
                             float(dictMetaData["dose"])
-                            / 10.0 ** 20
+                            / 10.0**20
                             / float(imagesCount),
                             2,
                         )
@@ -1043,7 +1043,7 @@ class MonitorISPyB_ESRF(Monitor):
         self.protocol.info("ESRF ISPyB upload motion corr results")
         for micrograph in self.iter_updated_set(prot.outputMicrographs):
             micrographFullPath = os.path.join(self.currentDir, micrograph.getFileName())
-            self.info("*"*80)
+            self.info("*" * 80)
             self.info("Motion corr micrographFullPath: {0}".format(micrographFullPath))
             if self.dataType == 0:  # "EPU"
                 dictFileNameParameters = (
@@ -1069,7 +1069,8 @@ class MonitorISPyB_ESRF(Monitor):
             if (
                 "movieName" in dictFileNameParameters
                 and dictFileNameParameters["movieName"] in self.allParams
-                and "motionCorrectionId" not in self.allParams[dictFileNameParameters["movieName"]]
+                and "motionCorrectionId"
+                not in self.allParams[dictFileNameParameters["movieName"]]
             ):
                 movieName = dictFileNameParameters["movieName"]
                 # self.info("Motion corr movie name: {0}".format(movieName))
@@ -1224,7 +1225,8 @@ class MonitorISPyB_ESRF(Monitor):
             if (
                 "movieName" in dictFileNameParameters
                 and dictFileNameParameters["movieName"] in self.allParams
-                and "motionCorrectionId" in self.allParams[dictFileNameParameters["movieName"]]
+                and "motionCorrectionId"
+                in self.allParams[dictFileNameParameters["movieName"]]
                 and "CTFid" not in self.allParams[dictFileNameParameters["movieName"]]
             ):
                 movieName = dictFileNameParameters["movieName"]

@@ -32,7 +32,6 @@ import random
 from collections import OrderedDict
 
 from pwem.protocols import ProtImportMovies
-from pwem.protocols import ProtUnionSet
 from pwem.protocols import ProtBoxSizeParameters
 from pwem.protocols import ProtManualCheckpoint
 from pwem.protocols import ProtExtractCoords
@@ -57,7 +56,7 @@ try:  # Xmipp plugin is mandatory to run this workflow
         XmippProtEliminateEmptyParticles,
         XmippProtScreenParticles,
         XmippProtStrGpuCrrSimple,
-        XmippProtEliminateEmptyClasses,
+        # XmippProtEliminateEmptyClasses,
         XmippProtCenterParticles,
     )
 #                                  XmippProtDeepMicrographScreen)
@@ -153,7 +152,7 @@ def preprocessWorkflow(config_dict):
             summaryList.append(prot)
 
     def applyLabel(prot, labelName, color=""):
-        if all(l != labelName for l in labelsDict.keys()):
+        if all(label_key != labelName for label_key in labelsDict.keys()):
             if color == "":
                 if len(colorsDict) < 9:
                     color = colorsDef[len(colorsDict)]
@@ -385,7 +384,7 @@ def preprocessWorkflow(config_dict):
         )
         if doDownSamp2D:
             downSampPreMics = config_dict["sampling2D"] / (
-                    config_dict["samplingRate"] * config_dict["binFactor"]
+                config_dict["samplingRate"] * config_dict["binFactor"]
             )
             protPreMics = project.newProtocol(
                 XmippProtPreprocessMicrographs,
@@ -416,11 +415,7 @@ def preprocessWorkflow(config_dict):
         protPP2._useQueue.set(True)
         protPP2._queueParams.set(json.dumps(QUEUE_PARAMS_WITHOUT_GPU_16_CPU))
         setBoxSize(protPP2.boxSize)
-        setExtendedInput(
-            protPP2.inputMicrographs,
-            protPreMics,
-            "outputMicrographs"
-        )
+        setExtendedInput(protPP2.inputMicrographs, protPreMics, "outputMicrographs")
         _registerProt(protPP2, "Picking")
 
         pickers.append(protPP2)
@@ -451,18 +446,12 @@ def preprocessWorkflow(config_dict):
             numberOfMpi=1,
         )
         setExtendedInput(
-            protExtractNoFlip.inputCoordinates,
-            finalPicker,
-            outputCoordsStr
+            protExtractNoFlip.inputCoordinates, finalPicker, outputCoordsStr
         )
         setExtendedInput(
-            protExtractNoFlip.inputMicrographs,
-            protPreMics,
-            "outputMicrographs"
+            protExtractNoFlip.inputMicrographs, protPreMics, "outputMicrographs"
         )
-        setExtendedInput(
-            protExtractNoFlip.ctfRelations,
-            protCTFs, "outputCTF")
+        setExtendedInput(protExtractNoFlip.ctfRelations, protCTFs, "outputCTF")
         _registerProt(protExtractNoFlip, "Particles")
 
         if config_dict["particleElimination"]:
@@ -528,7 +517,6 @@ def preprocessWorkflow(config_dict):
             list_trigger_particles = [20000, 50000, 100000]
 
         for outputSize in list_trigger_particles:
-            allAvgs = []
             classifiers = []
             # --------- TRIGGER PARTS ---------------------------
 
@@ -894,7 +882,9 @@ def preprocessWorkflow(config_dict):
             numberOfMpi=1,
             inputMicrographs="2888.outputMicrographs",
         )
-        protSupportBranchBoxSize.addPrerequisites(protSupportBranchCryoloPicking.getObjId())
+        protSupportBranchBoxSize.addPrerequisites(
+            protSupportBranchCryoloPicking.getObjId()
+        )
         setExtendedInput(
             protSupportBranchBoxSize.inputMicrographs,
             protSupportBranchTrigInitPick,
@@ -943,7 +933,7 @@ def preprocessWorkflow(config_dict):
         setExtendedInput(
             protSupportBranchTrigStopSignal.inputImages,
             protPreMics,
-            "outputMicrographs"
+            "outputMicrographs",
         )
         _registerProt(protSupportBranchTrigStopSignal, "Micrographs")
 
@@ -998,7 +988,9 @@ def preprocessWorkflow(config_dict):
             streamingSleepOnWait=10,
         )
         protSupportBranchCryoloPickingAutocompleted._useQueue.set(True)
-        protSupportBranchCryoloPickingAutocompleted._queueParams.set(json.dumps(QUEUE_PARAMS_WITHOUT_GPU_16_CPU))
+        protSupportBranchCryoloPickingAutocompleted._queueParams.set(
+            json.dumps(QUEUE_PARAMS_WITHOUT_GPU_16_CPU)
+        )
         setExtendedInput(
             protSupportBranchCryoloPickingAutocompleted.inputMicrographs,
             protPreMics,
@@ -1274,7 +1266,6 @@ def preprocessWorkflow(config_dict):
         )
         _registerProt(protSupportBranchConsensusPicking, "Picking")
 
-
         # ----------- RELION EXTRACT PARTICLES ---------------------------------
         # {
         #     "object.className": "ProtRelionExtractParticles",
@@ -1327,13 +1318,11 @@ def preprocessWorkflow(config_dict):
             protSupportBranchRelionExtractParticles.boxSize,
             protSupportBranchBoxSize,
             "boxSizeExtraction",
-            pointer = True
+            pointer=True,
         )
         #     "ctfRelations": "3052.outputCTF",
         setExtendedInput(
-            protSupportBranchRelionExtractParticles.ctfRelations,
-            protCTFs,
-            "outputCTF"
+            protSupportBranchRelionExtractParticles.ctfRelations, protCTFs, "outputCTF"
         )
         #  "inputCoordinates": "3439.consensusCoordinates"
         setExtendedInput(
@@ -1344,7 +1333,7 @@ def preprocessWorkflow(config_dict):
         setExtendedInput(
             protSupportBranchRelionExtractParticles.inputMicrographs,
             protPreMics,
-            "outputMicrographs"
+            "outputMicrographs",
         )
         _registerProt(protSupportBranchRelionExtractParticles, "Particles")
 
@@ -1501,7 +1490,9 @@ def preprocessWorkflow(config_dict):
             inputParticles="3610.outputParticles",
         )
         protSupportBranchRelionClassify2D._useQueue.set(True)
-        protSupportBranchRelionClassify2D._queueParams.set(json.dumps(QUEUE_PARAMS_WITH_2_GPU_16_CPU))
+        protSupportBranchRelionClassify2D._queueParams.set(
+            json.dumps(QUEUE_PARAMS_WITH_2_GPU_16_CPU)
+        )
         #     "inputParticles": "3610.outputParticles"
         setExtendedInput(
             protSupportBranchRelionClassify2D.inputParticles,
@@ -1535,7 +1526,9 @@ def preprocessWorkflow(config_dict):
             minCls=-1,
         )
         #     "inputProtocol": "3649."
-        protSupportBranchRelionSelectClasses2D.inputProtocol.set(protSupportBranchRelionClassify2D)
+        protSupportBranchRelionSelectClasses2D.inputProtocol.set(
+            protSupportBranchRelionClassify2D
+        )
         # setExtendedInput(
         #     protSupportBranchRelionSelectClasses2D.inputProtocol,
         #     protSupportBranchRelionClassify2D,
@@ -1665,7 +1658,9 @@ def preprocessWorkflow(config_dict):
             numberOfMpi=1,
         )
         protSupportBranchCRYOLOTraining._useQueue.set(True)
-        protSupportBranchCRYOLOTraining._queueParams.set(json.dumps(QUEUE_PARAMS_WITH_2_GPU_16_CPU))
+        protSupportBranchCRYOLOTraining._queueParams.set(
+            json.dumps(QUEUE_PARAMS_WITH_2_GPU_16_CPU)
+        )
         #     "inputMicrographs": "3202.outputMicrographs",
         setExtendedInput(
             protSupportBranchCRYOLOTraining.inputMicrographs,
@@ -1740,7 +1735,9 @@ def preprocessWorkflow(config_dict):
         )
         #     "inputMicrographs": "3052.outputMicrographs",
         setExtendedInput(
-            protSupportBranchCRYOLOPicking.inputMicrographs, protCTFs, "outputMicrographs"
+            protSupportBranchCRYOLOPicking.inputMicrographs,
+            protCTFs,
+            "outputMicrographs",
         )
         #     "boxSize": "3155.boxSizeEven",
         setExtendedInput(

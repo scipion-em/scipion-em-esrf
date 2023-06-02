@@ -31,6 +31,7 @@ def print_worker_status(active_workers):
             print()
     return list_processing
 
+
 if __name__ == "__main__":
     print("Checking status of CM celery workers...")
     app = celery.Celery()

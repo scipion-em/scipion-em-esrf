@@ -32,19 +32,12 @@
 import os
 import sys
 import time
-import logging
-import traceback
-from email.mime.text import MIMEText
-import smtplib
 
 
 class MetadataManagerClient(object):
 
     """
     A client for the MetadataManager and MetaExperiment tango Devices
-
-    Attributes:
-        name: name of the tango device. Example: 'id21/metadata/ingest'
     """
 
     def __init__(self, metadataManagerName, metaExperimentName):
@@ -128,7 +121,7 @@ class MetadataManagerClient(object):
         )
 
     def start(self, dataRoot, proposal, sampleName, datasetName):
-        """ Starts a new dataset """
+        """Starts a new dataset"""
         # Check if in state RUNNING, if yes abort dataset
         if self.getMetadataManagerState() == "RUNNING":
             MetadataManagerClient.metadataManager.AbortDataSet()
@@ -167,8 +160,8 @@ class MetadataManagerClient(object):
             MetadataManagerClient.metadataManager.endDataset()
             # Give the server some time to react
             time.sleep(1)
-        except:
-            print("Unexpected error:", sys.exc_info()[0])
+        except Exception as e:
+            print(f"Unexpected error: {e}, {sys.exc_info()[0]}")
             raise
 
     def getMetadataManagerState(self):

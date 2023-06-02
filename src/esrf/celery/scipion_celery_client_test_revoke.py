@@ -1,15 +1,15 @@
-import json
 import time
 import celery
+
 input_data = {}
-from celery import app
+
 worker_name = "svensson@cmproc3"
 app = celery.Celery()
 app.config_from_object("esrf.celery.cm_config")
 future = app.send_task(
     "esrf.sp.cm_process_worker.revoke_tst",
     args=({"input_data": False},),
-    queue=worker_name
+    queue=worker_name,
 )
 print(future)
 print(dir(future))

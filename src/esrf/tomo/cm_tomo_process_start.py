@@ -193,11 +193,11 @@ else:
                 if len(worker_value) == 0:
                     found_worker = True
                     break
-                elif config_dict["secondGrid"]:
+                elif config_dict.get("secondGrid", False):
                     print("Scheduling second grid job.")
                     found_worker = True
                     break
-                elif config_dict["thirdGrid"]:
+                elif config_dict.get("thirdGrid", False):
                     print("Scheduling second grid job.")
                     found_worker = True
                     break

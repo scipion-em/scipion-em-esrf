@@ -14,7 +14,7 @@ fi
 datestring=$(date '+%Y-%m-%d')
 logdir="/tmp_14_days/$user_name/scipion_logs"
 mkdir -p $logdir
-logfile="$logdir/cm_process__celery_$datestring.log"
+logfile="$logdir/cm_worker_$datestring.log"
 echo "Celery worker log file: $logfile"
 
 # New version of MPI necessary for dgx01

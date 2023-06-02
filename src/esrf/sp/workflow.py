@@ -642,12 +642,12 @@ def preprocessWorkflow(config_dict):
         #     "runMode": 0,
         #     "timeout": "1h"
         # },
-        protSupportBranchManualCheckpointStage1 = project.newProtocol(
-            ProtManualCheckpoint,
-            objLabel="pwem - manual check point (Stage 1)",
-            timeout="1h",
-        )
-        _registerProt(protSupportBranchManualCheckpointStage1, "CheckPoint")
+        # protSupportBranchManualCheckpointStage1 = project.newProtocol(
+        #     ProtManualCheckpoint,
+        #     objLabel="pwem - manual check point (Stage 1)",
+        #     timeout="1h",
+        # )
+        # _registerProt(protSupportBranchManualCheckpointStage1, "CheckPoint")
 
         # --------- MANUAL CHECKPOINT STAGE 2 ----------------------------------
         # {
@@ -662,12 +662,12 @@ def preprocessWorkflow(config_dict):
         #     "runMode": 0,
         #     "timeout": "1h"
         # },
-        protSupportBranchManualCheckpointStage2 = project.newProtocol(
-            ProtManualCheckpoint,
-            objLabel="pwem - manual check point (Stage 2)",
-            timeout="1h",
-        )
-        _registerProt(protSupportBranchManualCheckpointStage2, "CheckPoint")
+        # protSupportBranchManualCheckpointStage2 = project.newProtocol(
+        #     ProtManualCheckpoint,
+        #     objLabel="pwem - manual check point (Stage 2)",
+        #     timeout="1h",
+        # )
+        # _registerProt(protSupportBranchManualCheckpointStage2, "CheckPoint")
 
         # --------- MANUAL CHECKPOINT STAGE 3 ----------------------------------
         # {
@@ -682,12 +682,12 @@ def preprocessWorkflow(config_dict):
         #     "runMode": 1,
         #     "timeout": "1h"
         # },
-        protSupportBranchManualCheckpointStage3 = project.newProtocol(
-            ProtManualCheckpoint,
-            objLabel="pwem - manual check point (Stage 3)",
-            timeout="1h",
-        )
-        _registerProt(protSupportBranchManualCheckpointStage3, "CheckPoint")
+        # protSupportBranchManualCheckpointStage3 = project.newProtocol(
+        #     ProtManualCheckpoint,
+        #     objLabel="pwem - manual check point (Stage 3)",
+        #     timeout="1h",
+        # )
+        # _registerProt(protSupportBranchManualCheckpointStage3, "CheckPoint")
 
         # --------- TRIGGER 1 ----------------------------------
         # {

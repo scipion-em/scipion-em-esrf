@@ -1654,7 +1654,7 @@ def preprocessWorkflow(config_dict):
             batchSize=4,
             gpuList="0 1",
             hostName="localhost",
-            numberOfThreads=1,
+            numberOfThreads=2,
             numberOfMpi=1,
         )
         protSupportBranchCRYOLOTraining._useQueue.set(True)

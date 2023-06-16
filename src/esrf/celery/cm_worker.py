@@ -264,9 +264,10 @@ def print_config(config_dict):
     logger.info("{0:30s}{1:>8s}".format("proposal", config_dict["proposal"]))
     logger.info("{0:30s}{1:8s}".format("dataDirectory", config_dict["dataDirectory"]))
     logger.info("{0:30s}{1:>8s}".format("filesPattern", config_dict["filesPattern"]))
-    logger.info(
-        "{0:30s}{1:>8s}".format("proteinAcronym", config_dict["proteinAcronym"])
-    )
+    if config_dict["proteinAcronym"] is not None:
+        logger.info(
+            "{0:30s}{1:>8s}".format("proteinAcronym", config_dict["proteinAcronym"])
+        )
     logger.info("{0:30s}{1:>8s}".format("sampleName", config_dict["sampleName"]))
     logger.info("{0:30s}{1:8.0f}".format("voltage", config_dict["voltage"]))
     logger.info("{0:30s}{1:8d}".format("imagesCount", config_dict["imagesCount"]))

@@ -40,12 +40,6 @@ def getCommandlineOptions():
         "--directory", action="store", help="top EM directory", required=True
     )
     required.add_argument(
-        "--protein",
-        action="store",
-        help="Protein acronym, must be the one used in the A-form.",
-        required=True,
-    )
-    required.add_argument(
         "--sample",
         action="store",
         help="Sample name, for example 'grid1'.",
@@ -62,6 +56,12 @@ def getCommandlineOptions():
         action="store",
         help="Number of frames per movie.",
         required=True,
+    )
+    optional.add_argument(
+        "--protein",
+        action="store",
+        help="Protein acronym, must be the one used in the A-form.",
+        required=False,
     )
     optional.add_argument(
         "--tiltAxisAngle",
@@ -157,7 +157,7 @@ def getCommandlineOptions():
         "dataDirectory": results.directory,
         "filesPattern": results.filesPattern,
         "proteinAcronym": results.protein,
-        "sampleAcronym": results.sample,
+        "sampleName": results.sample,
         "doseInitial": float(results.doseInitial),
         "magnification": int(results.magnification)
         if results.magnification is not None

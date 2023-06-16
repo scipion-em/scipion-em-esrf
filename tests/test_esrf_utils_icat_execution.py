@@ -81,7 +81,7 @@ class Test(unittest.TestCase):
         return startTime, endTime
 
     def archiveGridSquare(
-        self, proposal, sampleAcronym, allParams, gridSquareToBeArchived
+        self, proposal, sampleName, allParams, gridSquareToBeArchived
     ):
         # Archive remaining movies
         print("Archiving grid square: {0}".format(gridSquareToBeArchived))
@@ -155,14 +155,14 @@ class Test(unittest.TestCase):
             # print("listPathsToBeArchived: {0}".format(pprint.pformat(listPathsToBeArchived)))
             print("directory: {0}".format(directory))
             print("proposal: {0}".format(proposal))
-            print("sampleAcronym: {0}".format(sampleAcronym))
+            print("sampleName: {0}".format(sampleName))
             print("dataSetName: {0}".format(dataSetName))
             print("dictIcatMetaData: {0}".format(pprint.pformat(dictIcatMetaData)))
             errorMessage = UtilsIcat.uploadToIcat(
                 listPathsToBeArchived,
                 directory,
                 proposal,
-                sampleAcronym,
+                sampleName,
                 dataSetName,
                 dictIcatMetaData,
                 listGalleryPath,
@@ -307,7 +307,7 @@ class Test(unittest.TestCase):
     # def test_archive_mx2261_20201005(self):
     #     proposal = "mx2261"
     #     # proposal = "id000001"
-    #     sampleAcronym = "Grid3"
+    #     sampleName = "Grid3"
     #     allParamsFile = "/home/esrf/svensson/CryoEM_archiving/mx2261_20201005/allParams.json"
     #     with open(allParamsFile) as fd:
     #         allParams = json.loads(fd.read())
@@ -318,7 +318,7 @@ class Test(unittest.TestCase):
     #     dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(allParams)
     #     pprint.pprint(dictGridSquares.keys())
     #     for gridSquareToBeArchived in dictGridSquares:
-    #         self.archiveGridSquare(proposal, sampleAcronym, allParams, gridSquareToBeArchived)
+    #         self.archiveGridSquare(proposal, sampleName, allParams, gridSquareToBeArchived)
     #         if not proposal.startswith("id"):
     #             with open(allParamsFile, "w") as fd:
     #                 fd.write(json.dumps(allParams, indent=4))
@@ -351,7 +351,7 @@ class Test(unittest.TestCase):
     # def test_archive_ih_mx127_20200727(self):
     #     proposal = "ih-mx127"
     #     # proposal = "id000001"
-    #     sampleAcronym = "Grid4"
+    #     sampleName = "Grid4"
     #     allParamsFile = "/home/esrf/svensson/CryoEM_archiving/ih-mx127_20200727/allParams.json"
     #     with open(allParamsFile) as fd:
     #         allParams = json.loads(fd.read())
@@ -362,7 +362,7 @@ class Test(unittest.TestCase):
     #     dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(allParams)
     #     pprint.pprint(dictGridSquares.keys())
     #     for gridSquareToBeArchived in dictGridSquares:
-    #         self.archiveGridSquare(proposal, sampleAcronym, allParams, gridSquareToBeArchived)
+    #         self.archiveGridSquare(proposal, sampleName, allParams, gridSquareToBeArchived)
     #         if not proposal.startswith("id"):
     #             with open(allParamsFile, "w") as fd:
     #                 fd.write(json.dumps(allParams, indent=4))
@@ -396,7 +396,7 @@ class Test(unittest.TestCase):
     # def test_archive_ih_mx126_20200720(self):
     #     proposal = "ih-mx126"
     #     # proposal = "id000001"
-    #     sampleAcronym = "g12"
+    #     sampleName = "g12"
     #     allParamsFile = "/home/esrf/svensson/CryoEM_archiving/ih-mx126_20200717/allParams.json"
     #     with open(allParamsFile) as fd:
     #         allParams = json.loads(fd.read())
@@ -407,7 +407,7 @@ class Test(unittest.TestCase):
     #     dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(allParams)
     #     pprint.pprint(dictGridSquares.keys())
     #     for gridSquareToBeArchived in dictGridSquares:
-    #         self.archiveGridSquare(proposal, sampleAcronym, allParams, gridSquareToBeArchived)
+    #         self.archiveGridSquare(proposal, sampleName, allParams, gridSquareToBeArchived)
     #         if not proposal.startswith("id"):
     #             with open(allParamsFile, "w") as fd:
     #                 fd.write(json.dumps(allParams, indent=4))
@@ -419,7 +419,7 @@ class Test(unittest.TestCase):
 # def test_archive_mx2301_20200720(self):
 #     proposal = "mx2301"
 #     # proposal = "id000001"
-#     sampleAcronym = "g10"
+#     sampleName = "g10"
 #     allParamsFile = "/home/esrf/svensson/CryoEM_archiving/mx2301_20200720/allParams.json"
 #     with open(allParamsFile) as fd:
 #         allParams = json.loads(fd.read())
@@ -430,7 +430,7 @@ class Test(unittest.TestCase):
 #     dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(allParams)
 #     pprint.pprint(dictGridSquares.keys())
 #     for gridSquareToBeArchived in dictGridSquares:
-#         self.archiveGridSquare(proposal, sampleAcronym, allParams, gridSquareToBeArchived)
+#         self.archiveGridSquare(proposal, sampleName, allParams, gridSquareToBeArchived)
 #         if not proposal.startswith("id"):
 #             with open(allParamsFile, "w") as fd:
 #                 fd.write(json.dumps(allParams, indent=4))
@@ -441,7 +441,7 @@ class Test(unittest.TestCase):
 # def test_archive_mx2300_20200715(self):
 #     proposal = "mx2300"
 #     # proposal = "id000001"
-#     sampleAcronym = "g8"
+#     sampleName = "g8"
 #     allParamsFile = "/home/esrf/svensson/CryoEM_archiving/mx2300_20200715/allParams.json"
 #     with open(allParamsFile) as fd:
 #         allParams = json.loads(fd.read())
@@ -452,7 +452,7 @@ class Test(unittest.TestCase):
 #     dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(allParams)
 #     pprint.pprint(dictGridSquares.keys())
 #     for gridSquareToBeArchived in dictGridSquares:
-#         self.archiveGridSquare(proposal, sampleAcronym, allParams, gridSquareToBeArchived)
+#         self.archiveGridSquare(proposal, sampleName, allParams, gridSquareToBeArchived)
 #         if not proposal.startswith("id"):
 #             with open(allParamsFile, "w") as fd:
 #                 fd.write(json.dumps(allParams, indent=4))
@@ -463,7 +463,7 @@ class Test(unittest.TestCase):
 # def test_archive_mx2297_20200713(self):
 #     proposal = "mx2297"
 #     # proposal = "id000001"
-#     sampleAcronym = "g5"
+#     sampleName = "g5"
 #     allParamsFile = "/home/esrf/svensson/CryoEM_archiving/mx2297_20200713/allParams.json"
 #     with open(allParamsFile) as fd:
 #         allParams = json.loads(fd.read())
@@ -474,7 +474,7 @@ class Test(unittest.TestCase):
 #     dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(allParams)
 #     pprint.pprint(dictGridSquares.keys())
 #     for gridSquareToBeArchived in dictGridSquares:
-#         self.archiveGridSquare(proposal, sampleAcronym, allParams, gridSquareToBeArchived)
+#         self.archiveGridSquare(proposal, sampleName, allParams, gridSquareToBeArchived)
 #         if not proposal.startswith("id"):
 #             with open(allParamsFile, "w") as fd:
 #                 fd.write(json.dumps(allParams, indent=4))
@@ -485,7 +485,7 @@ class Test(unittest.TestCase):
 # def test_archive_mx2258_20200708(self):
 #     proposal = "mx2258"
 #     # proposal = "id000001"
-#     sampleAcronym = "Grid4b"
+#     sampleName = "Grid4b"
 #     allParamsFile = "/home/esrf/svensson/CryoEM_archiving/mx2258_20200708/allParams.json"
 #     with open(allParamsFile) as fd:
 #         allParams = json.loads(fd.read())
@@ -496,7 +496,7 @@ class Test(unittest.TestCase):
 #     dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(allParams)
 #     pprint.pprint(dictGridSquares.keys())
 #     for gridSquareToBeArchived in dictGridSquares:
-#         self.archiveGridSquare(proposal, sampleAcronym, allParams, gridSquareToBeArchived)
+#         self.archiveGridSquare(proposal, sampleName, allParams, gridSquareToBeArchived)
 #         if not proposal.startswith("id"):
 #             with open(allParamsFile, "w") as fd:
 #                 fd.write(json.dumps(allParams, indent=4))
@@ -507,7 +507,7 @@ class Test(unittest.TestCase):
 # def test_archive_mx2303_20200706(self):
 #     proposal = "mx2303"
 #     # proposal = "id000001"
-#     sampleAcronym = "grid2"
+#     sampleName = "grid2"
 #     allParamsFile = "/home/esrf/svensson/CryoEM_archiving/mx2303_20200706/allParams.json"
 #     with open(allParamsFile) as fd:
 #         allParams = json.loads(fd.read())
@@ -518,7 +518,7 @@ class Test(unittest.TestCase):
 #     dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(allParams)
 #     pprint.pprint(dictGridSquares.keys())
 #     for gridSquareToBeArchived in dictGridSquares:
-#         self.archiveGridSquare(proposal, sampleAcronym, allParams, gridSquareToBeArchived)
+#         self.archiveGridSquare(proposal, sampleName, allParams, gridSquareToBeArchived)
 #         if not proposal.startswith("id"):
 #             with open(allParamsFile, "w") as fd:
 #                 fd.write(json.dumps(allParams, indent=4))
@@ -529,7 +529,7 @@ class Test(unittest.TestCase):
 # def test_archive_mx2249_20200703(self):
 #     proposal = "mx2249"
 #     # proposal = "id000001"
-#     sampleAcronym = "grid2"
+#     sampleName = "grid2"
 #     allParamsFile = "/home/esrf/svensson/CryoEM_archiving/mx2249_20200703/allParams.json"
 #     with open(allParamsFile) as fd:
 #         allParams = json.loads(fd.read())
@@ -540,7 +540,7 @@ class Test(unittest.TestCase):
 #     dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(allParams)
 #     pprint.pprint(dictGridSquares.keys())
 #     for gridSquareToBeArchived in dictGridSquares:
-#         self.archiveGridSquare(proposal, sampleAcronym, allParams, gridSquareToBeArchived)
+#         self.archiveGridSquare(proposal, sampleName, allParams, gridSquareToBeArchived)
 #         if not proposal.startswith("id"):
 #             with open(allParamsFile, "w") as fd:
 #                 fd.write(json.dumps(allParams, indent=4))
@@ -551,7 +551,7 @@ class Test(unittest.TestCase):
 # def test_archive_mx2248_20200629(self):
 #     proposal = "mx2248"
 #     # proposal = "id000001"
-#     sampleAcronym = "Grid2-2"
+#     sampleName = "Grid2-2"
 #     allParamsFile = "/home/esrf/svensson/CryoEM_archiving/mx2248_20200629/allParams.json"
 #     with open(allParamsFile) as fd:
 #         allParams = json.loads(fd.read())
@@ -562,7 +562,7 @@ class Test(unittest.TestCase):
 #     dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(allParams)
 #     pprint.pprint(dictGridSquares.keys())
 #     for gridSquareToBeArchived in dictGridSquares:
-#         self.archiveGridSquare(proposal, sampleAcronym, allParams, gridSquareToBeArchived)
+#         self.archiveGridSquare(proposal, sampleName, allParams, gridSquareToBeArchived)
 #         if not proposal.startswith("id"):
 #             with open(allParamsFile, "w") as fd:
 #                 fd.write(json.dumps(allParams, indent=4))
@@ -573,7 +573,7 @@ class Test(unittest.TestCase):
 # def test_archive_mx2250_20200622(self):
 #     proposal = "mx2250"
 #     # proposal = "id000001"
-#     sampleAcronym = "Grid4"
+#     sampleName = "Grid4"
 #     allParamsFile = "/home/esrf/svensson/CryoEM_archiving/mx2250_20200622/allParams.json"
 #     with open(allParamsFile) as fd:
 #         allParams = json.loads(fd.read())
@@ -584,7 +584,7 @@ class Test(unittest.TestCase):
 #     dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(allParams)
 #     pprint.pprint(dictGridSquares.keys())
 #     for gridSquareToBeArchived in dictGridSquares:
-#         self.archiveGridSquare(proposal, sampleAcronym, allParams, gridSquareToBeArchived)
+#         self.archiveGridSquare(proposal, sampleName, allParams, gridSquareToBeArchived)
 #         if not proposal.startswith("id"):
 #             with open(allParamsFile, "w") as fd:
 #                 fd.write(json.dumps(allParams, indent=4))
@@ -637,7 +637,7 @@ class Test(unittest.TestCase):
 # def test_archive_mx2263_20200828(self):
 #     proposal = "mx2263"
 #     # proposal = "id000001"
-#     sampleAcronym = "g2"
+#     sampleName = "g2"
 #     allParamsFile = "/home/esrf/svensson/CryoEM_archiving/mx2263_20200828/allParams.json"
 #     with open(allParamsFile) as fd:
 #         allParams = json.loads(fd.read())
@@ -648,7 +648,7 @@ class Test(unittest.TestCase):
 #     dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(allParams)
 #     pprint.pprint(dictGridSquares.keys())
 #     for gridSquareToBeArchived in dictGridSquares:
-#         self.archiveGridSquare(proposal, sampleAcronym, allParams, gridSquareToBeArchived)
+#         self.archiveGridSquare(proposal, sampleName, allParams, gridSquareToBeArchived)
 #         if not proposal.startswith("id"):
 #             with open(allParamsFile, "w") as fd:
 #                 fd.write(json.dumps(allParams, indent=4))
@@ -659,7 +659,7 @@ class Test(unittest.TestCase):
 # def test_archive_mx2259_20200923(self):
 #     proposal = "mx2259"
 #     # proposal = "id000001"
-#     sampleAcronym = "Grid3"
+#     sampleName = "Grid3"
 #     allParamsFile = "/home/esrf/svensson/CryoEM_archiving/mx2259_20200923/allParams.json"
 #     with open(allParamsFile) as fd:
 #         allParams = json.loads(fd.read())
@@ -670,7 +670,7 @@ class Test(unittest.TestCase):
 #     dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(allParams)
 #     pprint.pprint(dictGridSquares.keys())
 #     for gridSquareToBeArchived in dictGridSquares:
-#         self.archiveGridSquare(proposal, sampleAcronym, allParams, gridSquareToBeArchived)
+#         self.archiveGridSquare(proposal, sampleName, allParams, gridSquareToBeArchived)
 #         if not proposal.startswith("id"):
 #             with open(allParamsFile, "w") as fd:
 #                 fd.write(json.dumps(allParams, indent=4))
@@ -681,7 +681,7 @@ class Test(unittest.TestCase):
 # def test_archive_blc12442_20201002(self):
 #     proposal = "blc12442"
 #     # proposal = "id000001"
-#     sampleAcronym = "Grid2"
+#     sampleName = "Grid2"
 #     allParamsFile = "/home/esrf/svensson/CryoEM_archiving/blc12442_20201002/allParams.json"
 #     with open(allParamsFile) as fd:
 #         allParams = json.loads(fd.read())
@@ -699,7 +699,7 @@ class Test(unittest.TestCase):
 #     ]
 #     pprint.pprint(listGridSquares)
 #     for gridSquareToBeArchived in listGridSquares:
-#         self.archiveGridSquare(proposal, sampleAcronym, allParams, gridSquareToBeArchived)
+#         self.archiveGridSquare(proposal, sampleName, allParams, gridSquareToBeArchived)
 #         if not proposal.startswith("id"):
 #             with open(allParamsFile, "w") as fd:
 #                 fd.write(json.dumps(allParams, indent=4))
@@ -766,7 +766,7 @@ class Test(unittest.TestCase):
 # def test_archive_mx2258_20200819(self):
 #     proposal = "mx2258"
 #     # proposal = "id000001"
-#     sampleAcronym = "grid8"
+#     sampleName = "grid8"
 #     allParamsFile = "/home/esrf/svensson/CryoEM_archiving/mx2258_20200819/allParams.json"
 #     with open(allParamsFile) as fd:
 #         allParams = json.loads(fd.read())
@@ -777,7 +777,7 @@ class Test(unittest.TestCase):
 #     dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(allParams)
 #     pprint.pprint(dictGridSquares.keys())
 #     for gridSquareToBeArchived in dictGridSquares:
-#         self.archiveGridSquare(proposal, sampleAcronym, allParams, gridSquareToBeArchived)
+#         self.archiveGridSquare(proposal, sampleName, allParams, gridSquareToBeArchived)
 #         if not proposal.startswith("id"):
 #             with open(allParamsFile, "w") as fd:
 #                 fd.write(json.dumps(allParams, indent=4))
@@ -788,7 +788,7 @@ class Test(unittest.TestCase):
 # def test_archive_mx2244_20200722(self):
 #     proposal = "mx2244"
 #     # proposal = "id000001"
-#     sampleAcronym = "Grid2"
+#     sampleName = "Grid2"
 #     allParamsFile = "/home/esrf/svensson/CryoEM_archiving/mx2244_20200722/allParams.json"
 #     with open(allParamsFile) as fd:
 #         allParams = json.loads(fd.read())
@@ -799,7 +799,7 @@ class Test(unittest.TestCase):
 #     dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(allParams)
 #     pprint.pprint(dictGridSquares.keys())
 #     for gridSquareToBeArchived in dictGridSquares:
-#         self.archiveGridSquare(proposal, sampleAcronym, allParams, gridSquareToBeArchived)
+#         self.archiveGridSquare(proposal, sampleName, allParams, gridSquareToBeArchived)
 #         if not proposal.startswith("id"):
 #             with open(allParamsFile, "w") as fd:
 #                 fd.write(json.dumps(allParams, indent=4))
@@ -808,7 +808,7 @@ class Test(unittest.TestCase):
 
 # def tes_archive_blc12442(self):
 #     proposal = "blc12442"
-#     sampleAcronym = "Grid2"
+#     sampleName = "Grid2"
 #     allParamsFile = "/home/esrf/svensson/CryoEM_archiving/BLC12442/allParams.json"
 #     with open(allParamsFile) as fd:
 #         allParams = json.loads(fd.read())
@@ -819,7 +819,7 @@ class Test(unittest.TestCase):
 #     dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(allParams)
 #     pprint.pprint(dictGridSquares.keys())
 #     for gridSquareToBeArchived in dictGridSquares:
-#         self.archiveGridSquare(proposal, sampleAcronym, allParams, gridSquareToBeArchived)
+#         self.archiveGridSquare(proposal, sampleName, allParams, gridSquareToBeArchived)
 #         with open(allParamsFile, "w") as fd:
 #             fd.write(json.dumps(allParams, indent=4))
 #         sys.exit(0)
@@ -828,7 +828,7 @@ class Test(unittest.TestCase):
 # def test_archive_mx2261_20201104(self):
 #     proposal = "mx2261"
 #     # proposal = "id000001"
-#     sampleAcronym = "Grid1"
+#     sampleName = "Grid1"
 #     allParamsFile = "/home/esrf/svensson/CryoEM_archiving/mx2261_20201104/allParams.json"
 #     with open(allParamsFile) as fd:
 #         allParams = json.loads(fd.read())
@@ -839,7 +839,7 @@ class Test(unittest.TestCase):
 #     dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(allParams)
 #     pprint.pprint(dictGridSquares.keys())
 #     for gridSquareToBeArchived in dictGridSquares:
-#         self.archiveGridSquare(proposal, sampleAcronym, allParams, gridSquareToBeArchived)
+#         self.archiveGridSquare(proposal, sampleName, allParams, gridSquareToBeArchived)
 #         with open(allParamsFile, "w") as fd:
 #             fd.write(json.dumps(allParams, indent=4))
 #         sys.exit(0)
@@ -847,7 +847,7 @@ class Test(unittest.TestCase):
 # def test_archive_mx2261_20200925(self):
 #     proposal = "mx2261"
 #     # proposal = "id000001"
-#     sampleAcronym = "Grid3"
+#     sampleName = "Grid3"
 #     allParamsFile = "/home/esrf/svensson/CryoEM_archiving/mx2261_20200925/allParams.json"
 #     with open(allParamsFile) as fd:
 #         allParams = json.loads(fd.read())
@@ -858,7 +858,7 @@ class Test(unittest.TestCase):
 #     dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(allParams)
 #     pprint.pprint(dictGridSquares.keys())
 #     for gridSquareToBeArchived in dictGridSquares:
-#         self.archiveGridSquare(proposal, sampleAcronym, allParams, gridSquareToBeArchived)
+#         self.archiveGridSquare(proposal, sampleName, allParams, gridSquareToBeArchived)
 #         with open(allParamsFile, "w") as fd:
 #             fd.write(json.dumps(allParams, indent=4))
 #         # sys.exit(0)
@@ -866,7 +866,7 @@ class Test(unittest.TestCase):
 # def test_archive_mx2258_20200708(self):
 #     proposal = "mx2258"
 #     # proposal = "id000001"
-#     sampleAcronym = "Grid4b"
+#     sampleName = "Grid4b"
 #     allParamsFile = "/home/esrf/svensson/CryoEM_archiving/mx2258_20200708/allParams.json"
 #     with open(allParamsFile) as fd:
 #         allParams = json.loads(fd.read())
@@ -877,7 +877,7 @@ class Test(unittest.TestCase):
 #     dictGridSquares = UtilsIcat.findGridSquaresNotUploaded(allParams)
 #     pprint.pprint(dictGridSquares.keys())
 #     for gridSquareToBeArchived in dictGridSquares:
-#         self.archiveGridSquare(proposal, sampleAcronym, allParams, gridSquareToBeArchived)
+#         self.archiveGridSquare(proposal, sampleName, allParams, gridSquareToBeArchived)
 #         if not proposal.startswith("id"):
 #             with open(allParamsFile, "w") as fd:
 #                 fd.write(json.dumps(allParams, indent=4))

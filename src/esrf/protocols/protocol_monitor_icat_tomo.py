@@ -78,12 +78,12 @@ class ProtMonitorIcatTomo(ProtMonitor):
         )
 
         section1.addParam(
-            "sampleAcronym",
+            "sampleName",
             params.StringParam,
             default="unknown",
-            label="Sample acronym",
+            label="Sample name",
             important=True,
-            help="Name of the sample acronym",
+            help="Name of the sample",
         )
 
         section1.addParam(
@@ -196,7 +196,7 @@ class MonitorESRFIcatTomo(Monitor):
         self.project = self.protocol.getProject()
         self.proposal = protocol.proposal.get()
         self.proteinAcronym = protocol.proteinAcronym.get()
-        self.sampleAcronym = protocol.sampleAcronym.get()
+        self.sampleName = protocol.sampleName.get()
         self.movieDirectory = None
         self.current_dir = UtilsPath.removePrefixDirs(os.getcwd())
         self.currentGridSquare = None

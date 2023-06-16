@@ -267,7 +267,7 @@ def print_config(config_dict):
     logger.info(
         "{0:30s}{1:>8s}".format("proteinAcronym", config_dict["proteinAcronym"])
     )
-    logger.info("{0:30s}{1:>8s}".format("sampleAcronym", config_dict["sampleAcronym"]))
+    logger.info("{0:30s}{1:>8s}".format("sampleName", config_dict["sampleName"]))
     logger.info("{0:30s}{1:8.0f}".format("voltage", config_dict["voltage"]))
     logger.info("{0:30s}{1:8d}".format("imagesCount", config_dict["imagesCount"]))
     logger.info("{0:30s}{1:8.2f}".format("doseInitial", config_dict["doseInitial"]))

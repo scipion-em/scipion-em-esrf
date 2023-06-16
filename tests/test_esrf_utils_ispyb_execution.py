@@ -81,7 +81,7 @@ class Test(unittest.TestCase):
         technique = "EM"
         proposal = "mx415"
         proteinAcronym = "test1"
-        sampleAcronym = "test"
+        sampleName = "test"
         movieDirectory = "/data/visitor/mx415/cm01/20191029/RAW_DATA/mx2214/data"
         moviePath = (
             "/data/visitor/mx415/cm01/20191029/RAW_DATA/mx2214/data/mx2214_00009.tif"
@@ -106,7 +106,7 @@ class Test(unittest.TestCase):
         movieObject = client.service.addMovie(
             proposal=proposal,
             proteinAcronym=proteinAcronym,
-            sampleAcronym=sampleAcronym,
+            sampleName=sampleName,
             movieDirectory=movieDirectory,
             movieFullPath=moviePath,
             movieNumber=movieNumber,

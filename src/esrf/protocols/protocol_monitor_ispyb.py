@@ -87,12 +87,12 @@ class ProtMonitorISPyB_ESRF(ProtMonitor):
         )
 
         section1.addParam(
-            "sampleAcronym",
+            "sampleName",
             params.StringParam,
             default="unknown",
-            label="Sample acronym",
+            label="Sample name",
             important=True,
-            help="Name of the sample acronym",
+            help="Name of the sample",
         )
 
         section1.addParam(
@@ -251,7 +251,7 @@ class MonitorISPyB_ESRF(Monitor):
         self.client = protocol.client
         self.proposal = protocol.proposal.get()
         self.proteinAcronym = protocol.proteinAcronym.get()
-        self.sampleAcronym = protocol.sampleAcronym.get()
+        self.sampleName = protocol.sampleName.get()
         self.movieDirectory = None
         self.currentDir = os.getcwd()
         self.currentGridSquare = None
@@ -498,7 +498,7 @@ class MonitorISPyB_ESRF(Monitor):
                     movieObject = self.client.service.addMovie(
                         proposal=self.proposal,
                         proteinAcronym=self.proteinAcronym,
-                        sampleAcronym=self.sampleAcronym,
+                        sampleName=self.sampleName,
                         movieDirectory=self.movieDirectory,
                         movieFullPath=movieFullPath,
                         movieNumber=movieNumber,
@@ -745,7 +745,7 @@ class MonitorISPyB_ESRF(Monitor):
                         movieObject = self.client.service.addMovie(
                             proposal=self.proposal,
                             proteinAcronym=self.proteinAcronym,
-                            sampleAcronym=self.sampleAcronym,
+                            sampleName=self.sampleName,
                             movieDirectory=self.movieDirectory,
                             movieFullPath=movieFullPath,
                             movieNumber=movieNumber,
@@ -914,7 +914,7 @@ class MonitorISPyB_ESRF(Monitor):
             #
             self.info("proposal: {0}".format(self.proposal))
             self.info("proteinAcronym: {0}".format(self.proteinAcronym))
-            self.info("sampleAcronym: {0}".format(self.sampleAcronym))
+            self.info("sampleName: {0}".format(self.sampleName))
             self.info("movieDirectory: {0}".format(self.movieDirectory))
             self.info("movieFullPath: {0}".format(movieFullPath))
             self.info("movieNumber: {0}".format(movieNumber))
@@ -939,7 +939,7 @@ class MonitorISPyB_ESRF(Monitor):
             movieObject = self.client.service.addMovie(
                 proposal=self.proposal,
                 proteinAcronym=self.proteinAcronym,
-                sampleAcronym=self.sampleAcronym,
+                sampleName=self.sampleName,
                 movieDirectory=self.movieDirectory,
                 movieFullPath=movieFullPath,
                 movieNumber=movieNumber,
@@ -1499,7 +1499,7 @@ class MonitorISPyB_ESRF(Monitor):
             )
             self.info("directory: {0}".format(directory))
             self.info("self.proposal: {0}".format(self.proposal))
-            self.info("self.sampleAcronym: {0}".format(self.sampleAcronym))
+            self.info("self.sampleName: {0}".format(self.sampleName))
             self.info("dataSetName: {0}".format(dataSetName))
             self.info("no movies: {0}".format(len(listPathsToBeArchived)))
             self.info("dictIcatMetaData: {0}".format(pprint.pformat(dictIcatMetaData)))
@@ -1507,7 +1507,7 @@ class MonitorISPyB_ESRF(Monitor):
                 listPathsToBeArchived,
                 directory,
                 self.proposal,
-                self.sampleAcronym,
+                self.sampleName,
                 dataSetName,
                 dictIcatMetaData,
                 listGalleryPath,
@@ -1579,7 +1579,7 @@ class MonitorISPyB_ESRF(Monitor):
                             list_paths_to_be_archived,
                             directory,
                             self.proposal,
-                            self.sampleAcronym,
+                            self.sampleName,
                             data_set_name,
                             dict_icat_meta_data,
                             list_gallery_path,

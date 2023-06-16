@@ -19,7 +19,7 @@ config_dict["experiment_type"] = "tomo"
 #     "filesPattern": "Images-Disc1/GridSquare_*/Data/FoilHole_*_fractions.tiff",
 #     "scipionProjectName": "test_celery_{0}".format(time.time()),
 #     "proteinAcronym": "igm-fccore",
-#     "sampleAcronym": "g3",
+#     "sampleName": "g3",
 #     "doseInitial": 0.0,
 #     "magnification": 105000,
 #     "imagesCount": 40,
@@ -160,7 +160,7 @@ date_string = time.strftime("%Y%m%d-%H%M%S", time.localtime(time.time()))
 config_dict["scipionProjectName"] = "{0}_{1}_{2}_{3}".format(
     config_dict["proposal"],
     config_dict["proteinAcronym"],
-    config_dict["sampleAcronym"],
+    config_dict["sampleName"],
     date_string,
 )
 

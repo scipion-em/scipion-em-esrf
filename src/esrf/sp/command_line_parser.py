@@ -182,7 +182,7 @@ def getCommandlineOptions():
         "filesPattern": results.filesPattern,
         # "scipionProjectName": results.scipionProjectName,
         "proteinAcronym": results.protein,
-        "sampleAcronym": results.sample,
+        "sampleName": results.sample,
         "doseInitial": float(results.doseInitial),
         "magnification": int(results.magnification)
         if results.magnification is not None

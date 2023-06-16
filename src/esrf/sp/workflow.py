@@ -606,7 +606,7 @@ def preprocessWorkflow(config_dict):
             samplingInterval=10,
             proposal=config_dict["proposal"],
             proteinAcronym=config_dict["proteinAcronym"],
-            sampleAcronym=config_dict["sampleAcronym"],
+            sampleName=config_dict["sampleName"],
             db=config_dict["db"],
             all_params_json_file=config_dict["all_params_json_file"],
             samplingRate=config_dict["samplingRate"],

@@ -442,7 +442,7 @@ class MonitorESRFIcatTomo(Monitor):
         movie_full_path = pathlib.Path(dict_movie["file_path"])
         movie_number = dict_movie["movie_number"]
         tilt_angle = dict_movie["tilt_angle"]
-        ts_name = dict_movie["ts_name"]
+        sample_name = dict_movie["sample_name"]
         icat_movie_path = UtilsPath.createIcatLink(movie_full_path, icat_raw_dir)
         UtilsPath.createTiltSerieInstrumentSnapshot(icat_movie_path)
         # Copy search snapshot to gallery
@@ -450,7 +450,7 @@ class MonitorESRFIcatTomo(Monitor):
             shutil.copy(dict_movie["search_path"], icat_raw_dir / "gallery")
         self.info(f"Archiving movie: movie_full_path: {movie_full_path}")
         dictMetadata = {
-            "Sample_name": ts_name,
+            "Sample_name": sample_name,
             "EM_amplitude_contrast": amplitude_contrast,
             "EM_dose_initial": dose_initial,
             "EM_dose_per_frame": dose_per_frame,
@@ -482,7 +482,7 @@ class MonitorESRFIcatTomo(Monitor):
         self, prot, movie_name, micrograph_full_path, icat_mc_dir
     ):
         dict_movie = self.all_params[movie_name]
-        ts_name = dict_movie["ts_name"]
+        sample_name = dict_movie["sample_name"]
         movie_number = dict_movie["movie_number"]
         icat_raw_dir = dict_movie["icat_raw_dir"]
         # Link "raw" data
@@ -510,7 +510,7 @@ class MonitorESRFIcatTomo(Monitor):
         average_motion = dict_shift_data.get("averageMotionPerFrame", None)
         frame_range = dict_shift_data.get("noPoints", None)
         dictMetadata = {
-            "Sample_name": ts_name,
+            "Sample_name": sample_name,
             "EMMotionCorrection_total_motion": total_motion,
             "EMMotionCorrection_average_motion": average_motion,
             "EMMotionCorrection_frame_range": frame_range,
@@ -536,7 +536,7 @@ class MonitorESRFIcatTomo(Monitor):
 
     def archiveCTFInIcatPlus(self, prot, movie_name, ctf_full_path, icat_ctf_dir):
         dict_movie = self.all_params[movie_name]
-        ts_name = dict_movie["ts_name"]
+        sample_name = dict_movie["sample_name"]
         movie_number = dict_movie["movie_number"]
         movie_name = dict_movie["movie_name"]
         icat_mc_dir = dict_movie["icat_mc_dir"]
@@ -557,7 +557,7 @@ class MonitorESRFIcatTomo(Monitor):
         mc_snapshot_path = ctf_galley_path / (ctf_full_path.stem + ".jpg")
         os.system(f"bimg {ctf_full_path} {mc_snapshot_path}")
         dict_metadata = {
-            "Sample_name": ts_name,
+            "Sample_name": sample_name,
             "EMCTF_resolution_limit": resolution_limit,
             "EMCTF_correlation": correlation,
             "EMCTF_defocus_u": defocus_u,

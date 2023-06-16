@@ -348,15 +348,15 @@ class MonitorESRFIcatTomo(Monitor):
                     dict_movie["search_path"] = str(search_path)
                     # Start threads - if max number of threads not reached
                     self.no_movie_threads += 1
+                    grid_name = self.sampleName
                     thread = threading.Thread(
                         target=self.archiveMovieInIcatPlus,
-                        args=(prot, movie_name, icat_raw_dir),
+                        args=(prot, grid_name, movie_name, icat_raw_dir),
                     )
                     self.info(
                         f"Starting thread for movie {movie_name} - no_movie_threads: {self.no_movie_threads}"
                     )
                     thread.start()
-                    # self.archiveMovieInIcatPlus(prot, movie_name, icat_raw_dir)
 
     def uploadAlignMovies(self, prot):
         for micrograph in self.iter_updated_set(prot.outputMicrographs):
@@ -432,7 +432,7 @@ class MonitorESRFIcatTomo(Monitor):
                         #     prot, movie_name, ctf_full_path, icat_ctf_dir
                         # )
 
-    def archiveMovieInIcatPlus(self, prot, movie_name, icat_raw_dir):
+    def archiveMovieInIcatPlus(self, prot, grid_name, movie_name, icat_raw_dir):
         spherical_aberration = prot.sphericalAberration.get()
         amplitude_contrast = prot.amplitudeContrast.get()
         sampling_rate = prot.samplingRate.get()
@@ -441,7 +441,6 @@ class MonitorESRFIcatTomo(Monitor):
         dict_movie = self.all_params[movie_name]
         movie_full_path = pathlib.Path(dict_movie["file_path"])
         movie_number = dict_movie["movie_number"]
-        grid_name = dict_movie["grid_name"]
         tilt_angle = dict_movie["tilt_angle"]
         ts_name = dict_movie["ts_name"]
         icat_movie_path = UtilsPath.createIcatLink(movie_full_path, icat_raw_dir)

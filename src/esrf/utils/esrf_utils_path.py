@@ -987,7 +987,7 @@ class UtilsPath(object):
         dict_movie = None
         directory = str(file_path.parent)
         file_name = file_path.name
-        grid_name = str(file_path.parent.name)
+        parent_name = str(file_path.parent.name)
         reg_exp = "^(.+)_(\d+)_(\-*\d+\.\d+)_(\d{8})_(\d{6})_([a-zA-Z0-9]+){1}([_a-zA-Z0-9]*)\.{1}([a-zA-Z0-9]+)$"
         p = re.compile(reg_exp)
         m = p.match(file_name)
@@ -1009,10 +1009,10 @@ class UtilsPath(object):
                 else:
                     date_dir = directory.split("PROCESSED_DATA")[0]
                 icat_raw_dir = os.path.join(
-                    date_dir, "RAW_DATA", grid_name, ts_name, movie_number
+                    date_dir, "RAW_DATA", parent_name, ts_name, movie_number
                 )
                 icat_processed_dir = os.path.join(
-                    date_dir, "PROCESSED_DATA", grid_name, ts_name, movie_number
+                    date_dir, "PROCESSED_DATA", parent_name, ts_name, movie_number
                 )
             else:
                 date_dir = directory
@@ -1024,7 +1024,7 @@ class UtilsPath(object):
                 "file_name": file_name,
                 "ts_name": ts_name,
                 "movie_name": movie_name,
-                "grid_name": grid_name,
+                "sample_name": f"{parent_name}/{ts_name}",
                 "movie_number": int(movie_number),
                 "tilt_angle": tilt_angle,
                 "date": ts_date,

@@ -647,7 +647,7 @@ class UtilsPath(object):
     @staticmethod
     def removeFileSystemPrefix(filePath):
         newFilePath = filePath
-        for prefix in ["/gpfs/easy", "/gpfs/jazzy", "/gz", "hz"]:
+        for prefix in ["/gpfs/easy", "/gpfs/jazzy", "/gpfs/ga", "/gpfs/gb", "/gz", "hz"]:
             if filePath.startswith(prefix):
                 newFilePath = filePath.replace(prefix, "")
                 break

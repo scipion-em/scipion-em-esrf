@@ -251,7 +251,7 @@ class MonitorISPyB_ESRF(Monitor):
         self.client = protocol.client
         self.proposal = protocol.proposal.get()
         self.proteinAcronym = protocol.proteinAcronym.get()
-        self.sampleName = protocol.sampleName.get()
+        self.sampleAcronym = protocol.sampleName.get()
         self.movieDirectory = None
         self.currentDir = os.getcwd()
         self.currentGridSquare = None
@@ -498,7 +498,7 @@ class MonitorISPyB_ESRF(Monitor):
                     movieObject = self.client.service.addMovie(
                         proposal=self.proposal,
                         proteinAcronym=self.proteinAcronym,
-                        sampleName=self.sampleName,
+                        sampleAcronym=self.sampleName,
                         movieDirectory=self.movieDirectory,
                         movieFullPath=movieFullPath,
                         movieNumber=movieNumber,
@@ -745,7 +745,7 @@ class MonitorISPyB_ESRF(Monitor):
                         movieObject = self.client.service.addMovie(
                             proposal=self.proposal,
                             proteinAcronym=self.proteinAcronym,
-                            sampleName=self.sampleName,
+                            sampleAcronym=self.sampleName,
                             movieDirectory=self.movieDirectory,
                             movieFullPath=movieFullPath,
                             movieNumber=movieNumber,

@@ -335,10 +335,10 @@ class UtilsPath(object):
     @staticmethod
     def createSpectraImageSnapshot(extraDirectory, mrcFileBase):
         spectraImageSnapshotFullPath = None
-        spectraImageFullPath = os.path.join(extraDirectory, mrcFileBase + ".mrc")
+        spectraImageFullPath = os.path.join(extraDirectory, mrcFileBase + "_ctf.mrc")
         if os.path.exists(spectraImageFullPath):
             spectraImageSnapshotFullPath = os.path.join(
-                extraDirectory, mrcFileBase + ".jpeg"
+                extraDirectory, mrcFileBase + "_ctf.jpeg"
             )
             os.system(
                 "bimg -logarithm {0} {1}".format(
@@ -373,7 +373,7 @@ class UtilsPath(object):
             ) = UtilsPath.createSpectraImageSnapshot(extraDirectory, mrcFileBase)
             dictResults["spectraImageFullPath"] = spectraImageFullPath
             dictResults["spectraImageSnapshotFullPath"] = spectraImageSnapshotFullPath
-            ctfEstimationPath = os.path.join(extraDirectory, mrcFileBase + ".log")
+            ctfEstimationPath = os.path.join(extraDirectory, mrcFileBase + "_ctf.log")
             if os.path.exists(ctfEstimationPath):
                 f = open(ctfEstimationPath)
                 lines = f.readlines()

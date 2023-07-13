@@ -492,8 +492,8 @@ class MonitorESRFIcatTomo(Monitor):
         mc_galley_path.mkdir(mode=0o755)
         temp_tif_path = mc_galley_path / (micrograph_full_path.stem + ".tif")
         mc_snapshot_path = mc_galley_path / (micrograph_full_path.stem + ".jpg")
-        os.system(f"bimg {micrograph_full_path} {temp_tif_path}")
-        os.system(f"bscale -bin 12 {temp_tif_path} {mc_snapshot_path}")
+        os.system(f"/cvmfs/sb.esrf.fr/bin/bimg {micrograph_full_path} {temp_tif_path}")
+        os.system(f"/cvmfs/sb.esrf.fr/bin/bscale -bin 12 {temp_tif_path} {mc_snapshot_path}")
         os.chmod(mc_snapshot_path, mode=0o644)
         os.remove(str(temp_tif_path))
         # Copy global shift snap shot
@@ -555,7 +555,7 @@ class MonitorESRFIcatTomo(Monitor):
         ctf_galley_path = icat_ctf_dir / "gallery"
         ctf_galley_path.mkdir(mode=0o755)
         mc_snapshot_path = ctf_galley_path / (ctf_full_path.stem + ".jpg")
-        os.system(f"bimg -logarithm {ctf_full_path} {mc_snapshot_path}")
+        os.system(f"/cvmfs/sb.esrf.fr/bin/bimg -logarithm {ctf_full_path} {mc_snapshot_path}")
         dict_metadata = {
             "Sample_name": sample_name,
             "EMCTF_resolution_limit": resolution_limit,

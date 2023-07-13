@@ -341,7 +341,7 @@ class UtilsPath(object):
                 extraDirectory, mrcFileBase + "_ctf.jpeg"
             )
             os.system(
-                "bimg -logarithm {0} {1}".format(
+                "/cvmfs/sb.esrf.fr/bin/bimg -logarithm {0} {1}".format(
                     spectraImageFullPath, spectraImageSnapshotFullPath
                 )
             )
@@ -1061,7 +1061,7 @@ class UtilsPath(object):
         temp_tif_path = gallery_dir / (icat_movie_path.stem + ".tif")
         snapshot_path = gallery_dir / (icat_movie_path.stem + ".jpg")
         os.system(
-            f"bimg -average -truncate 0,1 -minmax 0,1 {icat_movie_path} {temp_tif_path}"
+            f"/cvmfs/sb.esrf.fr/bin/bimg -average -truncate 0,1 -minmax 0,1 {icat_movie_path} {temp_tif_path}"
         )
         os.system(f"bscale -bin 20 {temp_tif_path} {snapshot_path}")
         # os.chmod(snapshot_path, mode=0o644)
@@ -1085,7 +1085,7 @@ class UtilsPath(object):
         if search_mrc_path.exists():
             if not search_snapshot_path.exists():
                 os.system(
-                    f"bimg -average -truncate 0,1 -minmax 0,1 {search_mrc_path} {temp_tif_path}"
+                    f"/cvmfs/sb.esrf.fr/bin/bimg -average -truncate 0,1 -minmax 0,1 {search_mrc_path} {temp_tif_path}"
                 )
                 os.system(f"bscale -bin 6 {temp_tif_path} {search_snapshot_path}")
                 # os.chmod(search_snapshot_path, mode=0o644)

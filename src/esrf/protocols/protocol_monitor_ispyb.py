@@ -1235,6 +1235,7 @@ class MonitorISPyB_ESRF(Monitor):
                         os.path.basename(self.allParams[movieName]["movieFullPath"])
                     )
                 )
+                self.info(f"CTF: micrographFullPath {micrographFullPath}")
                 movieFullPath = self.allParams[movieName]["movieFullPath"]
                 spectraImageSnapshotFullPath = None
                 spectraImageSnapshotPyarchPath = None
@@ -1249,7 +1250,7 @@ class MonitorISPyB_ESRF(Monitor):
                 estimatedBfactor = None
 
                 dictResults = UtilsPath.getCtfMetaData(workingDir, micrographFullPath)
-                # self.info("dictResults: \n{0}".format(pprint.pformat(dictResults)))
+                self.info("dictResults: \n{0}".format(pprint.pformat(dictResults)))
                 spectraImageSnapshotFullPath = dictResults[
                     "spectraImageSnapshotFullPath"
                 ]

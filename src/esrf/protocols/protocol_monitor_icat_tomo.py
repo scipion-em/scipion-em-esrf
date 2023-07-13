@@ -555,7 +555,7 @@ class MonitorESRFIcatTomo(Monitor):
         ctf_galley_path = icat_ctf_dir / "gallery"
         ctf_galley_path.mkdir(mode=0o755)
         mc_snapshot_path = ctf_galley_path / (ctf_full_path.stem + ".jpg")
-        os.system(f"/cvmfs/sb.esrf.fr/bin/bimg -logarithm {ctf_full_path} {mc_snapshot_path}")
+        os.system(f"/cvmfs/sb.esrf.fr/bin/bimg -minmax 0,300 {ctf_full_path} {mc_snapshot_path}")
         dict_metadata = {
             "Sample_name": sample_name,
             "EMCTF_resolution_limit": resolution_limit,

@@ -341,7 +341,7 @@ class UtilsPath(object):
                 extraDirectory, mrcFileBase + "_ctf.jpeg"
             )
             os.system(
-                "/cvmfs/sb.esrf.fr/bin/bimg -logarithm {0} {1}".format(
+                "/cvmfs/sb.esrf.fr/bin/bimg -minmax 0,300 {0} {1}".format(
                     spectraImageFullPath, spectraImageSnapshotFullPath
                 )
             )

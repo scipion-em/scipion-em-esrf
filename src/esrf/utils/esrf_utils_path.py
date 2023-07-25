@@ -1076,13 +1076,20 @@ class UtilsPath(object):
         batch_dir = movie_dir / "Batch"
         search_file_name = ts_name + "_Search"
         search_mrc_path = batch_dir / (search_file_name + ".mrc")
-        temp_tif_path = search_dir / (search_file_name + ".tif")
-        search_snapshot_path = search_dir / (search_file_name + ".jpg")
-        print("*" * 80)
-        print(str(search_mrc_path))
-        print(str(search_snapshot_path))
-        print("*" * 80)
+        if not search_mrc_path.exists():
+            # Maybe we have a tilt series of type "Position_1_2..." which has the same
+            # search image as "Position_1_Search"
+            if "_" in ts_name:
+                new_ts_name = "_".join(ts_name.split("_")[:-1])
+                search_file_name = new_ts_name + "_Search"
+                search_mrc_path = batch_dir / (search_file_name + ".mrc")
         if search_mrc_path.exists():
+            temp_tif_path = search_dir / (search_file_name + ".tif")
+            search_snapshot_path = search_dir / (search_file_name + ".jpg")
+            print("*" * 80)
+            print(str(search_mrc_path))
+            print(str(search_snapshot_path))
+            print("*" * 80)
             if not search_snapshot_path.exists():
                 os.system(
                     f"/cvmfs/sb.esrf.fr/bin/bimg -average -truncate 0,1 -minmax 0,1 {search_mrc_path} {temp_tif_path}"

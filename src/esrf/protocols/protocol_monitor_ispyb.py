@@ -227,7 +227,7 @@ class ProtMonitorISPyB_ESRF(ProtMonitor):
         monitor = MonitorISPyB_ESRF(
             self,
             workingDir=self._getPath(),
-            samplingInterval=30,  # 30 seconds                                        # samplingInterval=self.samplingInterval.get(),
+            samplingInterval=10,  # 30 seconds                                        # samplingInterval=self.samplingInterval.get(),
             monitorTime=4 * 24 * 60,
         )  # 4*24 H max monitor time
 
@@ -1534,7 +1534,7 @@ class MonitorISPyB_ESRF(Monitor):
         if len(listGridSquareNotUploaded) > 0:
             for gridSquare in listGridSquareNotUploaded:
                 self.archiveGridSquare(gridSquare)
-                time.sleep(60)
+                time.sleep(10)
         return gridSquare
 
     def archiveGainAndDefectMap(self):

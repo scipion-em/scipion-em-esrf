@@ -329,7 +329,6 @@ class MonitorESRFIcatTomo(Monitor):
             icat_raw_dir = pathlib.Path(dict_movie["icat_raw_dir"])
             movie_name = dict_movie["movie_name"]
             if movie_name not in self.all_params:
-                self.all_params[movie_name] = dict_movie
                 if icat_raw_dir.exists():
                     self.info("Movie already archived: {0}".format(movie_name))
                 elif self.no_movie_threads > 10:
@@ -337,7 +336,6 @@ class MonitorESRFIcatTomo(Monitor):
                         f"Waiting for movie threads... no_threads: {self.no_movie_threads}"
                     )
                 else:
-                    self.info(f"Archiving movie {movie_name}")
                     icat_raw_dir.mkdir(mode=0o755, exist_ok=False, parents=True)
                     # Check if we need to create search snapshot image
                     search_dir = icat_raw_dir.parent / "Search"
@@ -351,7 +349,7 @@ class MonitorESRFIcatTomo(Monitor):
                     grid_name = self.sampleName
                     thread = threading.Thread(
                         target=self.archiveMovieInIcatPlus,
-                        args=(prot, grid_name, movie_name, icat_raw_dir),
+                        args=(prot, grid_name, movie_name, dict_movie, icat_raw_dir),
                     )
                     self.info(
                         f"Starting thread for movie {movie_name} - no_movie_threads: {self.no_movie_threads}"
@@ -432,13 +430,14 @@ class MonitorESRFIcatTomo(Monitor):
                         #     prot, movie_name, ctf_full_path, icat_ctf_dir
                         # )
 
-    def archiveMovieInIcatPlus(self, prot, grid_name, movie_name, icat_raw_dir):
+    def archiveMovieInIcatPlus(self, prot, grid_name, movie_name, dict_movie, icat_raw_dir):
+        self.info(f"Archiving movie {movie_name}")
+        self.all_params[movie_name] = dict_movie
         spherical_aberration = prot.sphericalAberration.get()
         amplitude_contrast = prot.amplitudeContrast.get()
         sampling_rate = prot.samplingRate.get()
         dose_initial = prot.doseInitial.get()
         dose_per_frame = prot.dosePerFrame.get()
-        dict_movie = self.all_params[movie_name]
         movie_full_path = pathlib.Path(dict_movie["file_path"])
         movie_number = dict_movie["movie_number"]
         tilt_angle = dict_movie["tilt_angle"]

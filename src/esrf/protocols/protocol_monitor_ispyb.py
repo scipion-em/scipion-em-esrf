@@ -637,61 +637,6 @@ class MonitorISPyB_ESRF(Monitor):
                 # self.info(micrographFullPath)
                 # self.info(xmlMetaDataFullPath)
                 # self.info(gridSquareSnapshotFullPath)
-                startTime = time.time()
-                doContinue = True
-                while doContinue:
-                    if (
-                        micrographSnapshotFullPath is None
-                        or micrographFullPath is None
-                        or xmlMetaDataFullPath is None
-                        or gridSquareSnapshotFullPath is None
-                    ):
-                        self.info(
-                            "Import movies: waiting for meta-data files to appear on disk..."
-                        )
-                        timeNow = time.time()
-                        deltaTime = timeNow - startTime
-                        if deltaTime > 120:
-                            self.info(
-                                "Import movies: Timeout waiting for meta-data files to appear on disk!!!"
-                            )
-                            doContinue = False
-                        else:
-                            time.sleep(10)
-                            (
-                                micrographSnapshotFullPath_new,
-                                micrographFullPath_new,
-                                xmlMetaDataFullPath_new,
-                                gridSquareSnapshotFullPath_new,
-                            ) = UtilsPath.getEpuTiffMovieJpegMrcXml(movieFullPath)
-                            if (
-                                micrographSnapshotFullPath is None
-                                and micrographSnapshotFullPath_new is not None
-                            ):
-                                micrographSnapshotFullPath = (
-                                    micrographSnapshotFullPath_new
-                                )
-                            if (
-                                micrographFullPath is None
-                                and micrographFullPath_new is not None
-                            ):
-                                micrographFullPath = micrographFullPath_new
-                            if (
-                                xmlMetaDataFullPath is None
-                                and xmlMetaDataFullPath_new is not None
-                            ):
-                                xmlMetaDataFullPath = xmlMetaDataFullPath_new
-                            if (
-                                gridSquareSnapshotFullPath is None
-                                and gridSquareSnapshotFullPath_new is not None
-                            ):
-                                gridSquareSnapshotFullPath = (
-                                    gridSquareSnapshotFullPath_new
-                                )
-                    else:
-                        doContinue = False
-                # micrographFullPath = None
-                # self.info("Import movies: micrographSnapshotFullPath: {0}".format(micrographSnapshotFullPath))
 
                 micrographSnapshotPyarchPath = None
                 micrographPyarchPath = None
@@ -706,9 +651,6 @@ class MonitorISPyB_ESRF(Monitor):
                 if micrographFullPath is not None:
                     micrographSnapshotPyarchPath = UtilsPath.copyToPyarchPath(
                         micrographSnapshotFullPath
-                    )
-                    xmlMetaDataPyarchPath = UtilsPath.copyToPyarchPath(
-                        xmlMetaDataFullPath
                     )
                     gridSquareSnapshotPyarchPath = UtilsPath.copyToPyarchPath(
                         gridSquareSnapshotFullPath

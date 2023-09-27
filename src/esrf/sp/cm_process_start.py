@@ -67,6 +67,20 @@ listMovies = glob.glob(
     os.path.join(config_dict["dataDirectory"], config_dict["filesPattern"])
 )
 noMovies = len(listMovies)
+# Check that we have voltage, imagesCount and magnification:
+for key in ["magnification", "imagesCount"]:
+    if key not in config_dict or config_dict[key] is None:
+        raise RuntimeError(
+            "Missing command line argument '--{0}'!".format(
+                key
+            )
+        )
+# Assume EPU TIFF data
+config_dict["dataType"] = 1  # "EPU_TIFF"
+config_dict["gainFlip"] = motioncorr.constants.FLIP_LEFTRIGHT
+config_dict["gainRot"] = motioncorr.constants.ROTATE_180
+config_dict["filesPattern"] = "Images-Disc*/GridSquare_*/Data/FoilHole_*_fractions.tiff"
+
 if config_dict["secondGrid"] or config_dict["thirdGrid"]:
     if config_dict["secondGrid"] and config_dict["thirdGrid"]:
         raise RuntimeError(
@@ -76,21 +90,6 @@ if config_dict["secondGrid"] or config_dict["thirdGrid"]:
         raise RuntimeError(
             "--secondGrid or --thirdGrid used and images already exists on disk!"
         )
-    # Check that we have voltage, imagesCount and magnification:
-    for key in ["magnification", "imagesCount"]:
-        if key not in config_dict or config_dict[key] is None:
-            raise RuntimeError(
-                "--secondGrid or --thirdGrid used, missing command line argument '--{0}'!".format(
-                    key
-                )
-            )
-    # Assume EPU TIFF data
-    config_dict["dataType"] = 1  # "EPU_TIFF"
-    config_dict["gainFlip"] = motioncorr.constants.FLIP_LEFTRIGHT
-    config_dict["gainRot"] = motioncorr.constants.ROTATE_180
-    config_dict[
-        "filesPattern"
-    ] = "Images-Disc*/GridSquare_*/Data/FoilHole_*_fractions.tiff"
 elif noMovies == 0:
     print(
         "ERROR! No movies available in directory {0} with the filesPattern {1}.".format(
@@ -115,40 +114,6 @@ if noMovies == 0:
 else:
     firstMovieFullPath = listMovies[0]
 
-jpeg = None
-xml = None
-mrc = None
-
-if not config_dict["secondGrid"] and not config_dict["thirdGrid"]:
-    if firstMovieFullPath.endswith("tiff"):
-        print("********** EPU tiff data **********")
-        config_dict["dataType"] = 1  # "EPU_TIFF"
-        config_dict["gainFlip"] = motioncorr.constants.FLIP_LEFTRIGHT
-        config_dict["gainRot"] = motioncorr.constants.ROTATE_180
-
-        jpeg, mrc, xml, gridSquareThumbNail = UtilsPath.getEpuTiffMovieJpegMrcXml(
-            firstMovieFullPath
-        )
-        if xml is None:
-            print("*" * 80)
-            print("*" * 80)
-            print("*" * 80)
-            print(
-                "Error! Cannot find metadata files in the directory which contains the following movie:"
-            )
-            print(firstMovieFullPath)
-            print("*" * 80)
-            print("*" * 80)
-            print("*" * 80)
-            sys.exit(1)
-        dictResults = UtilsPath.getXmlMetaData(xml)
-        config_dict["doPhaseShiftEstimation"] = dictResults["phasePlateUsed"]
-        config_dict["magnification"] = int(dictResults["magnification"])
-        config_dict["voltage"] = int(dictResults["accelerationVoltage"])
-        config_dict["imagesCount"] = int(dictResults["numberOffractions"])
-    elif firstMovieFullPath.endswith("eer"):
-        print("********** EER data **********")
-        config_dict["dataType"] = 3  # "EER"
 
 proposal = UtilsISPyB.getProposal(config_dict["dataDirectory"])
 

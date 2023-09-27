@@ -51,9 +51,18 @@ def getCommandlineOptions():
         required=True,
     )
     required.add_argument(
+        "--magnification", action="store", help="Nominal magnification.", default=None
+    )
+    required.add_argument(
         "--dosePerFrame", action="store", help="Dose per frame.", required=True
     )
-    optional.add_argument(
+    required.add_argument(
+        "--imagesCount",
+        action="store",
+        help="Number of images per movie.",
+        default=None,
+    )
+    required.add_argument(
         "--samplingRate",
         action="store",
         help="Sampling rate.",
@@ -74,15 +83,6 @@ def getCommandlineOptions():
     # )
     optional.add_argument(
         "--doseInitial", action="store", help="Initial dose, default zero.", default=0.0
-    )
-    optional.add_argument(
-        "--magnification", action="store", help="Nominal magnification.", default=None
-    )
-    optional.add_argument(
-        "--imagesCount",
-        action="store",
-        help="Number of images per movie.",
-        default=None,
     )
     # optional.add_argument("--voltage", action="store", help="Voltage [V]", default=None)
     optional.add_argument(

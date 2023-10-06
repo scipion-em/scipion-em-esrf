@@ -1072,7 +1072,7 @@ class UtilsPath(object):
         movie_dir = pathlib.Path(dict_movie["directory"])
         ts_name = dict_movie["ts_name"]
         if not movie_dir.exists():
-            raise RuntimeError(f"File path {movie_dir} doesn't exist!")
+            raise FileNotFoundError(f"File path {movie_dir} doesn't exist!")
         batch_dir = movie_dir / "Batch"
         search_file_name = ts_name + "_Search"
         search_mrc_path = batch_dir / (search_file_name + ".mrc")
@@ -1092,7 +1092,7 @@ class UtilsPath(object):
             print("*" * 80)
             if not search_snapshot_path.exists():
                 os.system(
-                    f"/cvmfs/sb.esrf.fr/bin/bimg -average -truncate 0,1 -minmax 0,1 {search_mrc_path} {temp_tif_path}"
+                    f"/cvmfs/sb.esrf.fr/bin/bimg -average {search_mrc_path} {temp_tif_path}"
                 )
                 os.system(f"bscale -bin 6 {temp_tif_path} {search_snapshot_path}")
                 # os.chmod(search_snapshot_path, mode=0o644)

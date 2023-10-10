@@ -278,13 +278,6 @@ class MonitorESRFIcatTomo(Monitor):
                 ):
                     self.uploadCTFMicrographs(prot)
                     isActiveCTFMicrographs = prot.isActive()
-                # elif (
-                #     isinstance(prot, ProtClassify2D)
-                #     and hasattr(prot, "outputClasses")
-                #     and not prot.getObjId() in self.all_params
-                # ):
-                #     self.uploadClassify2D(prot)
-                #     isActiveClassify2D = prot.isActive()
 
             if isActiveImportMovies or isActiveAlignMovies or isActiveCTFMicrographs:
                 finished = False
@@ -319,11 +312,8 @@ class MonitorESRFIcatTomo(Monitor):
         objSet.close()
 
     def uploadImportMovies(self, prot):
+        no_waiting = 0
         for movie_path in prot.getMatchFiles():
-            # for movie in prot.iterNewInputFiles():
-            #     movie_full_path = pathlib.Path(
-            #         os.path.join(self.currentDir, movie.getFileName())
-            # )
             movie_full_path = UtilsPath.removePrefixDirs(movie_path)
             dict_movie = UtilsPath.getTSFileParameters(movie_full_path)
             icat_raw_dir = pathlib.Path(dict_movie["icat_raw_dir"])
@@ -332,18 +322,21 @@ class MonitorESRFIcatTomo(Monitor):
                 if icat_raw_dir.exists():
                     self.info("Movie already archived: {0}".format(movie_name))
                 elif self.no_movie_threads > 10:
-                    self.info(
-                        f"Waiting for movie threads... no_threads: {self.no_movie_threads}"
-                    )
+                    no_waiting += 1
+                    if no_waiting < 10:
+                        self.info(
+                            f"Waiting for movie threads... no_threads: {self.no_movie_threads}"
+                        )
                 else:
                     icat_raw_dir.mkdir(mode=0o755, exist_ok=False, parents=True)
                     # Check if we need to create search snapshot image
                     search_dir = icat_raw_dir.parent / "Search"
-                    search_dir.mkdir(mode=0o755, exist_ok=True)
-                    search_path = UtilsPath.createTiltSerieSearchSnapshot(
-                        dict_movie, search_dir
-                    )
-                    dict_movie["search_path"] = str(search_path)
+                    if not search_dir.exists():
+                        search_dir.mkdir(mode=0o755, exist_ok=False)
+                        search_path = UtilsPath.createTiltSerieSearchSnapshot(
+                            dict_movie, search_dir
+                        )
+                        dict_movie["search_path"] = str(search_path)
                     # Start threads - if max number of threads not reached
                     self.no_movie_threads += 1
                     grid_name = self.sampleName
@@ -357,6 +350,7 @@ class MonitorESRFIcatTomo(Monitor):
                     thread.start()
 
     def uploadAlignMovies(self, prot):
+        no_waiting = 0
         for micrograph in self.iter_updated_set(prot.outputMicrographs):
             micrograph_full_path = self.current_dir / micrograph.getFileName()
             dict_micrograph = UtilsPath.getTSFileParameters(micrograph_full_path)
@@ -374,9 +368,11 @@ class MonitorESRFIcatTomo(Monitor):
                             )
                         )
                     elif self.no_mc_threads > 10:
-                        self.info(
-                            f"Waiting for mc threads... no_mc_threads: {self.no_mc_threads}"
-                        )
+                        no_waiting += 1
+                        if no_waiting < 10:
+                            self.info(
+                                f"Waiting for mc threads... no_mc_threads: {self.no_mc_threads}"
+                            )
                     else:
                         os.makedirs(icat_mc_dir, mode=0o755, exist_ok=False)
                         self.info(f"Archiving motion cor results {movie_name}")
@@ -393,6 +389,7 @@ class MonitorESRFIcatTomo(Monitor):
                         # self.archiveAlignedMovieInIcatPlus(prot, movie_name, micrograph_full_path, icat_mc_dir)
 
     def uploadCTFMicrographs(self, prot):
+        no_waiting = 0
         for ctf in self.iter_updated_set(prot.outputCTF):
             mc_full_path = self.current_dir / ctf.getMicrograph().getFileName()
             ctf_working_dir = self.current_dir / str(prot.workingDir)
@@ -410,9 +407,11 @@ class MonitorESRFIcatTomo(Monitor):
                             "CTF results already archived: {0}".format(movie_name)
                         )
                     elif self.no_ctf_threads > 10:
-                        self.info(
-                            f"Waiting for CTF threads... no_ctf_threads: {self.no_ctf_threads}"
-                        )
+                        no_waiting += 1
+                        if no_waiting < 10:
+                            self.info(
+                                f"Waiting for CTF threads... no_ctf_threads: {self.no_ctf_threads}"
+                            )
                     else:
                         self.info(f"Archiving CTF results: {movie_name}")
                         os.makedirs(icat_ctf_dir, mode=0o755, exist_ok=False)

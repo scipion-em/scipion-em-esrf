@@ -1094,7 +1094,7 @@ class UtilsPath(object):
                 os.system(
                     f"/cvmfs/sb.esrf.fr/bin/bimg -average {search_mrc_path} {temp_tif_path}"
                 )
-                os.system(f"bscale -bin 6 {temp_tif_path} {search_snapshot_path}")
+                os.system(f"/cvmfs/sb.esrf.fr/bin/bscale -bin 6 {temp_tif_path} {search_snapshot_path}")
                 # os.chmod(search_snapshot_path, mode=0o644)
                 os.remove(str(temp_tif_path))
         else:

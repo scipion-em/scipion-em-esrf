@@ -430,51 +430,66 @@ class MonitorESRFIcatTomo(Monitor):
                         # )
 
     def archiveMovieInIcatPlus(self, prot, grid_name, movie_name, dict_movie, icat_raw_dir):
-        self.info(f"Archiving movie {movie_name}")
-        self.all_params[movie_name] = dict_movie
-        spherical_aberration = prot.sphericalAberration.get()
-        amplitude_contrast = prot.amplitudeContrast.get()
-        sampling_rate = prot.samplingRate.get()
-        dose_initial = prot.doseInitial.get()
-        dose_per_frame = prot.dosePerFrame.get()
-        movie_full_path = pathlib.Path(dict_movie["file_path"])
-        movie_number = dict_movie["movie_number"]
-        tilt_angle = dict_movie["tilt_angle"]
-        sample_name = dict_movie["sample_name"]
-        icat_movie_path = UtilsPath.createIcatLink(movie_full_path, icat_raw_dir)
-        UtilsPath.createTiltSerieInstrumentSnapshot(icat_movie_path)
-        # Copy search snapshot to gallery
-        if movie_number == 1:
-            shutil.copy(dict_movie["search_path"], icat_raw_dir / "gallery")
-        self.info(f"Archiving movie: movie_full_path: {movie_full_path}")
-        dictMetadata = {
-            "Sample_name": sample_name,
-            "EM_amplitude_contrast": amplitude_contrast,
-            "EM_dose_initial": dose_initial,
-            "EM_dose_per_frame": dose_per_frame,
-            "EM_images_count": self.imagesCount,
-            "EM_magnification": self.magnification,
-            "EM_protein_acronym": self.proteinAcronym,
-            "EM_sampling_rate": sampling_rate,
-            "EM_spherical_aberration": spherical_aberration,
-            "EM_voltage": self.voltage,
-            "EM_grid_name": grid_name,
-            "EM_tilt_angle": tilt_angle,
-        }
-        if DO_UPLOAD:
-            time.sleep(5)
-            UtilsIcat.uploadRawToIcatPlus(
-                directory=str(icat_raw_dir),
-                proposal=self.proposal,
-                dataSetName=f"{movie_number:03d}",
-                dictMetadata=dictMetadata,
+        try:
+            self.info(f"Archiving movie {movie_name}")
+            self.all_params[movie_name] = dict_movie
+            spherical_aberration = prot.sphericalAberration.get()
+            amplitude_contrast = prot.amplitudeContrast.get()
+            sampling_rate = prot.samplingRate.get()
+            dose_initial = prot.doseInitial.get()
+            dose_per_frame = prot.dosePerFrame.get()
+            movie_full_path = pathlib.Path(dict_movie["file_path"])
+            movie_number = dict_movie["movie_number"]
+            tilt_angle = dict_movie["tilt_angle"]
+            sample_name = dict_movie["sample_name"]
+            icat_movie_path = UtilsPath.createIcatLink(movie_full_path, icat_raw_dir)
+            UtilsPath.createTiltSerieInstrumentSnapshot(icat_movie_path)
+            # Copy search snapshot to gallery
+            if movie_number == 1 and "search_path" in dict_movie:
+                shutil.copy(dict_movie["search_path"], icat_raw_dir / "gallery")
+            self.info(f"Archiving movie: movie_full_path: {movie_full_path}")
+            dictMetadata = {
+                "Sample_name": sample_name,
+                "EM_amplitude_contrast": amplitude_contrast,
+                "EM_dose_initial": dose_initial,
+                "EM_dose_per_frame": dose_per_frame,
+                "EM_images_count": self.imagesCount,
+                "EM_magnification": self.magnification,
+                "EM_protein_acronym": self.proteinAcronym,
+                "EM_sampling_rate": sampling_rate,
+                "EM_spherical_aberration": spherical_aberration,
+                "EM_voltage": self.voltage,
+                "EM_grid_name": grid_name,
+                "EM_tilt_angle": tilt_angle,
+            }
+            if DO_UPLOAD:
+                time.sleep(5)
+                UtilsIcat.uploadRawToIcatPlus(
+                    directory=str(icat_raw_dir),
+                    proposal=self.proposal,
+                    dataSetName=f"{movie_number:03d}",
+                    dictMetadata=dictMetadata,
+                )
+            self.all_params[movie_name]["raw_movie_archived"] = True
+            self.all_params[movie_name]["icat_raw_dir"] = str(icat_raw_dir)
+            self.info(
+                f"Thread finished for movie {movie_name}, no_movie_threads: {self.no_movie_threads}"
             )
-        self.all_params[movie_name]["raw_movie_archived"] = True
-        self.all_params[movie_name]["icat_raw_dir"] = str(icat_raw_dir)
+        except Exception as e:
+            self.info("Error in ICAT upload:")
+            self.info(e)
+            (exc_type, exc_value, exc_traceback) = sys.exc_info()
+            error_message = f"{exc_type} {exc_value}"
+            self.info(error_message)
+            list_trace = traceback.extract_tb(exc_traceback)
+            self.info("Traceback (most recent call last): %s" % os.linesep)
+            for list_line in list_trace:
+                error_line = f"  File '{list_line[0]}', line {list_line[1]}, in {list_line[2]}{os.sep}"
+                self.info(error_line)
+            self.info(
+                f"Thread finished with errors for movie {movie_name}, no_movie_threads: {self.no_movie_threads}"
+            )
         self.no_movie_threads -= 1
-        self.info(
-            f"Thread finished for movie {movie_name}, no_movie_threads: {self.no_movie_threads}"
-        )
 
     def archiveAlignedMovieInIcatPlus(
         self, prot, movie_name, micrograph_full_path, icat_mc_dir

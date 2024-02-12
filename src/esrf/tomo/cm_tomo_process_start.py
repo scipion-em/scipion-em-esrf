@@ -57,7 +57,7 @@ config_dict["experiment_type"] = "tomo"
 # config_dict["filesRegExp"] = files_reg_exp
 
 # Remove prefix dirs...
-config_dict["dataDirectory"] = UtilsPath.removePrefixDirs(config_dict["dataDirectory"])
+config_dict["dataDirectory"] = str(UtilsPath.removePrefixDirs(config_dict["dataDirectory"]))
 
 # Check how many movies are present on disk
 listMovies = glob.glob(

@@ -56,6 +56,9 @@ config_dict["experiment_type"] = "tomo"
 # files_reg_exp.replace("{TIME}", "\d{6}")
 # config_dict["filesRegExp"] = files_reg_exp
 
+# Remove prefix dirs...
+config_dict["dataDirectory"] = UtilsPath.removePrefixDirs(config_dict["dataDirectory"])
+
 # Check how many movies are present on disk
 listMovies = glob.glob(
     os.path.join(config_dict["dataDirectory"], config_dict["filesPattern"])

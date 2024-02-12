@@ -51,6 +51,9 @@ config_dict["experiment_type"] = "sp"
 #
 #
 
+# Remove prefix dirs...
+config_dict["dataDirectory"] = UtilsPath.removePrefixDirs(config_dict["dataDirectory"])
+
 if config_dict["filesPattern"] is None:
     # No filesPattern, let's assume that we are dealing with EPU data
     config_dict[

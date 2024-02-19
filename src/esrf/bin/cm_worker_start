@@ -12,7 +12,7 @@ if [ "$list_process" != "" ]; then
 fi
 
 datestring=$(date '+%Y-%m-%d')
-logdir = "/var/log/scipion"
+logdir="/var/log/scipion"
 logfile="$logdir/cm_worker_$datestring.log"
 echo "Celery worker log file: $logfile"
 

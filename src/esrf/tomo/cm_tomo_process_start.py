@@ -169,7 +169,7 @@ config_dict["scipionProjectName"] = "{0}_{1}_{2}_{3}".format(
 
 user_name = os.environ["USER"]
 
-log_dir = os.path.join("/tmp_14_days", user_name, "scipion_logs")
+log_dir = "/var/log/scipion"
 if not os.path.exists(log_dir):
     os.makedirs(log_dir, mode=0o777)
 log_file_name = "{0}.log".format(config_dict["scipionProjectName"])

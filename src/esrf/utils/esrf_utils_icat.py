@@ -118,7 +118,7 @@ class UtilsIcat(object):
                 elif "movieFullPath" in entry:
                     movieFullPath = entry["movieFullPath"]
                     dictFileNameParameters = (
-                        UtilsPath.getEpuTiffMovieFileNameParameters(movieFullPath)
+                        UtilsPath.getEpuMovieFileNameParameters(movieFullPath)
                     )
                     gridSquare = dictFileNameParameters["gridSquare"]
                     if gridSquare not in listGridSquares:

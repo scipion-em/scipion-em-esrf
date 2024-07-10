@@ -31,6 +31,7 @@ import re
 import glob
 import json
 import math
+import sys
 import time
 import shutil
 import datetime
@@ -63,7 +64,7 @@ class UtilsPath(object):
         return jpeg, mrc, xml, gridSquareSnapshot
 
     @staticmethod
-    def getEpuTiffMovieJpegMrcXml(movieFilePath):
+    def getEpuMovieJpegMrcXml(movieFilePath):
         gridSquareSnapshot = None
         fileDir = os.path.dirname(movieFilePath)
         if os.path.exists(fileDir):
@@ -72,7 +73,7 @@ class UtilsPath(object):
             fd = os.open(fileDir, os.O_DIRECTORY)
             statResult = os.fstat(fd)  # noqa F841
             os.close(fd)
-        dictFileName = UtilsPath.getEpuTiffMovieFileNameParameters(movieFilePath)
+        dictFileName = UtilsPath.getEpuMovieFileNameParameters(movieFilePath)
         filePrefix = "{directory}/{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}".format(
             **dictFileName
         )
@@ -148,18 +149,18 @@ class UtilsPath(object):
         return dictResult
 
     @staticmethod
-    def getEpuTiffAlignMoviesPngLogFilePath(mrcFilePath):
+    def getEpuAlignMoviesPngLogFilePath(mrcFilePath):
         dictResult = {}
         # Locate png file in same directory
         mrcDirectory = os.path.dirname(mrcFilePath)
-        dictMrcFile = UtilsPath.getEpuTiffMovieFileNameParametersFromMotioncorrPath(
+        dictMrcFile = UtilsPath.getEpuMovieFileNameParametersFromMotioncorrPath(
             mrcFilePath
         )
         mrcMovieNumber = dictMrcFile["movieNumber"]
         listPng = glob.glob(os.path.join(mrcDirectory, "*.png"))
         for pngFile in listPng:
             dictFileNameParameters = (
-                UtilsPath.getEpuTiffMovieFileNameParametersFromMotioncorrPath(pngFile)
+                UtilsPath.getEpuMovieFileNameParametersFromMotioncorrPath(pngFile)
             )
             movieNumber = dictFileNameParameters["movieNumber"]
             if (
@@ -175,7 +176,7 @@ class UtilsPath(object):
         listMrc = glob.glob(os.path.join(mrcDirectory, "*.mrc"))
         for mrcFile in listMrc:
             dictFileNameParameters = (
-                UtilsPath.getEpuTiffMovieFileNameParametersFromMotioncorrPath(mrcFile)
+                UtilsPath.getEpuMovieFileNameParametersFromMotioncorrPath(mrcFile)
             )
             movieNumber = dictFileNameParameters["movieNumber"]
             if (
@@ -276,10 +277,14 @@ class UtilsPath(object):
     def getXmlMetaData(xmlMetaDataFullPath):
         root = xml.etree.ElementTree.parse(xmlMetaDataFullPath).getroot()
         dictXML = UtilsPath.etree_to_dict(root)
-        dictResults = {
-            "numberOffractions": UtilsPath.get_recursively(
+        try:
+            numberOffractions = UtilsPath.get_recursively(
                 dictXML, "NumberOffractions"
-            )[0],
+            )[0]
+        except IndexError:
+            numberOffractions = None
+        dictResults = {
+            "numberOffractions": numberOffractions,
             "magnification": UtilsPath.get_recursively(dictXML, "NominalMagnification")[
                 0
             ],
@@ -497,7 +502,7 @@ class UtilsPath(object):
         return dictResult
 
     @staticmethod
-    def getEpuTiffMovieFileNameParameters(mrcFilePath):
+    def getEpuMovieFileNameParameters(mrcFilePath):
         """
         FoilHole_10859740_Data_10853322_10853324_20210611_233928_fractions.tiff
         """
@@ -508,7 +513,7 @@ class UtilsPath(object):
             p = re.compile(
                 "^(.*)/(GridSquare_[0-9]*)/"
                 + "Data/(.*)_([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)"
-                + "_fractions\.(.*)"
+                + "_(fractions|EER)\.(.*)"
             )
             m = p.match(mrcFilePath)
             if m is not None:
@@ -519,7 +524,8 @@ class UtilsPath(object):
                 dictResult["id3"] = m.group(6)
                 dictResult["date"] = m.group(7)
                 dictResult["hour"] = m.group(8)
-                dictResult["suffix"] = m.group(9)
+                dictResult["extra"] = m.group(9)
+                dictResult["suffix"] = m.group(10)
         except Exception as e:
             raise e
             dictResult = None
@@ -529,7 +535,7 @@ class UtilsPath(object):
         else:
             dictResult[
                 "movieName"
-            ] = "{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}_fractions".format(
+            ] = "{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}_{extra}".format(
                 **dictResult
             )
             dictResult["movieNumber"] = dictResult["date"][-2:] + dictResult["hour"]
@@ -593,7 +599,7 @@ class UtilsPath(object):
         return dictResult
 
     @staticmethod
-    def getEpuTiffMovieFileNameParametersFromMotioncorrPath(mrcFilePath):
+    def getEpuMovieFileNameParametersFromMotioncorrPath(mrcFilePath):
         """
         GridSquare_10847341_Data_FoilHole_10851620_Data_10853313_10853315_20210611_161457_fractions_aligned_mic.mrc
         """
@@ -601,7 +607,7 @@ class UtilsPath(object):
         p = re.compile(
             "^(.*)/Images-Disc(.*)_GridSquare_([0-9]*)_"
             + "Data_(.*)_([0-9]*)_Data_([0-9]*)_([0-9]*)_([0-9]*)_([0-9]*)"
-            + "_fractions_(.*)\.(.*)"
+            + "_(fractions|EER)_(.*)\.(.*)"
         )
         m = p.match(mrcFilePath)
         if m is not None:
@@ -616,7 +622,7 @@ class UtilsPath(object):
             dictResult["suffix"] = m.group(11)
             dictResult[
                 "movieName"
-            ] = "{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}_fractions".format(
+            ] = "{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}_{extra}".format(
                 **dictResult
             )
             dictResult["movieNumber"] = dictResult["date"][-2:] + dictResult["hour"]
@@ -645,13 +651,16 @@ class UtilsPath(object):
         return dictResult
 
     @staticmethod
-    def removeFileSystemPrefix(filePath):
-        newFilePath = filePath
-        for prefix in ["/gpfs/easy", "/gpfs/jazzy", "/gpfs/ga", "/gpfs/gb", "/gz", "hz"]:
-            if filePath.startswith(prefix):
-                newFilePath = filePath.replace(prefix, "")
-                break
-        return newFilePath
+    def removeFileSystemPrefix(file_path):
+        """Removes any paths before /data/..., e.g. /gpfs/easy/data/..."""
+        list_paths = str(file_path).split(os.sep)
+        if "data" in list_paths:
+            while list_paths[1] != "data":
+                list_paths = [list_paths[0]] + list_paths[2:]
+            new_data_directory = os.sep.join(list_paths)
+        else:
+            new_data_directory = file_path
+        return new_data_directory
 
     @staticmethod
     def getPyarchFilePath(workingDir):
@@ -770,8 +779,8 @@ class UtilsPath(object):
                             os.chmod(filePath, 0o644)
                             isDone = True
             except BaseException:
-                print("ERROR uploading file {0} tp pyarch!".format(filePath))
-                traceback.print_exc()
+                print("ERROR uploading file {0} to pyarch!".format(filePath))
+                UtilsPath.logStackTrace()
             if pyarchFilePath is None or not os.path.exists(pyarchFilePath):
                 pyarchFilePath = filePath
         return pyarchFilePath
@@ -779,7 +788,12 @@ class UtilsPath(object):
     @staticmethod
     def getShiftData(file_path):
         dict_results = {}
-        movie_name = pathlib.Path(file_path).stem.split("fractions")[0] + "fractions"
+        if "fractions" in file_path:
+            movie_name = pathlib.Path(file_path).stem.split("fractions")[0] + "fractions"
+        elif "EER" in file_path:
+            movie_name = pathlib.Path(file_path).stem.split("EER")[0] + "EER"
+        else:
+            raise RuntimeError(f"Unknown file type: {file_path}")
         file_dir = pathlib.Path(file_path).parent
         patch_path = file_dir / (movie_name + "-Patch-Full.log")
         if patch_path.exists():
@@ -857,7 +871,7 @@ class UtilsPath(object):
         # First find all grid squares which contain
         # movies that have not been processed
         for movie in listMovies:
-            dictMovieName = UtilsPath.getEpuTiffMovieFileNameParameters(movie)
+            dictMovieName = UtilsPath.getEpuMovieFileNameParameters(movie)
             gridSquare = dictMovieName["gridSquare"]
             if gridSquare not in dictGridSquare:
                 dictGridSquare[gridSquare] = []
@@ -1107,3 +1121,19 @@ class UtilsPath(object):
         if "/data" in str_path and not str_path.startswith("/data"):
             str_path = os.path.join("/data", str_path.split("/data")[1][1:])
         return pathlib.Path(str_path)
+
+    @classmethod
+    def logStackTrace(cls):
+        (exc_type, exc_value, exc_traceback) = sys.exc_info()
+        errorMessage = "{0} {1}".format(exc_type, exc_value)
+        print(errorMessage)
+        listTrace = traceback.extract_tb(exc_traceback)
+        print("Traceback (most recent call last): %s" % os.linesep)
+        for listLine in listTrace:
+            errorLine = '  File "%s", line %d, in %s%s' % (
+                listLine[0],
+                listLine[1],
+                listLine[2],
+                os.linesep,
+            )
+            print(errorLine)

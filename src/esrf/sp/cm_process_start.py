@@ -4,9 +4,6 @@ import glob
 import time
 import celery
 
-if "v3_dev" in __file__:
-    sys.path.insert(0, "/opt/pxsoft/scipion/v3_dev/ubuntu20.04/scipion-em-esrf")
-
 #
 import motioncorr.constants
 
@@ -54,11 +51,27 @@ config_dict["experiment_type"] = "sp"
 # Remove prefix dirs...
 config_dict["dataDirectory"] = str(UtilsPath.removePrefixDirs(config_dict["dataDirectory"]))
 
-if config_dict["filesPattern"] is None:
-    # No filesPattern, let's assume that we are dealing with EPU data
-    config_dict[
-        "filesPattern"
-    ] = "Images-Disc*/GridSquare_*/Data/FoilHole_*_fractions.tiff"
+# Check that we have voltage, imagesCount and magnification:
+for key in ["magnification", "imagesCount"]:
+    if key not in config_dict or config_dict[key] is None:
+        raise RuntimeError(
+            "Missing command line argument '--{0}'!".format(
+                key
+            )
+        )
+
+if config_dict["dataType"] == 0:
+    # "EPU_TIFF"
+    config_dict["gainFlip"] = motioncorr.constants.FLIP_LEFTRIGHT
+    config_dict["gainRot"] = motioncorr.constants.ROTATE_180
+    if config_dict["filesPattern"] is None:
+        config_dict["filesPattern"] = "Images-Disc*/GridSquare_*/Data/FoilHole_*_fractions.tiff"
+else:
+    # EPU_EER
+    config_dict["gainFlip"] = motioncorr.constants.FLIP_LEFTRIGHT
+    config_dict["gainRot"] = motioncorr.constants.ROTATE_180
+    if config_dict["filesPattern"] is None:
+        config_dict["filesPattern"] = "Images-Disc*/GridSquare_*/Data/FoilHole_*_EER.eer"
 
 # Check how many movies are present on disk
 listMovies = glob.glob(
@@ -70,19 +83,8 @@ listMovies = glob.glob(
     os.path.join(config_dict["dataDirectory"], config_dict["filesPattern"])
 )
 noMovies = len(listMovies)
-# Check that we have voltage, imagesCount and magnification:
-for key in ["magnification", "imagesCount"]:
-    if key not in config_dict or config_dict[key] is None:
-        raise RuntimeError(
-            "Missing command line argument '--{0}'!".format(
-                key
-            )
-        )
-# Assume EPU TIFF data
-config_dict["dataType"] = 1  # "EPU_TIFF"
-config_dict["gainFlip"] = motioncorr.constants.FLIP_LEFTRIGHT
-config_dict["gainRot"] = motioncorr.constants.ROTATE_180
-config_dict["filesPattern"] = "Images-Disc*/GridSquare_*/Data/FoilHole_*_fractions.tiff"
+
+
 
 if config_dict["secondGrid"] or config_dict["thirdGrid"]:
     if config_dict["secondGrid"] and config_dict["thirdGrid"]:

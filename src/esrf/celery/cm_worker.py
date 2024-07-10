@@ -488,7 +488,7 @@ def extract_meta_data(movie_path, phase_plate_data=False, super_resolution=True)
     config_dict[
         "filesPattern"
     ] = "Images-Disc*/GridSquare_*/Data/FoilHole_*_fractions.tiff"
-    jpeg, mrc, xml, gridSquareThumbNail = UtilsPath.getEpuTiffMovieJpegMrcXml(
+    jpeg, mrc, xml, gridSquareThumbNail = UtilsPath.getEpuMovieJpegMrcXml(
         movie_path
     )
     dictResults = UtilsPath.getXmlMetaData(xml)

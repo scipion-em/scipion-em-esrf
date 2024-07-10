@@ -85,7 +85,7 @@ config_dict["dataType"] = 1  # "EPU_TIFF"
 config_dict["gainFlip"] = motioncorr.constants.FLIP_LEFTRIGHT
 config_dict["gainRot"] = motioncorr.constants.ROTATE_180
 
-# jpeg, mrc, xml, gridSquareThumbNail = UtilsPath.getEpuTiffMovieJpegMrcXml(
+# jpeg, mrc, xml, gridSquareThumbNail = UtilsPath.getEpuMovieJpegMrcXml(
 #     firstMovieFullPath
 # )
 # if xml is None:

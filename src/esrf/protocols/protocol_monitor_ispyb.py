@@ -587,7 +587,7 @@ class MonitorISPyB_ESRF(Monitor):
             self.updateJsonFile()
 
     def uploadMoviesEPUTiff(self, prot, movieFullPath):
-        dictFileNameParameters = UtilsPath.getEpuTiffMovieFileNameParameters(
+        dictFileNameParameters = UtilsPath.getEpuMovieFileNameParameters(
             movieFullPath
         )
         if dictFileNameParameters is None:
@@ -632,11 +632,11 @@ class MonitorISPyB_ESRF(Monitor):
                     micrographFullPath,
                     xmlMetaDataFullPath,
                     gridSquareSnapshotFullPath,
-                ) = UtilsPath.getEpuTiffMovieJpegMrcXml(movieFullPath)
-                # self.info(micrographSnapshotFullPath)
-                # self.info(micrographFullPath)
-                # self.info(xmlMetaDataFullPath)
-                # self.info(gridSquareSnapshotFullPath)
+                ) = UtilsPath.getEpuMovieJpegMrcXml(movieFullPath)
+                self.info(micrographSnapshotFullPath)
+                self.info(micrographFullPath)
+                self.info(xmlMetaDataFullPath)
+                self.info(gridSquareSnapshotFullPath)
 
                 micrographSnapshotPyarchPath = None
                 micrographPyarchPath = None
@@ -670,7 +670,7 @@ class MonitorISPyB_ESRF(Monitor):
                         self.info(
                             "ERROR reading XML file {0}".format(xmlMetaDataFullPath)
                         )
-                        traceback.print_exc()
+                        UtilsPath.logStackTrace()
 
                 sphericalAberration = prot.sphericalAberration.get()
                 amplitudeContrast = prot.amplitudeContrast.get()
@@ -972,14 +972,7 @@ class MonitorISPyB_ESRF(Monitor):
                 # self.info("Movie already uploaded: {0}".format(movieFullPath))
             else:
                 self.info("Import movies: movieFullPath: {0}".format(movieFullPath))
-                if self.dataType == 0:  # "EPU"
-                    self.uploadMoviesEPU(prot, movieFullPath)
-                if self.dataType == 1:  # "EPU_TIFF"
-                    self.uploadMoviesEPUTiff(prot, movieFullPath)
-                elif self.dataType == 2:  # "SERIALEM"
-                    self.uploadMoviesSerialEM(prot, movieFullPath)
-                else:
-                    raise RuntimeError("Unknown data type: {0}".format(self.dataType))
+                self.uploadMoviesEPUTiff(prot, movieFullPath)
 
     def uploadAlignMovies(self, prot):
         self.protocol.info("ESRF ISPyB upload motion corr results")
@@ -987,26 +980,11 @@ class MonitorISPyB_ESRF(Monitor):
             micrographFullPath = os.path.join(self.currentDir, micrograph.getFileName())
             self.info("*" * 80)
             self.info("Motion corr micrographFullPath: {0}".format(micrographFullPath))
-            if self.dataType == 0:  # "EPU"
-                dictFileNameParameters = (
-                    UtilsPath.getMovieFileNameParametersFromMotioncorrPath(
-                        micrographFullPath
-                    )
+            dictFileNameParameters = (
+                UtilsPath.getEpuMovieFileNameParametersFromMotioncorrPath(
+                    micrographFullPath
                 )
-            elif self.dataType == 1:  # "EPU_TIFF"
-                dictFileNameParameters = (
-                    UtilsPath.getEpuTiffMovieFileNameParametersFromMotioncorrPath(
-                        micrographFullPath
-                    )
-                )
-            elif self.dataType == 2:  # "SERIALEM"
-                dictFileNameParameters = (
-                    UtilsPath.getSerialEMMovieFileNameParametersFromMotioncorrPath(
-                        micrographFullPath
-                    )
-                )
-            else:
-                raise RuntimeError("Unknown data type: {0}".format(self.dataType))
+            )
             # self.info("dictFileNameParameters: \n{0}".format(pprint.pformat(dictFileNameParameters)))
             if (
                 "movieName" in dictFileNameParameters
@@ -1022,20 +1000,9 @@ class MonitorISPyB_ESRF(Monitor):
                     )
                 )
                 movieFullPath = self.allParams[movieName]["movieFullPath"]
-                if self.dataType == 0:  # "EPU"
-                    dictResult = UtilsPath.getAlignMoviesPngLogFilePath(
-                        micrographFullPath
-                    )
-                elif self.dataType == 1:  # "EPU_TIFF"
-                    dictResult = UtilsPath.getEpuTiffAlignMoviesPngLogFilePath(
-                        micrographFullPath
-                    )
-                elif self.dataType == 2:  # "SERIALEM"
-                    dictResult = UtilsPath.getSerialEMAlignMoviesPngLogFilePath(
-                        micrographFullPath
-                    )
-                else:
-                    raise RuntimeError("Unknown data type: {0}".format(self.dataType))
+                dictResult = UtilsPath.getEpuAlignMoviesPngLogFilePath(
+                    micrographFullPath
+                )
                 # self.info("dictResult: \n{0}".format(pprint.pformat(dictResult)))
                 if "globalShiftPng" in dictResult:
                     driftPlotFullPath = dictResult["globalShiftPng"]
@@ -1143,26 +1110,11 @@ class MonitorISPyB_ESRF(Monitor):
         workingDir = os.path.join(self.currentDir, str(prot.workingDir))
         for ctf in self.iter_updated_set(prot.outputCTF):
             micrographFullPath = ctf.getMicrograph().getFileName()
-            if self.dataType == 0:  # "EPU"
-                dictFileNameParameters = (
-                    UtilsPath.getMovieFileNameParametersFromMotioncorrPath(
-                        micrographFullPath
-                    )
+            dictFileNameParameters = (
+                UtilsPath.getEpuMovieFileNameParametersFromMotioncorrPath(
+                    micrographFullPath
                 )
-            elif self.dataType == 1:  # "EPU TIFF"
-                dictFileNameParameters = (
-                    UtilsPath.getEpuTiffMovieFileNameParametersFromMotioncorrPath(
-                        micrographFullPath
-                    )
-                )
-            elif self.dataType == 2:  # "SERIALEM"
-                dictFileNameParameters = (
-                    UtilsPath.getSerialEMMovieFileNameParametersFromMotioncorrPath(
-                        micrographFullPath
-                    )
-                )
-            else:
-                raise RuntimeError("Unknown data type: {0}".format(self.dataType))
+            )
             # self.info("dictFileNameParameters: \n{0}".format(pprint.pformat(dictFileNameParameters)))
             if (
                 "movieName" in dictFileNameParameters

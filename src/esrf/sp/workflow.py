@@ -55,7 +55,7 @@ try:  # Xmipp plugin is mandatory to run this workflow
         XmippProtTriggerData,
         XmippProtEliminateEmptyParticles,
         XmippProtScreenParticles,
-        XmippProtStrGpuCrrSimple,
+        # XmippProtStrGpuCrrSimple,
         # XmippProtEliminateEmptyClasses,
         XmippProtCenterParticles,
     )
@@ -1866,26 +1866,26 @@ def preprocessWorkflow(config_dict):
         #     "inputParticles": "3919.outputParticles",
         #     "inputRefs": "3967.output"
         # },
-        protSupportBranchStrGpuCrrSimple = project.newProtocol(
-            XmippProtStrGpuCrrSimple,
-            objLabel="xmipp3 - gl2d static",
-            gpuList="2",
-            maxShift=10,
-            keepBest=1,
-        )
-        #     "inputParticles": "3919.outputParticles",
-        setExtendedInput(
-            protSupportBranchStrGpuCrrSimple.inputParticles,
-            protSupportBranchRelionExtractParticles2,
-            "outputClasses",
-        )
-        #     "inputRefs": "3967.output"
-        setExtendedInput(
-            protSupportBranchStrGpuCrrSimple.inputRefs,
-            protSupportBranchClassesSelector,
-            "output",
-        )
-        _registerProt(protSupportBranchStrGpuCrrSimple, "Classes")
+        # protSupportBranchStrGpuCrrSimple = project.newProtocol(
+        #     XmippProtStrGpuCrrSimple,
+        #     objLabel="xmipp3 - gl2d static",
+        #     gpuList="2",
+        #     maxShift=10,
+        #     keepBest=1,
+        # )
+        # #     "inputParticles": "3919.outputParticles",
+        # setExtendedInput(
+        #     protSupportBranchStrGpuCrrSimple.inputParticles,
+        #     protSupportBranchRelionExtractParticles2,
+        #     "outputClasses",
+        # )
+        # #     "inputRefs": "3967.output"
+        # setExtendedInput(
+        #     protSupportBranchStrGpuCrrSimple.inputRefs,
+        #     protSupportBranchClassesSelector,
+        #     "output",
+        # )
+        # _registerProt(protSupportBranchStrGpuCrrSimple, "Classes")
 
         # --------- SUMMARY ----------------------------------
         # {

@@ -70,10 +70,16 @@ def getCommandlineOptions():
         required=True,
     )
     optional.add_argument(
+        "--dataType",
+        action="store",
+        help="Type of data: tiff or eer, default tiff",
+        default="tiff"
+    )
+    optional.add_argument(
         "--filesPattern",
         action="store",
         help="file pattern for finding EM movies, default pattern "
-        + "'Images-Disc*/GridSquare_*/Data/FoilHole_*-*.mrc'",
+        + "Images-Disc*/GridSquare_*/Data/FoilHole_*_fractions.tiff",
         default=None,
     )
     # optional.add_argument(
@@ -180,7 +186,7 @@ def getCommandlineOptions():
     opt_dict = {
         "dataDirectory": results.directory,
         "filesPattern": results.filesPattern,
-        # "scipionProjectName": results.scipionProjectName,
+        "dataType": 0 if results.dataType == "tiff" else 1,
         "proteinAcronym": results.protein,
         "sampleName": results.sample,
         "doseInitial": float(results.doseInitial),

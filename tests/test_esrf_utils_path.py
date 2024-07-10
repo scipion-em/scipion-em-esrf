@@ -84,11 +84,16 @@ class Test(unittest.TestCase):
         }
         self.assertEqual(refDict2, dictResult2)
 
-    def test_getEpuTiffMovieFileNameParametersFromMotioncorrPath(self):
-        # Test 1
-        # mrcFullPath1 = "/data/visitor/mx2112/cm01/20210614/PROCESSED_DATA/ApoF-test1/ApoF-test1_20210616-085412/Runs/000064_ProtMotionCorr/extra/GridSquare_10847341_Data_FoilHole_10851620_Data_10853313_10853315_20210611_161457_fractions_aligned_mic.mrc"
-        mrcFullPath1 = "/gpfs/easy/data/visitor/mx2369/cm01/20220620/PROCESSED_DATA/mx2369_PkV-R_Grid6_EPU/mx2369-PkV-R/Runs/000065_ProtMotionCorr/extra/Images-Disc1_GridSquare_20341956_Data_FoilHole_20233951_Data_20345306_20345308_20220620_164313_fractions_aligned_mic.mrc"
-        dictResult1 = UtilsPath.getEpuTiffMovieFileNameParametersFromMotioncorrPath(
+    def test_getEpuMovieFileNameParametersFromMotioncorrPath_tiff(self):
+        mrcFullPath1 = "/data/visitor/mx2369/cm01/20220620/PROCESSED_DATA/mx2369_PkV-R_Grid6_EPU/mx2369-PkV-R/Runs/000065_ProtMotionCorr/extra/Images-Disc1_GridSquare_20341956_Data_FoilHole_20233951_Data_20345306_20345308_20220620_164313_fractions_aligned_mic.mrc"
+        dictResult1 = UtilsPath.getEpuMovieFileNameParametersFromMotioncorrPath(
+            mrcFullPath1
+        )
+        pprint.pprint(dictResult1)
+
+    def test_getEpuMovieFileNameParametersFromMotioncorrPath_eer(self):
+        mrcFullPath1 = "/data/visitor/mx2112/cm01/20240604/PROCESSED_DATA/blc15239_grid4_epu/mx2112_test_grid4_20240604-161321/Runs/000968_SphireProtCRYOLOPicking/tmp/micrographs_25-28/Images-Disc1_GridSquare_18872000_Data_FoilHole_18894731_Data_18873449_36_20240319_160410_EER_aligned_mic_DW.mrc"
+        dictResult1 = UtilsPath.getEpuMovieFileNameParametersFromMotioncorrPath(
             mrcFullPath1
         )
         pprint.pprint(dictResult1)
@@ -166,10 +171,23 @@ class Test(unittest.TestCase):
         refDict2 = None
         self.assertEqual(refDict2, dictResult2)
 
-    def test_getEpuTiffMovieFileNameParameters(self):
+    def test_getMovieFileNameParameters_tiff(self):
+        # Test1
+        # movieFullPath = "/data/visitor/mx2598/cm01/20240531/RAW_DATA/mx2598_CONCR_419_718_Grid5_EPU/Images-Disc1/GridSquare_31495547/Data/FoilHole_1860331_Data_31497954_32_20240602_163856_fractions.tiff"
+        movieFullPath = "FoilHole_1860331_Data_31497954_32_20240602_163856_fractions.tiff"
+        dictResult1 = UtilsPath.getMovieFileNameParameters(movieFullPath)
+
+
+    def test_getMovieFileNameParameters_eer(self):
+        # Test1
+        movieFullPath = "/data/visitor/mx2112/cm01/20240605/RAW_DATA/blc15239_grid4_epu_1/Images-Disc1/GridSquare_18872000/Data/FoilHole_18894636_Data_18890323_8_20240319_153418_EER.eer"
+        dictResult1 = UtilsPath.getMovieFileNameParameters(movieFullPath)
+
+
+    def test_getEpuMovieFileNameParameters(self):
         # Test - EPU Tiff
         tiffFullPath = "/data/cm01/commissioning/K3_commissioning/ApoF-test1/Images-Disc1/GridSquare_10847244/Data/FoilHole_10859740_Data_10853322_10853324_20210611_233928_fractions.tiff"
-        dictResult3 = UtilsPath.getEpuTiffMovieFileNameParameters(tiffFullPath)
+        dictResult3 = UtilsPath.getEpuMovieFileNameParameters(tiffFullPath)
         refDict3 = {
             "date": "20210611",
             "directory": "/data/cm01/commissioning/K3_commissioning/ApoF-test1/Images-Disc1/GridSquare_10847244/Data",
@@ -182,12 +200,21 @@ class Test(unittest.TestCase):
             "movieNumber": "11233928",
             "prefix": "FoilHole",
             "suffix": "tiff",
+            "extra": "fractions"
         }
         self.assertEqual(refDict3, dictResult3)
         # Test - EPU Tiff
         tiffFullPath = "/data/visitor/mx2263/cm01/20210628/RAW_DATA/mx2263_vDLPA_grid1_EPU/Images-Disc1/GridSquare_28833986/Data/FoilHole_29901259_Data_28850949_28850951_20210630_051336_fractions.tiff"
-        dictResult4 = UtilsPath.getEpuTiffMovieJpegMrcXml(tiffFullPath)
+        dictResult4 = UtilsPath.getEpuMovieJpegMrcXml(tiffFullPath)
         pprint.pprint(dictResult4)
+
+    def test_getEpuMovieFileNameParameters_epu_eer(self):
+        # Test - EPU EER
+        eerFullPath = "/data/visitor/mx2112/cm01/20240604/RAW_DATA/blc15239_grid4_epu/Images-Disc1/GridSquare_18872000/Data/FoilHole_18894731_Data_18873449_36_20240319_160410_EER.eer"
+        dictResult5 = UtilsPath.getEpuMovieFileNameParameters(eerFullPath)
+        pprint.pprint(dictResult5)
+        dictResult6 = UtilsPath.getEpuMovieJpegMrcXml(eerFullPath)
+        pprint.pprint(dictResult6)
 
     def test_getSerialEMMovieFileNameParameters(self):
         # Test1
@@ -246,9 +273,9 @@ class Test(unittest.TestCase):
         }
         self.assertEqual(dictRef, dictResult)
 
-    def test_getEpuTiffAlignMoviesPngLogFilePath(self):
+    def test_getEpuAlignMoviesPngLogFilePath(self):
         mrcFilePath = "/data/visitor/mx2112/cm01/20220630/PROCESSED_DATA/ih-ls3403_MTb-56_Blue3/mx2112_test1_g1_20220630-155702/Runs/000065_ProtMotionCorr/extra/Images-Disc1_GridSquare_29820840_Data_FoilHole_30945883_Data_29822705_29822707_20220630_091041_fractions_aligned_mic.mrc"
-        dictResult = UtilsPath.getEpuTiffAlignMoviesPngLogFilePath(mrcFilePath)
+        dictResult = UtilsPath.getEpuAlignMoviesPngLogFilePath(mrcFilePath)
         pprint.pprint(dictResult)
 
     def test_getSerialEMAlignMoviesPngLogFilePath(self):
@@ -287,6 +314,22 @@ class Test(unittest.TestCase):
             "phasePlateUsed": "true",
             "positionX": "0.00026971729600000011",
             "positionY": "0.00014176793600000005",
+            "superResolutionFactor": "1",
+        }
+        self.assertEqual(dictRef, dictResult)
+
+    def test_getXmlMetaData_cm02(self):
+        xmlMetaDataFullPath = "/data/visitor/blc15239/cm02/20240319/RAW_DATA/blc15239_grid4_epu/Images-Disc1/GridSquare_18871834/Data/FoilHole_19898164_Data_18873529_4_20240320_021346.xml"
+        dictResult = UtilsPath.getXmlMetaData(xmlMetaDataFullPath)
+        dictRef = {
+            "accelerationVoltage": "300000",
+            "acquisitionDateTime": "2024-03-20T02:13:50.0136264+01:00",
+            "dose": "3.1519703645517025E+21",
+            "magnification": "165000",
+            "numberOffractions": None,
+            "phasePlateUsed": "false",
+            "positionX": "-0.00038817706829999985",
+            "positionY": "0.00084602332000000035",
             "superResolutionFactor": "1",
         }
         self.assertEqual(dictRef, dictResult)

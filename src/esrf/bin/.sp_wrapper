@@ -1,3 +1,18 @@
 #!/bin/bash
+module load cuda/11.4.4
+module load bsoft
+
+export SCIPION_DOMAIN=pwem
+export SCIPION_HOME=/opt/pxsoft/scipion/v3_20240517_cuda11.4.4/ubuntu20.04
+
+export CONDA_ACTIVATION_CMD=". $SCIPION_HOME/miniconda3/etc/profile.d/conda.sh"
+
+export ISPyB_user="ispybws1"
+export ISPyB_pass="I\$pybws1"
+
+export PATH=$SCIPION_HOME:$PATH
+export PATH=$SCIPION_HOME/scipion-em-esrf/src/esrf/bin:$PATH
+export LD_LIBRARY_PATH=/cvmfs/hpc.esrf.fr/software/packages/ubuntu20.04/x86_64/cuda/10.1/lib64:$LD_LIBRARY_PATH
+
 prog_name=$(basename "$0")
 scipion3 python -m esrf.sp.$prog_name ${1:+"$@"}

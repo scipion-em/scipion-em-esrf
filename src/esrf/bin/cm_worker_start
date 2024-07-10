@@ -13,8 +13,8 @@ fi
 
 datestring=$(date '+%Y-%m-%d')
 logdir="/var/log/scipion"
-logfile="$logdir/cm_worker_$datestring.log"
-echo "Celery worker log file: $logfile"
+logfile="${logdir}/cm_worker_${user_name}_${datestring}.log"
+echo "Celery worker log file: ${logfile}"
 
 # New version of MPI necessary for dgx01
 export PATH=/usr/mpi/gcc/openmpi-4.1.2a1/bin:$PATH
@@ -22,4 +22,4 @@ export PATH=/usr/mpi/gcc/openmpi-4.1.2a1/bin:$PATH
 scipion3 python -m celery -A esrf.celery.cm_worker worker --logfile $logfile --loglevel INFO -E --concurrency=3 -Q $queue_name -n $queue_name --detach
 # /opt/pxsoft/bin/scipion3 python -m celery -A esrf.workflow.cm_process_worker worker --logfile $logfile --loglevel INFO -E --concurrency=3 -Q $queue_name -n $queue_name
 
-echo "Celery worker '$queue_name' started."
+echo "Celery worker '${queue_name}' started."

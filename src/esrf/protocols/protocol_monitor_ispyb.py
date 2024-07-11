@@ -633,10 +633,10 @@ class MonitorISPyB_ESRF(Monitor):
                     xmlMetaDataFullPath,
                     gridSquareSnapshotFullPath,
                 ) = UtilsPath.getEpuMovieJpegMrcXml(movieFullPath)
-                self.info(micrographSnapshotFullPath)
-                self.info(micrographFullPath)
-                self.info(xmlMetaDataFullPath)
-                self.info(gridSquareSnapshotFullPath)
+                # self.info(micrographSnapshotFullPath)
+                # self.info(micrographFullPath)
+                # self.info(xmlMetaDataFullPath)
+                # self.info(gridSquareSnapshotFullPath)
 
                 micrographSnapshotPyarchPath = None
                 micrographPyarchPath = None
@@ -1052,6 +1052,8 @@ class MonitorISPyB_ESRF(Monitor):
                         )
                 noTrialsLeft = 5
                 uploadSucceeded = False
+                # self.info(f"micrographSnapshotPyarchPath: {micrographSnapshotPyarchPath}")
+                # self.info(f"driftPlotPyarchPath: {driftPlotPyarchPath}")
                 while not uploadSucceeded:
                     motionCorrectionObject = None
                     try:

@@ -98,6 +98,13 @@ class Test(unittest.TestCase):
         )
         pprint.pprint(dictResult1)
 
+    def test_getEpuMovieFileNameParametersFromMotioncorrPath_png(self):
+        mrcFullPath1 = "/data/visitor/mx2112/cm01/20240710/PROCESSED_DATA/mx2597_S1R_grid2_EPU_2/mx2112_S1R_grid2_20240710-215406/Runs/000066_ProtMotionCorr/extra/Images-Disc1_GridSquare_2644258_Data_FoilHole_2784084_Data_2645754_10_20240704_013000_fractions_global_shifts.png"
+        dictResult1 = UtilsPath.getEpuMovieFileNameParametersFromMotioncorrPath(
+            mrcFullPath1
+        )
+        pprint.pprint(dictResult1)
+
     def test_getSerialEMMovieFileNameParametersFromMotioncorrPath(self):
         # Test 1
         mrcFullPath1 = "/mntdirect/_data_visitor/mx415/cm01/20191029/PROCESSED_DATA/mx2214/mx2214_20191029-110718/Runs/000064_ProtMotionCorr/extra/data_mx2214_00005_aligned_mic.mrc"
@@ -274,7 +281,7 @@ class Test(unittest.TestCase):
         self.assertEqual(dictRef, dictResult)
 
     def test_getEpuAlignMoviesPngLogFilePath(self):
-        mrcFilePath = "/data/visitor/mx2112/cm01/20220630/PROCESSED_DATA/ih-ls3403_MTb-56_Blue3/mx2112_test1_g1_20220630-155702/Runs/000065_ProtMotionCorr/extra/Images-Disc1_GridSquare_29820840_Data_FoilHole_30945883_Data_29822705_29822707_20220630_091041_fractions_aligned_mic.mrc"
+        mrcFilePath = "/data/visitor/mx2112/cm01/20240710/PROCESSED_DATA/mx2597_S1R_grid2_EPU_2/mx2112_S1R_grid2_20240710-215406/Runs/000066_ProtMotionCorr/extra/Images-Disc1_GridSquare_2644258_Data_FoilHole_2784082_Data_2645754_0_20240704_012928_fractions_aligned_mic.mrc"
         dictResult = UtilsPath.getEpuAlignMoviesPngLogFilePath(mrcFilePath)
         pprint.pprint(dictResult)
 

@@ -164,12 +164,12 @@ class UtilsPath(object):
             )
             movieNumber = dictFileNameParameters["movieNumber"]
             if (
-                dictFileNameParameters["extra"] == "global_shifts"
+                dictFileNameParameters["extra2"] == "global_shifts"
                 and mrcMovieNumber == movieNumber
             ):
                 dictResult["globalShiftPng"] = pngFile
             elif (
-                dictFileNameParameters["extra"] == "thumbnail"
+                dictFileNameParameters["extra2"] == "thumbnail"
                 and mrcMovieNumber == movieNumber
             ):
                 dictResult["thumbnailPng"] = pngFile
@@ -180,7 +180,7 @@ class UtilsPath(object):
             )
             movieNumber = dictFileNameParameters["movieNumber"]
             if (
-                "DW" in dictFileNameParameters["extra"]
+                "DW" in dictFileNameParameters["extra2"]
                 and mrcMovieNumber == movieNumber
             ):
                 dictResult["doseWeightMrc"] = mrcFile
@@ -618,11 +618,12 @@ class UtilsPath(object):
             dictResult["id3"] = m.group(7)
             dictResult["date"] = m.group(8)
             dictResult["hour"] = m.group(9)
-            dictResult["extra"] = m.group(10)
-            dictResult["suffix"] = m.group(11)
+            dictResult["extra1"] = m.group(10)
+            dictResult["extra2"] = m.group(11)
+            dictResult["suffix"] = m.group(12)
             dictResult[
                 "movieName"
-            ] = "{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}_{extra}".format(
+            ] = "{prefix}_{id1}_Data_{id2}_{id3}_{date}_{hour}_{extra1}".format(
                 **dictResult
             )
             dictResult["movieNumber"] = dictResult["date"][-2:] + dictResult["hour"]

@@ -40,52 +40,52 @@ def getCommandlineOptions():
     )
     required.add_argument(
         "--protein",
-        action="store",
+        type=str,
         help="Protein acronym, must be the one used in the A-form.",
         required=True,
     )
     required.add_argument(
         "--sample",
-        action="store",
+        type=str,
         help="Sample name, for example 'grid1'.",
         required=True,
     )
     required.add_argument(
-        "--magnification", action="store", help="Nominal magnification.", default=None
+        "--magnification", type=int, help="Nominal magnification.", default=None
     )
     required.add_argument(
-        "--dosePerFrame", action="store", help="Dose per frame.", required=True
+        "--dosePerFrame", type=float, help="Dose per frame.", required=True
     )
     required.add_argument(
         "--imagesCount",
-        action="store",
+        type=int,
         help="Number of images per movie.",
         default=None,
     )
     required.add_argument(
         "--samplingRate",
-        action="store",
+        type=float,
         help="Sampling rate.",
         default=None,
         required=True,
     )
     optional.add_argument(
         "--dataType",
-        action="store",
+        type=str,
         help="Type of data: tiff or eer, default tiff",
-        default="tiff"
+        default="tiff",
     )
     optional.add_argument(
         "--EER_fractionation",
-        action="store",
-        help="The number of hardware frames to group into one " +
-             "fraction. This option is relevant only for Falcon 4 " +
-             "movies in the EER format.",
-        default="30"
+        type=int,
+        help="The number of hardware frames to group into one "
+        + "fraction. This option is relevant only for Falcon 4 "
+        + "movies in the EER format.",
+        default="30",
     )
     optional.add_argument(
         "--filesPattern",
-        action="store",
+        type=str,
         help="file pattern for finding EM movies, default pattern "
         + "Images-Disc*/GridSquare_*/Data/FoilHole_*_fractions.tiff",
         default=None,
@@ -96,24 +96,24 @@ def getCommandlineOptions():
     #     help="Scipion project name, is only used internally in Scipion.",
     # )
     optional.add_argument(
-        "--doseInitial", action="store", help="Initial dose, default zero.", default=0.0
+        "--doseInitial", type=float, help="Initial dose, default zero.", default=0.0
     )
     # optional.add_argument("--voltage", action="store", help="Voltage [V]", default=None)
     optional.add_argument(
         "--startMotioncorFrame",
-        action="store",
+        type=int,
         help="Start frame for motion correction, default 1.",
         default=1,
     )
     optional.add_argument(
         "--endMotioncorFrame",
-        action="store",
+        type=int,
         help="End frame for motion correction, default last frame.",
         default=0,
     )
     optional.add_argument(
         "--partSize",
-        action="store",
+        type=float,
         help="Particle size for auto picking",
         default=200.0,
     )
@@ -148,10 +148,10 @@ def getCommandlineOptions():
         default=False,
     )
     optional.add_argument(
-        "--defectMapPath", action="store", help="Defect map file path", default=None
+        "--defectMapPath", type=str, help="Defect map file path", default=None
     )
     optional.add_argument(
-        "--gainFilePath", action="store", help="Gain file path", default=None
+        "--gainFilePath", type=str, help="Gain file path", default=None
     )
     optional.add_argument(
         "--particleElimination",
@@ -179,9 +179,9 @@ def getCommandlineOptions():
     )
     optional.add_argument(
         "--celery_worker",
-        action="store",
+        type=str,
         help="Celery worker (dgx01, cmproc3, None)",
-        default="dgx01",
+        default="cmproc5",
     )
     optional.add_argument(
         "--debug",
@@ -198,26 +198,24 @@ def getCommandlineOptions():
         "EER_fractionation": results.EER_fractionation,
         "proteinAcronym": results.protein,
         "sampleName": results.sample,
-        "doseInitial": float(results.doseInitial),
-        "magnification": int(results.magnification)
-        if results.magnification is not None
-        else None,
-        "imagesCount": int(results.imagesCount)
-        if results.imagesCount is not None
-        else None,
+        "doseInitial": results.doseInitial,
+        "magnification": (
+            results.magnification if results.magnification is not None else None
+        ),
+        "imagesCount": results.imagesCount if results.imagesCount is not None else None,
         # "voltage": int(results.voltage) if results.voltage is not None else None,
-        "dosePerFrame": float(results.dosePerFrame),
+        "dosePerFrame": results.dosePerFrame,
         "dataStreaming": True,
-        "alignFrame0": int(results.startMotioncorFrame),
-        "alignFrameN": int(results.endMotioncorFrame),
+        "alignFrame0": results.startMotioncorFrame,
+        "alignFrameN": results.endMotioncorFrame,
         "phasePlateData": results.phasePlateData,
         "no2dClass": results.no2dClass,
         "onlyISPyB": results.onlyISPyB,
         "noISPyB": results.noISPyB,
         "particleElimination": results.particleElimination,
-        "samplingRate": float(results.samplingRate),
+        "samplingRate": results.samplingRate,
         "superResolution": results.superResolution,
-        "partSize": float(results.partSize),
+        "partSize": results.partSize,
         "defectMapPath": results.defectMapPath,
         "gainFilePath": results.gainFilePath,
         "secondGrid": results.secondGrid,

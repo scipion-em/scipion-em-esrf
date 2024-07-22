@@ -76,6 +76,14 @@ def getCommandlineOptions():
         default="tiff"
     )
     optional.add_argument(
+        "--EER_fractionation",
+        action="store",
+        help="The number of hardware frames to group into one " +
+             "fraction. This option is relevant only for Falcon 4 " +
+             "movies in the EER format.",
+        default="30"
+    )
+    optional.add_argument(
         "--filesPattern",
         action="store",
         help="file pattern for finding EM movies, default pattern "
@@ -187,6 +195,7 @@ def getCommandlineOptions():
         "dataDirectory": results.directory,
         "filesPattern": results.filesPattern,
         "dataType": 0 if results.dataType == "tiff" else 1,
+        "EER_fractionation": results.EER_fractionation,
         "proteinAcronym": results.protein,
         "sampleName": results.sample,
         "doseInitial": float(results.doseInitial),

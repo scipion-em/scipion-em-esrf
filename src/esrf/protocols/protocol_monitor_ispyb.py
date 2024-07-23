@@ -78,6 +78,15 @@ class ProtMonitorISPyB_ESRF(ProtMonitor):
         section1 = form.addSection(label="Names")
 
         section1.addParam(
+            "instrument",
+            params.StringParam,
+            default="cm01",
+            label="Instrument",
+            important=True,
+            help="Instrument (cm01 or cm02)",
+        )
+
+        section1.addParam(
             "proposal",
             params.StringParam,
             default="unknown",
@@ -249,6 +258,7 @@ class MonitorISPyB_ESRF(Monitor):
         self.imageGenerator = None
         self.project = self.protocol.getProject()
         self.client = protocol.client
+        self.instrument = protocol.instrument.get()
         self.proposal = protocol.proposal.get()
         self.proteinAcronym = protocol.proteinAcronym.get()
         self.sampleName = protocol.sampleName.get()
@@ -256,7 +266,6 @@ class MonitorISPyB_ESRF(Monitor):
         self.currentDir = os.getcwd()
         self.currentGridSquare = None
         self.currentGridSquareLastMovieTime = None
-        self.beamlineName = "cm01"
         self.dataType = protocol.dataType.get()
         self.voltage = protocol.voltage.get()
         self.magnification = protocol.magnification.get()
@@ -514,7 +523,7 @@ class MonitorISPyB_ESRF(Monitor):
                         dosePerImage=dosePerImage,
                         positionX=positionX,
                         positionY=positionY,
-                        beamlineName=self.beamlineName,
+                        beamlineName=self.instrument,
                         gridSquareSnapshotFullPath=gridSquareSnapshotPyarchPath,
                     )
                 except Exception as e:
@@ -703,7 +712,7 @@ class MonitorISPyB_ESRF(Monitor):
                             dosePerImage=dosePerImage,
                             positionX=positionX,
                             positionY=positionY,
-                            beamlineName=self.beamlineName,
+                            beamlineName=self.instrument,
                             gridSquareSnapshotFullPath=gridSquareSnapshotPyarchPath,
                         )
                     except Exception as e:
@@ -874,7 +883,7 @@ class MonitorISPyB_ESRF(Monitor):
             self.info("dosePerImage: {0}".format(dosePerImage))
             self.info("positionX: {0}".format(positionX))
             self.info("positionY: {0}".format(positionY))
-            self.info("beamlineName: {0}".format(self.beamlineName))
+            self.info("instrument: {0}".format(self.instrument))
             self.info(
                 "gridSquareSnapshotFullPath: {0}".format(gridSquareSnapshotFullPath)
             )
@@ -897,7 +906,7 @@ class MonitorISPyB_ESRF(Monitor):
                 dosePerImage=dosePerImage,
                 positionX=positionX,
                 positionY=positionY,
-                beamlineName=self.beamlineName,
+                beamlineName=self.instrument,
                 gridSquareSnapshotFullPath=gridSquareSnapshotPyarchPath,
             )
 
@@ -1405,6 +1414,7 @@ class MonitorISPyB_ESRF(Monitor):
                 directory,
                 self.proposal,
                 self.sampleName,
+                self.instrument,
                 dataSetName,
                 dictIcatMetaData,
                 listGalleryPath,
@@ -1477,6 +1487,7 @@ class MonitorISPyB_ESRF(Monitor):
                             directory,
                             self.proposal,
                             self.sampleName,
+                            self.instrument,
                             data_set_name,
                             dict_icat_meta_data,
                             list_gallery_path,

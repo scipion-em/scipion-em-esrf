@@ -48,6 +48,7 @@ class Test(unittest.TestCase):
         directory = "/data/visitor/mx2005/cm01/20171209/RAW_DATA/baseplate-epu-grid2"
         proposal = "id310009"
         sample = "sample1"
+        instrument="cm01"
         dataSetName = "GridSquare_7259648_{0}".format(round(time.time()))
         dictMetadata = {
             "EM_amplitude_contrast": 0.0,
@@ -63,7 +64,7 @@ class Test(unittest.TestCase):
             "EM_voltage": 10.0,
         }
         UtilsIcat.uploadToIcat(
-            listFiles, directory, proposal, sample, dataSetName, dictMetadata
+            listFiles, directory, proposal, sample, instrument, dataSetName, dictMetadata
         )
 
     def findStartEndTime(self, listMovies):

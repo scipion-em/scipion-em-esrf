@@ -279,6 +279,7 @@ def preprocessWorkflow(config_dict):
             alignFrameN=config_dict["alignFrameN"],
             binFactor=config_dict["binFactor"],
             extraParams2=config_dict["extraParams2"],
+            eerGroup=config_dict["EER_fractionation"]
         )
         setExtendedInput(protMA.inputMovies, protImport, "outputMovies")
         _registerProt(protMA, "MotionCorr")

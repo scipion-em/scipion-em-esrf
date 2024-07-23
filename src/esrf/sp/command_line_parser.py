@@ -81,7 +81,7 @@ def getCommandlineOptions():
         help="The number of hardware frames to group into one "
         + "fraction. This option is relevant only for Falcon 4 "
         + "movies in the EER format.",
-        default="30",
+        default=30,
     )
     optional.add_argument(
         "--filesPattern",
@@ -199,11 +199,8 @@ def getCommandlineOptions():
         "proteinAcronym": results.protein,
         "sampleName": results.sample,
         "doseInitial": results.doseInitial,
-        "magnification": (
-            results.magnification if results.magnification is not None else None
-        ),
-        "imagesCount": results.imagesCount if results.imagesCount is not None else None,
-        # "voltage": int(results.voltage) if results.voltage is not None else None,
+        "magnification": results.magnification,
+        "imagesCount": results.imagesCount,
         "dosePerFrame": results.dosePerFrame,
         "dataStreaming": True,
         "alignFrame0": results.startMotioncorFrame,

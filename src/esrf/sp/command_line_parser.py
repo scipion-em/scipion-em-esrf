@@ -122,6 +122,7 @@ def getCommandlineOptions():
         type=str,
         help="Instrument name (cm01 or cm02) if not defined by directory.",
         default=None,
+        choices=["cm01", "cm02"]
     )
     optional.add_argument(
         "--superResolution",

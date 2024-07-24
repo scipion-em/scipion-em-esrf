@@ -79,8 +79,9 @@ class ProtMonitorISPyB_ESRF(ProtMonitor):
 
         section1.addParam(
             "instrument",
-            params.StringParam,
-            default="cm01",
+            params.EnumParam,
+            choices=["cm01", "cm02"],
+            default=0,
             label="Instrument",
             important=True,
             help="Instrument (cm01 or cm02)",

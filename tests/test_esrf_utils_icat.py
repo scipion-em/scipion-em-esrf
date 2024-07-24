@@ -69,6 +69,7 @@ class Test(unittest.TestCase):
         ]
         directory = "/data/visitor/mx415/cm01/20180619/RAW_DATA/epu-grid2-ddw49-1_1"
         proposal = "id000001"
+        instrument="cm01"
         sample = "Test"
         dataSetName = "Test_1_1"
         dictMetadata = {"EM_voltage": "300000"}
@@ -82,6 +83,7 @@ class Test(unittest.TestCase):
             directory,
             proposal,
             sample,
+            instrument,
             dataSetName,
             dictMetadata,
             listGalleryPath,

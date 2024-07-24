@@ -118,6 +118,13 @@ def getCommandlineOptions():
         default=200.0,
     )
     optional.add_argument(
+        "--instrument",
+        type=str,
+        help="Instrument name (cm01 or cm02) if not defined by directory.",
+        default=None,
+        choices=["cm01", "cm02"]
+    )
+    optional.add_argument(
         "--superResolution",
         action="store_true",
         help="Super resolution used, default 'False'.",
@@ -213,6 +220,7 @@ def getCommandlineOptions():
         "samplingRate": results.samplingRate,
         "superResolution": results.superResolution,
         "partSize": results.partSize,
+        "instrument": results.instrument,
         "defectMapPath": results.defectMapPath,
         "gainFilePath": results.gainFilePath,
         "secondGrid": results.secondGrid,

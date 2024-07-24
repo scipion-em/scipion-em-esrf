@@ -104,7 +104,7 @@ config_dict["gainRot"] = motioncorr.constants.ROTATE_180
 # config_dict["magnification"] = int(dictResults["magnification"])
 config_dict["imagesCount"] = config_dict["numberOfFrames"]
 
-proposal = UtilsISPyB.getProposal(config_dict["dataDirectory"])
+proposal, _ = UtilsISPyB.getProposalInstrument(config_dict["dataDirectory"])
 
 if config_dict["noICAT"]:
     print("No upload to ISPyB or iCAT")

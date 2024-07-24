@@ -120,7 +120,16 @@ else:
     firstMovieFullPath = listMovies[0]
 
 
-proposal = UtilsISPyB.getProposal(config_dict["dataDirectory"])
+proposal, instrument = UtilsISPyB.getProposalInstrument(config_dict["dataDirectory"])
+
+if instrument is None:
+    if "instrument" in config_dict:
+        instrument = config_dict["instrument"]
+
+if instrument is None or instrument not in ["cm01", "cm02"]:
+    raise RuntimeError(f"Cannot find valid instrument for path {instrument}")
+
+config_dict["instrument"] = 0 if instrument == "cm01" else 1
 
 if config_dict["noISPyB"]:
     print("No upload to ISPyB or iCAT")

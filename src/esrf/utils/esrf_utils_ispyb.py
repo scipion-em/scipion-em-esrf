@@ -169,22 +169,27 @@ class UtilsISPyB(object):
         return sessions
 
     @staticmethod
-    def getProposal(movieFilePath):
+    def getProposalInstrument(movieFilePath):
         proposal = None
+        instrument = None
         list_directory = movieFilePath.split(os.sep)
         # First check: directory must start with "data":
         if list_directory[1] == "data":
             proposal_from_directory = None
             if list_directory[2] == "visitor":
+                # /data/visitor/<proposal>/<instrument>
                 proposal_from_directory = list_directory[3]
+                instrument = list_directory[4]
             else:
+                # /data/<instrument>/<opcm01>/<proposal>
+                instrument = list_directory[2]
                 proposal_from_directory = list_directory[4]
             proposal_code, proposal_number = UtilsISPyB.splitProposalInCodeAndNumber(
                 proposal_from_directory
             )
             if proposal_code is not None:
                 proposal = "{0}{1}".format(proposal_code, proposal_number)
-        return proposal
+        return proposal, instrument
 
     @staticmethod
     def uploadClassify2D(

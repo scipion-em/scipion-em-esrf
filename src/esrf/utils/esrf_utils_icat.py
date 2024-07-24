@@ -48,6 +48,7 @@ class UtilsIcat(object):
         directory,
         proposal,
         sample,
+        instrument,
         dataSetName,
         dictMetadata={},
         listGalleryPath=[],
@@ -55,8 +56,8 @@ class UtilsIcat(object):
         errorMessage = None
         try:
             os.environ["TANGO_HOST"] = "l-cryoem-1.esrf.fr:20000"
-            metadataManagerName = "cm01/metadata/ingest"
-            metaExperimentName = "cm01/metadata/experiment"
+            metadataManagerName = f"{instrument}/metadata/ingest"
+            metaExperimentName = f"{instrument}/metadata/experiment"
             client = MetadataManagerClient(metadataManagerName, metaExperimentName)
         except Exception:
             errorMessage = UtilsIcat.getStackTraceLog()

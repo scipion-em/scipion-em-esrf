@@ -605,6 +605,7 @@ def preprocessWorkflow(config_dict):
             ProtMonitorISPyB_ESRF,
             objLabel="ISPyB monitor",
             samplingInterval=10,
+            instrument=config_dict["instrument"],
             proposal=config_dict["proposal"],
             proteinAcronym=config_dict["proteinAcronym"],
             sampleName=config_dict["sampleName"],

@@ -26,12 +26,11 @@
 # **************************************************************************
 
 import argparse
-import pprint
 
 
 def getCommandlineOptions():
     parser = argparse.ArgumentParser(
-        description="Application for starting Scipion Cryo ET workflow for CM01"
+        description="Application for starting Scipion Cryo ET workflow at the ESRF"
     )
     parser._action_groups.pop()
     required = parser.add_argument_group("required arguments")
@@ -41,45 +40,59 @@ def getCommandlineOptions():
     )
     required.add_argument(
         "--sample",
-        action="store",
+        type=str,
         help="Sample name, for example 'grid1'.",
         required=True,
     )
     required.add_argument(
-        "--dosePerFrame", action="store", help="Dose per frame.", required=True
+        "--magnification", type=int, help="Nominal magnification.", default=None
     )
     required.add_argument(
-        "--magnification", action="store", help="Nominal magnification.", required=True
+        "--dosePerFrame", type=float, help="Dose per frame.", required=True
     )
     required.add_argument(
-        "--numberOfFrames",
-        action="store",
-        help="Number of frames per movie.",
-        required=True,
+        "--imagesCount",
+        type=int,
+        help="Number of images per movie.",
+        default=None,
     )
     optional.add_argument(
         "--protein",
-        action="store",
+        type=str,
         help="Protein acronym, must be the one used in the A-form.",
         required=False,
     )
     optional.add_argument(
         "--tiltAxisAngle",
-        action="store",
+        type=float,
         help="Tilt axis angle.",
         default=-175.9,
         required=False,
     )
     optional.add_argument(
         "--samplingRate",
-        action="store",
+        type=float,
         help="Sampling rate.",
         default=None,
         required=True,
     )
     optional.add_argument(
+        "--dataType",
+        type=str,
+        help="Type of data: tiff or eer, default tiff",
+        default="tiff",
+    )
+    optional.add_argument(
+        "--EER_fractionation",
+        type=int,
+        help="The number of hardware frames to group into one "
+        + "fraction. This option is relevant only for Falcon 4 "
+        + "movies in the EER format.",
+        default=30,
+    )
+    optional.add_argument(
         "--filesPattern",
-        action="store",
+        type=str,
         help="File pattern for finding CRyo ET movies, default pattern, default: '*_fractions.tiff'",
         default="*_fractions.tiff"
         #         help="""
@@ -100,30 +113,17 @@ def getCommandlineOptions():
     #     help="Scipion project name, is only used internally in Scipion.",
     # )
     optional.add_argument(
-        "--doseInitial", action="store", help="Initial dose, default zero.", default=0.0
-    )
-    optional.add_argument(
-        "--imagesCount",
-        action="store",
-        help="Number of images per movie.",
-        default=None,
-    )
-    # optional.add_argument("--voltage", action="store", help="Voltage [V]", default=None)
-    optional.add_argument(
-        "--defectMapPath", action="store", help="Defect map file path", default=None
-    )
-    optional.add_argument(
-        "--gainFilePath", action="store", help="Gain file path", default=None
+        "--doseInitial", type=float, help="Initial dose, default zero.", default=0.0
     )
     optional.add_argument(
         "--startMotioncorFrame",
-        action="store",
+        type=int,
         help="Start frame for motion correction, default 1.",
         default=1,
     )
     optional.add_argument(
         "--endMotioncorFrame",
-        action="store",
+        type=int,
         help="End frame for motion correction, default last frame.",
         default=0,
     )
@@ -146,33 +146,34 @@ def getCommandlineOptions():
         default=False,
     )
     optional.add_argument(
+        "--defectMapPath", type=str, help="Defect map file path", default=None
+    )
+    optional.add_argument(
+        "--gainFilePath", type=str, help="Gain file path", default=None
+    )
+    optional.add_argument(
         "--celery_worker",
         action="store",
         help="Celery worker (dgx01, cmproc3, None)",
-        default="dgx01",
+        default="cmproc5",
     )
     results = parser.parse_args()
 
     opt_dict = {
         "dataDirectory": results.directory,
         "filesPattern": results.filesPattern,
+        "dataType": 0 if results.dataType == "tiff" else 1,
+        "EER_fractionation": results.EER_fractionation,
         "proteinAcronym": results.protein,
         "sampleName": results.sample,
-        "doseInitial": float(results.doseInitial),
-        "magnification": int(results.magnification)
-        if results.magnification is not None
-        else None,
-        "numberOfFrames": int(results.numberOfFrames)
-        if results.numberOfFrames is not None
-        else None,
-        "imagesCount": int(results.imagesCount)
-        if results.imagesCount is not None
-        else None,
-        "dosePerFrame": float(results.dosePerFrame),
-        "samplingRate": float(results.samplingRate),
+        "doseInitial": results.doseInitial,
+        "magnification": results.magnification,
+        "imagesCount": results.imagesCount,
+        "dosePerFrame": results.dosePerFrame,
+        "samplingRate": results.samplingRate,
         "dataStreaming": True,
-        "alignFrame0": int(results.startMotioncorFrame),
-        "alignFrameN": int(results.endMotioncorFrame),
+        "alignFrame0": results.startMotioncorFrame,
+        "alignFrameN": results.endMotioncorFrame,
         "onlyICAT": results.onlyICAT,
         "noICAT": results.noICAT,
         "celery_worker": results.celery_worker,
@@ -181,5 +182,5 @@ def getCommandlineOptions():
         "tiltAxisAngle": results.tiltAxisAngle,
         "superResolution": results.superResolution,
     }
-    pprint.pprint(opt_dict)
+
     return opt_dict

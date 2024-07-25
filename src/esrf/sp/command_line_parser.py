@@ -30,7 +30,7 @@ import argparse
 
 def getCommandlineOptions():
     parser = argparse.ArgumentParser(
-        description="Application for starting Scipion workflow for CM01"
+        description="Application for starting Scipion workflow at the ESRF"
     )
     parser._action_groups.pop()
     required = parser.add_argument_group("required arguments")
@@ -98,7 +98,6 @@ def getCommandlineOptions():
     optional.add_argument(
         "--doseInitial", type=float, help="Initial dose, default zero.", default=0.0
     )
-    # optional.add_argument("--voltage", action="store", help="Voltage [V]", default=None)
     optional.add_argument(
         "--startMotioncorFrame",
         type=int,

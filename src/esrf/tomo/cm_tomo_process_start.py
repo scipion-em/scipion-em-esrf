@@ -104,7 +104,16 @@ config_dict["gainRot"] = motioncorr.constants.ROTATE_180
 # config_dict["magnification"] = int(dictResults["magnification"])
 config_dict["imagesCount"] = config_dict["numberOfFrames"]
 
-proposal, _ = UtilsISPyB.getProposalInstrument(config_dict["dataDirectory"])
+proposal, instrument = UtilsISPyB.getProposalInstrument(config_dict["dataDirectory"])
+
+if instrument is None:
+    if "instrument" in config_dict:
+        instrument = config_dict["instrument"]
+
+if instrument is None or instrument not in ["cm01", "cm02"]:
+    raise RuntimeError(f"Cannot find valid instrument for path {instrument}")
+
+config_dict["instrument"] = 0 if instrument == "cm01" else 1
 
 if config_dict["noICAT"]:
     print("No upload to ISPyB or iCAT")

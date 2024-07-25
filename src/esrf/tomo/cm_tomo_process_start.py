@@ -7,7 +7,9 @@ import celery
 #
 import motioncorr.constants
 
+from esrf.utils.esrf_utils_path import UtilsPath
 from esrf.utils.esrf_utils_ispyb import UtilsISPyB
+
 from esrf.tomo.cryo_tomo_command_line_parser import getCommandlineOptions
 from esrf.celery.cm_worker import run_workflow_commandline
 
@@ -84,25 +86,6 @@ print("********** EPU tiff data **********")
 config_dict["dataType"] = 1  # "EPU_TIFF"
 config_dict["gainFlip"] = motioncorr.constants.FLIP_LEFTRIGHT
 config_dict["gainRot"] = motioncorr.constants.ROTATE_180
-
-# jpeg, mrc, xml, gridSquareThumbNail = UtilsPath.getEpuMovieJpegMrcXml(
-#     firstMovieFullPath
-# )
-# if xml is None:
-#     print("*" * 80)
-#     print("*" * 80)
-#     print("*" * 80)
-#     print(
-#         "Error! Cannot find metadata files in the directory which contains the following movie:"
-#     )
-#     print(firstMovieFullPath)
-#     print("*" * 80)
-#     print("*" * 80)
-#     print("*" * 80)
-#     sys.exit(1)
-# dictResults = UtilsPath.getXmlMetaData(xml)
-# config_dict["magnification"] = int(dictResults["magnification"])
-config_dict["imagesCount"] = config_dict["numberOfFrames"]
 
 proposal, instrument = UtilsISPyB.getProposalInstrument(config_dict["dataDirectory"])
 

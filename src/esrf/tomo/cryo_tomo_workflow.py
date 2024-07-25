@@ -369,6 +369,7 @@ def preprocessWorkflow(config_dict):
             ProtMonitorIcatTomo,
             objLabel="ICAT Tomo monitor",
             samplingInterval=10,
+            instrument=config_dict["instrument"],
             proposal=config_dict["proposal"],
             proteinAcronym=config_dict["proteinAcronym"],
             sampleName=config_dict["sampleName"],

@@ -79,9 +79,8 @@ class ProtMonitorISPyB_ESRF(ProtMonitor):
 
         section1.addParam(
             "instrument",
-            params.EnumParam,
-            choices=["cm01", "cm02"],
-            default=0,
+            params.StringParam,
+            default="cm01",
             label="Instrument",
             important=True,
             help="Instrument (cm01 or cm02)",
@@ -297,6 +296,7 @@ class MonitorISPyB_ESRF(Monitor):
 
     def step(self):
         self.info("MonitorISPyB: start step ------------------------")
+        self.info(f"Instrument: {self.instrument}")
         self.info("Number of movies in all params: {0}".format(len(self.allParams)))
 
         # Check if we should archive gain an defect maps

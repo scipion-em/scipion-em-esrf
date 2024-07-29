@@ -261,7 +261,7 @@ def print_config(config_dict):
     logger.info("")
     logger.info("Parameters:")
     logger.info("")
-    logger.info("{0:30s}{1:>8s}".format("instrument", "cm01" if config_dict["instrument"] == 0 else "cm02"))
+    logger.info("{0:30s}{1:>8s}".format("instrument", config_dict["instrument"]))
     logger.info("{0:30s}{1:>8s}".format("proposal", config_dict["proposal"]))
     logger.info("{0:30s}{1:8s}".format("dataDirectory", config_dict["dataDirectory"]))
     logger.info("{0:30s}{1:>8s}".format("filesPattern", config_dict["filesPattern"]))

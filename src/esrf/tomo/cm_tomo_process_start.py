@@ -96,7 +96,7 @@ if instrument is None:
 if instrument is None or instrument not in ["cm01", "cm02"]:
     raise RuntimeError(f"Cannot find valid instrument for path {instrument}")
 
-config_dict["instrument"] = 0 if instrument == "cm01" else 1
+config_dict["instrument"] = instrument
 
 if config_dict["noICAT"]:
     print("No upload to ISPyB or iCAT")
